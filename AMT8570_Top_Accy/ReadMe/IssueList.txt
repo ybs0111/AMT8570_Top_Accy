@@ -1,0 +1,43 @@
+
+
+CMainFrame::CMainFrame()
+// 이곳 수정해야 함
+
+OnSet_MotorUnitDist()
+프로그램별로 이 부분 수정해야 함
+
+
+OnCreate
+// 타이머 주석 해제하고 사용하라
+OnSet_EqpManual
+OnSet_EqpAuto
+// 나중에 점검
+int CPublic_Function::IO_Board_Initialize()
+
+
+OnManual_IO_Read
+수정 필요한 함수
+
+int CPublic_Function::Robot_Reinstatement_Position(int mode)
+int CPublic_Function::Robot_Reinstatement_Position(int mode)
+
+
+void CMyJamData::On_Alarm_Display()
+// 수정한다
+
+
+// 설비와 CIM 프로그램간의 연결 상태 및 수정
+st_handler.m_iCimMode = YES;
+	st_work.nLink_CIM2TMS = CTL_NO;
+
+
+
+	void CMainFrame::OnReset() 
+	// 위 함수 기능 추가 필요
+	
+
+void CMainFrame::OnDestroy() 
+// 열어 놓은 통신 포트 닫는 부분 추가해야 한다
+
+Func.MsgLog("File Open Fail!.");
+// 전체 찾아서 내가 만든 것으로 대체한다

@@ -1,0 +1,27 @@
+// Server_EC.cpp: implementation of the CServer_EC class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "handler.h"
+#include "Server_EC.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CServer_EC::CServer_EC()
+{
+
+}
+
+CServer_EC::~CServer_EC()
+{
+
+}

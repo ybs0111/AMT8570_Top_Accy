@@ -1,0 +1,16 @@
+===== FarPoint Technologies, Inc =====
+===== Begin of Excel Workbook General Load =====
+9/7/2015 - 01:40
+
+Col	Row	Information
+___	___	___________
+		Import Excel File: C:\AMT8570_Accy\ExcelMap\AMT8570_Accy_MOTOR_AXIS_MAP.xls
+
+===== End of Excel Workbook General Load =====
+
+===== Begin of Excel Sheet Load =====
+		Import Sheet:  -1
+-	-	102:Excel reads the AllowDragDrop, AutoClipboard, and EditEnterAction properties from the registry. If you modify these properties in Spread, the changes are not saved at export.
+
+===== End of Excel Sheet Load =====
+===== FarPoint Technologies, Inc =====

@@ -1,0 +1,973 @@
+// Seq_LoadingConv.cpp: implementation of the CSeq_LoadingConv class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "handler.h"
+#include "Seq_LoadingConv.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+CSeq_LoadingConv	SeqLoadingConv;
+
+CSeq_LoadingConv::CSeq_LoadingConv()
+{
+
+}
+
+CSeq_LoadingConv::~CSeq_LoadingConv()
+{
+	OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+}
+
+//==================================================================//
+// 쓰레드 동작
+//==================================================================//
+void CSeq_LoadingConv::OnSeq_RUN(void) 
+{
+	OnSeq_INIT();     // 쓰레드 관련 변수 초기화
+	OnSeq_Execute();  // 쓰레드 제어
+}
+
+//==================================================================//
+// 쓰레드 관련 변수 초기화
+//==================================================================//
+void CSeq_LoadingConv::OnSeq_INIT(void) 
+{
+	if (m_bflag_INIT == true)	{
+		return;
+	}
+	m_bflag_INIT = true;
+
+	m_nStep_Init	= 0;
+	m_nStep_Run		= 0;
+	m_nRcvyStep		= 0;	// 복구 동작 처리 스템
+
+	m_nReq_AcMotCtrl = REQ_MV_RESET_;	// [없음] AC 모터 제어 요청
+
+	// [초기화] 복구 동작 요청 플래그
+	//stSync.nRcvyComplete[SITE_BTM_ACCY_CONV_] = CTL_YES;
+}
+
+//==================================================================//
+// 쓰레드 제어
+//==================================================================//
+void CSeq_LoadingConv::OnSeq_Execute(void) 
+{
+	// 시컨스 인터럽트 조건 확인
+	if (Func.OnIsInterruptCondition() == 1)
+	{
+		return;
+	}
+	int nRet = 0;
+
+	//==============================================================//
+	// AC 모터를 설비 상태에 상관없이 제어하기 위하여 추가함
+	// : 이곳에서는 TIME OUT 처리 하지 않음
+	// : 설비 상태가 START 상태로 변경되면 곧바로 TIME OUT 검사하기 때문
+	//==============================================================//
+	if (st_work.nEqpStatus != dRUN)
+	{
+		// 일정 시간동안 컨베이어 제어하는 동작에서는 시작 시간을 갱신하지 않음
+		// 그 외 동작에서는 시작 시간을 갱신함
+		// - 센서 위치까지 굴러가는 시간을 처음부터 다시 설정해야 하기 때문
+		// - 안그러면 시간을 다 지나가 버렸으므로 곧바로 TIME OUT 에러 발생함
+		if (m_nReq_AcMotCtrl != REQ_MV_RESET_ &&
+			m_nReq_AcMotCtrl != REQ_MV_INIT_)
+		{
+			// [RUN] 상태로 변경되기 전의 맨 마지막 시간 정보 설정
+			// - 이 정소는 [RUN] 상태로 변경되기까지 계속 갱신될 것임
+			m_lTime_GoesBy[0] = GetCurrentTime();
+		}
+	}
+
+	if (m_nReq_AcMotCtrl == REQ_MV_THIRD_)			// [Accy Conv] 첫번째 위치에 자재 공급 요청인 경우
+	{
+		nRet = OnCheck_AccyBoxConvInThird(IO_ON);	// [SIDE_FIRST_] 악세사리 버퍼에 자재가 존재하는지 확인
+		if (nRet == IO_ON)	// 센서에 감지됨
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+		}
+	}
+	else if (m_nReq_AcMotCtrl == REQ_MV_SECOND_)	// [Accy Conv] 두번째 위치에 자재 공급 요청인 경우
+	{
+		nRet = OnCheck_AccyBoxConvInSecond(IO_ON);	// [SIDE_SECOND_] 악세사리 버퍼에 자재가 존재하는지 확인
+		if (nRet == IO_ON)	// 센서에 감지됨
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+		}
+	}
+	else if (m_nReq_AcMotCtrl == REQ_MV_STABILITY_)	// 일정 시간만큼 감아달라는 요청인 경우
+	{
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+		}
+
+		if (m_lTime_GoesBy[2] >= st_time.nWait_On[WAIT_RAIL_AC_OFF] * 2)	// 안정 시간 후에 AC 모터 정지시킴
+		{
+			OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+		}
+	}
+	// 초기화 작업 시 레일 구동 요청인 경우
+	else if (m_nReq_AcMotCtrl == REQ_MV_INIT_)
+	{
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			return;
+		}
+
+		if (m_lTime_GoesBy[2] > 5000)
+		{
+			OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+		}
+	}
+	//--------------------------------------------------------------//
+
+	switch(st_work.nEqpStatus)
+	{
+	case dINIT:
+		// 초기화 진행 대화상자에서 [YES] 선택했는지 여부
+		if (st_handler.nInitTryREQ != YES)
+		{
+			break;
+		}
+		OnRun_Initial();	// LoadingConv 버퍼의 초기화 작업
+		break;
+
+	case dRUN:
+		// 초기화 작업이 완료되지 않으면 [AUTO] 작업 시작 불가능
+		// - st_handler.nIsAllSiteInitEnd : 초기화 화면에서 설정
+		if (st_handler.nIsAllSiteInitEnd == CTL_YES)
+		{
+			OnRun_Move();	// LoadingConv 시컨스 동작
+		}
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+void CSeq_LoadingConv::OnRun_Initial() 
+{
+	// 초기화 작업이 완료된 경우 강제 리턴함
+	if (st_handler.mn_init_state[INIT_LOAD_CONV] != CTL_NO)
+	{
+		return;
+	}
+	int nRet = VAR_INIT_;
+
+	switch(m_nStep_Init)
+	{
+	case 0:
+		memset(&st_map, 0, sizeof(st_map));
+		m_nStep_Init = 100;
+		break;
+
+	// 스토퍼를 [ON] 시켜 Loading Conv 자재를 구분할 수 있게 됨
+	case 100:
+		OnSet_CylStopper(IO_ON);	// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
+		m_nStep_Init = 110;
+		break;
+
+	case 110:
+		nRet = OnGet_CylStopper(IO_ON);
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_Init = 200;
+		}
+		else if (nRet == CTL_ERROR)
+		{
+			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
+			m_nStep_Init = 100;
+		}
+		break;
+
+	case 200:
+		OnMove_AcMotor(AC_MV_STOP_);
+		m_nStep_Init = 400;
+		break;
+
+	case 400:
+		// [Manual Loading] 상태 변경
+		Func.OnSet_EqpLoadingManual();
+		m_nStep_Init = 3000;
+		break;
+
+	case 3000:
+		// 초기화 화면에서 [초기화] 완료 표시 가능
+		stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
+		st_handler.mn_init_state[INIT_LOAD_CONV] = CTL_YES;
+		m_nStep_Init = 0;
+		break;
+	}
+}
+
+void CSeq_LoadingConv::OnRun_Move() 
+{
+	// 전체 사이트 복구 동작 완료 여부 확인
+	// - 모든 부분의 복구 동작이 완료된 후에만 시컨스 동작하도록 함
+	// : 복구 동작 중에 시컨스 구동하면 복구하는 영역과 충돌이 발생할 수 있음
+	if (Func.OnIsAllRcvyComplete() != CTL_YES)
+	{
+		return;
+	}
+
+	// Clamp가 짚는 동작을 하는 중이기 때문에 대기
+	if (stSync.nResp_Clamp2LoadingConv_Work == SYNC_RESP_WORK_)
+	{
+		return;
+	}
+
+	if (st_work.nLoadingStatus == dMANUAL)
+	{
+		st_work.nLoadingFlag = TRUE;
+		return;
+	}
+	else
+	{
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			if (stWithoutData.nLoadingTestBox <= 0)
+			{
+				st_map.nLoadingAccyBoxExist[0] = 1;
+				st_map.nLoadingAccyBoxExist[1] = 1;
+				st_map.nLoadingAccyBoxExist[2] = 1;
+				stWithoutData.nLoadingTestBox = 3;
+			}
+		}
+	}
+
+	Func.OnTrace_ThreadStep(0, m_nStep_Run);	// 쓰레드 스텝 정보 TRACE
+
+	int nRet = VAR_INIT_;
+	int nRetData[4] = {0,};
+
+	switch(m_nStep_Run)
+	{
+	case 0:
+		// 규이리 추가 [2014.12.27]
+		// [리셋] 센서 감지 오류로 인한 트레이 미존재 강제 설정 플래그 (투입 Conv)
+		st_work.nSkipReq_ShiftTray = CTL_NO;
+
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			if (stWithoutData.nLoadingTestBox == 0)
+			{
+				if (st_map.nLoadingAccyBoxExist[0] == 0 && 
+					st_map.nLoadingAccyBoxExist[1] == 0 &&
+					st_map.nLoadingAccyBoxExist[2] == 0)
+				{
+					break;
+				}
+			}
+			else 
+			{
+				if (st_map.nLotStart != CTL_YES)
+				{
+					st_map.nLotStart = CTL_YES;
+					m_nStep_Run = 200;
+					break;
+				}
+				else
+				{
+					m_nStep_Run = 100;
+					break;
+				}
+				
+			}
+		}
+		else
+		{
+			nRetData[0] = OnCheck_AccyBoxConvInThird(IO_ON);
+			nRetData[1] = OnCheck_AccyBoxConvInSecond(IO_ON);
+			nRetData[2] = OnCheck_AccyBoxConvInFirst(IO_ON);
+
+			if (nRetData[0] == IO_ON)
+			{
+				stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_;
+			}
+			
+			if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
+			{
+				stSync.nLotEnd_LoadingConv = TRUE;
+				stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
+				break;
+			}
+			else
+			{
+				st_map.nLotStart = CTL_YES;
+				stSync.nLotEnd_LoadingConv = FALSE;
+				m_nStep_Run = 100;
+			}
+		}
+		break;
+
+	case 100:
+		nRetData[0] = OnCheck_AccyBoxConvInThird(IO_ON);
+		nRetData[1] = OnCheck_AccyBoxConvInSecond(IO_ON);
+		nRetData[2] = OnCheck_AccyBoxConvInFirst(IO_ON);
+
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nRetData[0] = st_map.nLoadingAccyBoxExist[0]; 
+			nRetData[1] = st_map.nLoadingAccyBoxExist[1];
+			nRetData[2] = st_map.nLoadingAccyBoxExist[2];
+		}
+
+		if (nRetData[0] == IO_OFF)
+		{
+			if (nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
+			{
+				m_nStep_Run = 0;
+				break;
+			} 
+			else if (nRetData[1] == IO_ON || nRetData[2] == IO_ON)
+			{
+				st_work.nLoadingFlag = TRUE;
+				stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
+				m_nStep_Run = 200;
+			}
+		}
+		else if (nRetData[1] == IO_OFF)
+		{
+			if (nRetData[2] == IO_ON)
+			{
+				m_nStep_Run = 1100;
+				break;
+			}
+			else
+			{
+				m_nStep_Run = 0;
+				break;
+			}
+		}
+		else if (nRetData[2] == IO_ON)
+		{
+			m_nStep_Run = 2000;
+		}
+		else
+		{
+			m_nStep_Run = 0;
+			break;
+		}
+		break;
+
+	case 200:
+		OnSet_CylStopper(IO_ON);	// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
+		m_nStep_Run = 210;
+		break;
+
+	case 210:
+		nRet = OnGet_CylStopper(IO_ON);
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_Run = 1000;
+		}
+		else if (nRet == CTL_ERROR)
+		{
+			m_nStep_Run = 200;
+			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
+		}
+		break;
+
+	case 1000:
+		OnMove_AcMotor(AC_MV_CW_);		// AC 모터 구동/정지
+		m_lTime_GoesBy[0] = GetCurrentTime();
+		m_nReq_AcMotCtrl = REQ_MV_THIRD_;  // 첫번째 센서 까지 레일 구동
+		m_nStep_Run = 1030;
+		break;
+	
+	//Conv의 구동 상태를 확인 후 악세사리 박스가 로딩이 완료 됬다는것을 Clamp에 요청
+	case 1030:
+		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)	// 구동 완료함
+		{
+			if (st_map.nLoadingAccyBoxExist[2] == 1 &&
+				st_map.nLoadingAccyBoxExist[1] == 1 &&
+				st_map.nLoadingAccyBoxExist[0] == 0)
+			{
+				st_map.nLoadingAccyBoxExist[2] = 0;
+				st_map.nLoadingAccyBoxExist[1] = 1;
+				st_map.nLoadingAccyBoxExist[0] = 1;
+			}
+			else if (st_map.nLoadingAccyBoxExist[2] == 0 &&
+					st_map.nLoadingAccyBoxExist[1] == 1 &&
+					st_map.nLoadingAccyBoxExist[0] == 0)
+			{
+				st_map.nLoadingAccyBoxExist[1] = 0;
+				st_map.nLoadingAccyBoxExist[0] = 1;
+			}
+			else
+			{
+				st_map.nLoadingAccyBoxExist[0] = 1;
+			}
+			stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_;
+			m_nStep_Run = 3000;
+		}	
+		else
+		{
+			// 규이리 추가 [2014.12.27]
+			// 센서 오동작에 의한 공급 동작이니 리셋하라는 요청이 발생했는지 확인
+			if (st_work.nSkipReq_ShiftTray == CTL_YES)
+			{
+				OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+				m_nStep_Run = 3000;
+				break;
+			}
+
+			m_lTime_GoesBy[1] = GetCurrentTime();
+			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+			if (m_lTime_GoesBy[2] < 0)
+			{
+				m_lTime_GoesBy[0] = GetCurrentTime();
+				break;
+			}
+			
+			// [WithOut] 모드인지 확인
+			// - 자재가 없기 때문에 센서에 감지되지 않음
+			// - 센서를 보고 멈출 수 있는 조건이 아니므로 일정 시간 후에 강제로 멈춤
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			{
+				if (m_lTime_GoesBy[2] >= (MAX_WAIT_ACCY_BOX_CONV_/2))
+				{
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					if (st_map.nLoadingAccyBoxExist[2] == 1 &&
+						st_map.nLoadingAccyBoxExist[1] == 1 &&
+						st_map.nLoadingAccyBoxExist[0] == 0)
+					{
+						st_map.nLoadingAccyBoxExist[2] = 0;
+						st_map.nLoadingAccyBoxExist[1] = 1;
+						st_map.nLoadingAccyBoxExist[0] = 1;
+					}
+					else if (st_map.nLoadingAccyBoxExist[2] == 0 &&
+						st_map.nLoadingAccyBoxExist[1] == 1 &&
+						st_map.nLoadingAccyBoxExist[0] == 0)
+					{
+						st_map.nLoadingAccyBoxExist[1] = 0;
+						st_map.nLoadingAccyBoxExist[0] = 1;
+					}
+					else if (st_map.nLoadingAccyBoxExist[2] == 0 &&
+						st_map.nLoadingAccyBoxExist[1] == 0 &&
+						st_map.nLoadingAccyBoxExist[0] == 1)
+					{
+						st_map.nLoadingAccyBoxExist[0] = 0;
+					}
+					else
+					{
+						st_map.nLoadingAccyBoxExist[0] = 1;
+					}
+					if (stWithoutData.nLoadingTestBox != 0)
+					{
+						stWithoutData.nLoadingTestBox--;
+					}
+					stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_;
+					m_nStep_Run = 3000;
+				}
+			}
+			else
+			{
+				if (m_lTime_GoesBy[2] >= (MAX_WAIT_ACCY_BOX_CONV_ + 1000) * 2)
+				{
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					m_nStep_Run = 1000;	// AC 모터 처음부터 다시 굴림
+					
+					// 120000 0 00 "PS0306_LOADING_CONV_FIRST_CHK_ERR."
+					alarm.mstr_code		= "120000";
+					alarm.mn_count_mode	= 0;
+					alarm.mn_type_mode	= eWARNING;
+					st_work.nEqpStatus	= dWARNING;
+				}
+			}
+		}
+		break;
+	
+	case 1100:
+		nRet = OnCheck_AccyBoxConvInSecond(IO_ON);
+		if (nRet == IO_OFF)	// 센서에 미감지
+		{
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			{
+				if(stWithoutData.nLoadingTestBox > 0)
+				{
+					m_nStep_Run = 1200;
+				}
+				else
+				{
+					m_nStep_Run = 3000;
+				}
+			}
+			else
+			{
+				m_nStep_Run = 1200;
+			}
+		}
+		else
+		{
+			m_nStep_Run = 2000;
+		}
+		break;
+
+	case 1200:
+		OnSet_CylStopper(IO_ON);	// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
+		m_nStep_Run = 1210;
+		break;
+
+	case 1210:
+		nRet = OnGet_CylStopper(IO_ON);
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_Run = 1300;
+		}
+		else if (nRet == CTL_ERROR)
+		{
+			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
+			m_nStep_Run = 1200;
+		}
+		break;
+
+	case 1300:
+		OnMove_AcMotor(AC_MV_CW_);		// AC 모터 구동/정지
+		m_lTime_GoesBy[0] = GetCurrentTime();
+		m_nReq_AcMotCtrl = REQ_MV_SECOND_;  // 두번째 센서 까지 레일 구동
+		m_nStep_Run = 1310;
+		break;
+
+	// Conv의 구동 상태를 확인 후 악세사리 박스가 로딩이 완료 되면
+	// 첫번째 센서를 확인 한 후 OFF 일경우 첫번째 센서가 OFF되는 Step으로 이동
+	// 첫번째 센서가 ON이면 완료 Step로 이동
+	case 1310:
+		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)	// 구동 완료함
+		{
+			m_nStep_Run = 3000;
+		}
+		else
+		{
+			// 규이리 추가 [2014.12.27]
+			// 센서 오동작에 의한 공급 동작이니 리셋하라는 요청이 발생했는지 확인
+			if (st_work.nSkipReq_ShiftTray == CTL_YES)
+			{
+				OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+				m_nStep_Run = 3000;
+				break;
+			}
+			m_lTime_GoesBy[1] = GetCurrentTime();
+			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+			if (m_lTime_GoesBy[2] < 0)
+			{
+				m_lTime_GoesBy[0] = GetCurrentTime();
+				break;
+			}
+			
+			// [WithOut] 모드인지 확인
+			// - 자재가 없기 때문에 센서에 감지되지 않음
+			// - 센서를 보고 멈출 수 있는 조건이 아니므로 일정 시간 후에 강제로 멈춤
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			{
+				if (m_lTime_GoesBy[2] >= (MAX_WAIT_ACCY_BOX_CONV_/2))
+				{
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					st_map.nLoadingAccyBoxExist[1] = 1;
+					nRet = OnCheck_AccyBoxConvInThird(IO_ON);
+					
+					if(nRet == IO_OFF)
+					{
+						m_nStep_Run = 100;
+					}
+					else
+					{
+						m_nStep_Run = 3000;
+					}
+				}
+			}
+			else
+			{
+				if (m_lTime_GoesBy[2] >= MAX_WAIT_ACCY_BOX_CONV_)
+				{
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					m_nStep_Run = 1300;	// AC 모터 처음부터 다시 굴림
+					
+					// 120001 0 00 "PS0307_LOADING_CONV_SECOND_CHK_ERR."
+					alarm.mstr_code		= "120001";
+					alarm.mn_count_mode	= 0;
+					alarm.mn_type_mode	= eWARNING;
+					st_work.nEqpStatus	= dWARNING;
+				}
+			}
+		}
+		break;
+
+	// 세번째 센서 ON, OFF 확인
+	// 센서 ON : Conv Stopper의 UP 상태를 확인 한 후에 다음 Step 진행
+	// 센서 OFF : 완료 Step로 이동
+	case 2000:
+		nRet = OnCheck_AccyBoxConvInFirst(IO_ON);
+		if (nRet == IO_OFF)
+		{
+			m_nStep_Run = 3000;
+		}
+		else
+		{
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			{
+				if(stWithoutData.nLoadingTestBox > 0)
+				{
+					m_nStep_Run = 2100;
+				}
+				else
+				{
+					m_nStep_Run = 3000;
+				}
+			}
+			else
+			{
+				if (st_work.nLoadingFlag == TRUE)
+				{
+					st_work.nLoadingFlag = FALSE;
+					m_nStep_Run = 2100;
+				}
+				else
+				{
+					m_nStep_Run = 3000;
+				}
+			}
+		}
+		break;
+
+	case 2100:
+		OnSet_CylStopper(IO_ON);	// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
+		m_nStep_Run = 2110;
+		break;
+
+	// Loading Conv Stopper의 UP 상태
+	// 안정시간 만큼 Conv를 구동
+	case 2110:
+		nRet = OnGet_CylStopper(IO_ON);
+		if (nRet == CTL_GOOD)	// AccyConv Stopper Up
+		{
+			m_nStep_Run = 2200;
+		}
+		else if (nRet == CTL_ERROR)	// AccyConv Stopper Down
+		{
+			m_nStep_Run = 2100;
+			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
+		}
+		break;
+
+	case 2200:
+		OnMove_AcMotor(AC_MV_CW_);		// AC 모터 구동/정지
+		m_lTime_GoesBy[0] = GetCurrentTime();
+		m_nReq_AcMotCtrl = REQ_MV_STABILITY_;  // 안정 시간만큼 감아달라는 요청
+		m_nStep_Run = 2210;
+		break;
+
+	// Conv를 안정 시간 만큼 구동이 완료 되면 완료 Strp으로 진행
+	case 2210:
+		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)	// 구동 완료함
+		{
+			m_nStep_Run = 3000;
+		}
+		else
+		{
+			// 규이리 추가 [2014.12.27]
+			// 센서 오동작에 의한 공급 동작이니 리셋하라는 요청이 발생했는지 확인
+			if (st_work.nSkipReq_ShiftTray == CTL_YES)
+			{
+				OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+				m_nStep_Run = 3000;
+				break;
+			}
+
+			m_lTime_GoesBy[1] = GetCurrentTime();
+			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+			if (m_lTime_GoesBy[2] < 0)
+			{
+				m_lTime_GoesBy[0] = GetCurrentTime();
+				break;
+			}
+			
+			// [WithOut] 모드인지 확인
+			// - 자재가 없기 때문에 센서에 감지되지 않음
+			// - 센서를 보고 멈출 수 있는 조건이 아니므로 일정 시간 후에 강제로 멈춤
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			{
+				if (m_lTime_GoesBy[2] >= (MAX_WAIT_ACCY_BOX_CONV_/2))
+				{
+					st_map.nLoadingAccyBoxExist[2] = 1;
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					
+					m_nStep_Run = 3000;
+				}
+			}
+			else
+			{
+				if (m_lTime_GoesBy[2] >= MAX_WAIT_ACCY_BOX_CONV_)
+				{
+					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
+					m_nStep_Run = 2200;	// AC 모터 처음부터 다시 굴림
+					
+					// 120002 0 00 "PS0308_LOADING_CONV_THIRD_CHK_ERR."
+					alarm.mstr_code		= "120002";
+					alarm.mn_count_mode	= 0;
+					alarm.mn_type_mode	= eWARNING;
+					st_work.nEqpStatus	= dWARNING;
+				}
+			}
+		}
+		break;
+
+	case 3000:
+		if (st_work.nSkipReq_ShiftTray == CTL_YES)
+		{
+			st_work.nSkipReq_ShiftTray = CTL_NO;
+		}
+		m_nStep_Run = 0;
+		break;
+	}
+}
+
+//==================================================================//
+// AC 모터 구동/정지
+//==================================================================//
+void CSeq_LoadingConv::OnMove_AcMotor(int nzMoveType) 
+{
+	if (nzMoveType == AC_MV_CW_)
+	{
+		g_ioMgr.set_out_bit(stIO.o_AccyBoxConvMotor, IO_ON);
+	}
+	else if (nzMoveType == AC_MV_STOP_)
+	{
+		g_ioMgr.set_out_bit(stIO.o_AccyBoxConvMotor, IO_OFF);
+
+		m_nReq_AcMotCtrl = REQ_MV_RESET_;	// AC 모터 구동 요청 없음
+	}
+}
+
+//==================================================================//
+// [Accy Box Conv First] 악세사리 박스가 존재하는지 확인
+//==================================================================//
+int CSeq_LoadingConv::OnCheck_AccyBoxConvInFirst(int nzOnOff, int nzMode) 
+{
+	int nReadIO = 0;
+
+	// 센서가 B접이라 센서 상태 확인 시 반전 사용
+	nReadIO = !g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvDetection[SIDE_FIRST_]);
+
+	// 자재 존재하는 경우에 대한 체크인지 확인
+	if (nzMode == 0)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = nzOnOff;
+		}
+	}
+	else if (nzMode == 1)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = st_map.nLoadingAccyBoxExist[2];
+		}
+	}
+	
+	if (nReadIO == IO_ON)
+	{
+		return IO_ON;	// 센서 감지
+	}
+	else	
+	{
+		return IO_OFF;	// 센서 미감지
+	} 
+}
+
+//==================================================================//
+// [Accy Box Conv Second] 악세사리 박스가 존재하는지 확인
+//==================================================================//
+int CSeq_LoadingConv::OnCheck_AccyBoxConvInSecond(int nzOnOff, int nzMode) 
+{
+	int nReadIO = 0;
+
+	// 센서가 B접이라 센서 상태 확인 시 반전 사용
+	nReadIO = !g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvDetection[SIDE_SECOND_]);
+
+	// 자재 존재하는 경우에 대한 체크인지 확인
+	if (nzMode == 0)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = nzOnOff;
+		}
+	}
+	else if (nzMode == 1)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = st_map.nLoadingAccyBoxExist[1];
+		}
+	}
+	
+	if (nReadIO == IO_ON)
+	{
+		return IO_ON;	// 센서 감지
+	}
+	else	
+	{
+		return IO_OFF;	// 센서 미감지
+	}
+}
+
+//==================================================================//
+// [Accy Box Conv Third] 악세사리 박스가 존재하는지 확인
+//==================================================================//
+int CSeq_LoadingConv::OnCheck_AccyBoxConvInThird(int nzOnOff, int nzMode) 
+{
+	int nReadIO = 0;
+
+	// 센서가 B접이라 센서 상태 확인 시 반전 사용
+	nReadIO = !g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvDetection[SIDE_THIRD_]);
+
+	// 자재 존재하는 경우에 대한 체크인지 확인
+	if (nzMode == 0)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = nzOnOff;
+		}
+	}
+	else if (nzMode == 1)
+	{
+		// 현재 WithOut 모드인지 확인
+		// - 자재없이 돌리고 있으므로 감지되지 않기 때문에 강제로 설정함
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			nReadIO = st_map.nLoadingAccyBoxExist[0];
+		}
+	}
+	if (nReadIO == IO_ON)
+	{
+		return IO_ON;	// 센서 감지
+	}
+	else	
+	{
+		return IO_OFF;	// 센서 미감지
+	}
+}
+
+//==================================================================//
+// 악세사리 박스를 BoxClamp 영역로 고정하게 하는 스토터
+// - IO_ON = UP 상태에서 Conv에 3개의 Accy Box를 공급받음
+// - IO_OFF = Down 상태에서 BoxClamp에 적되어 Supply 영역으로 공금 받음
+//==================================================================//
+void CSeq_LoadingConv::OnSet_CylStopper(int nzOnOff) 
+{
+	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxConvStopperUp, nzOnOff);
+	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxConvStopperDn, !nzOnOff);
+
+	m_bflag_Stopper = true;
+	m_lWait_Stopper[0] = GetCurrentTime();
+}
+
+int CSeq_LoadingConv::OnGet_CylStopper(int nzOnOff, int nzSite) 
+{
+	int nFunRet = CTL_PROCEED;
+
+	int nReadIO[2] = {0,};
+	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvStopperUp);
+	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvStopperDn);
+
+
+	m_lWait_Stopper[1] = GetCurrentTime();
+	m_lWait_Stopper[2] = m_lWait_Stopper[1] - m_lWait_Stopper[0];
+
+	if (m_lWait_Stopper[2] < 0)
+	{
+		m_lWait_Stopper[0] = GetCurrentTime();
+	}
+
+	if (nzOnOff == IO_OFF)		// 스토퍼 내려간 상태
+	{
+		if (m_bflag_Stopper == true &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
+		{
+			m_lWait_Stopper[0] = GetCurrentTime();
+			m_bflag_Stopper = false;
+		}
+		else if (m_bflag_Stopper == false &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
+		{
+			if (m_lWait_Stopper[2] > st_time.nWait_Off[CYL_ACCY_BOX_STOPPER])
+			{
+				nFunRet = CTL_GOOD;	// [OFF:DOWN]
+			}
+		}
+		else
+		{
+			if (m_lWait_Stopper[2] > st_time.nWait_Limit[CYL_ACCY_BOX_STOPPER])
+			{
+				// 120100 0 00 "PS0303_LOADING_CONV_STOPPER_DOWN_CHK_ERR."
+				alarm.mstr_code		= "120100";
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+
+				nFunRet = CTL_ERROR;
+			}
+		}
+	}
+	else		// 스토퍼 올라온 상태
+	{
+		if (m_bflag_Stopper == true &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+		{
+			m_lWait_Stopper[0] = GetCurrentTime();
+			m_bflag_Stopper = false;
+		}
+		else if (m_bflag_Stopper == false &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+		{
+			if (m_lWait_Stopper[2] > st_time.nWait_On[CYL_ACCY_BOX_STOPPER])
+			{
+				nFunRet = CTL_GOOD;	// [OFF:DOWN]
+			}
+		}
+		else
+		{
+			if (m_lWait_Stopper[2] > st_time.nWait_Limit[CYL_ACCY_BOX_STOPPER])
+			{
+				// 120101 0 00 "PS0302_LOADING_CONV_STOPPER_UP_CHK_ERR."
+				alarm.mstr_code		= "120101";
+
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+
+				nFunRet = CTL_ERROR;
+			}
+		}
+	}
+	return nFunRet;
+}
