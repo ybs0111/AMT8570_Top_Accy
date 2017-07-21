@@ -111,16 +111,6 @@ public:
 	//--------------------------------------------------------------//
 
 	CWnd* m_hFindWnd;
-
-	
-
-
-
-
-
-
-	
-
 	int n_summary_flag;
 	int nElectrostaticCheckStep;
 	CString strElectCommand;

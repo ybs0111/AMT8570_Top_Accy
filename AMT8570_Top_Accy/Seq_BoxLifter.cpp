@@ -208,7 +208,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1300, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2001, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -231,7 +231,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 		else
 		{
 			//150000 0 00 "ACCY_UNLOADER_FULL_ERR."
-			CTL_Lib.Alarm_Error_Occurrence( 1301, CTL_dWARNING, "150000");
+			CTL_Lib.Alarm_Error_Occurrence( 2002, CTL_dWARNING, "150000");
 		}
 		break;
 
@@ -248,7 +248,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1302, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2003, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -266,7 +266,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1303, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2004, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -292,7 +292,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1304, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2005, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -311,9 +311,9 @@ void CSeq_BoxLifter::OnRun_Move()
 {
 	//Up Complete
 	int nRet_1,nRet_2;
-	int nRetData[4] = {0,};
 	int nRet[3] = {0,};
 	int nCnt,i;
+	int nRetData[4] = {0,};
 	
 	switch(m_nBoxLift_Step)
 	{
@@ -335,24 +335,29 @@ void CSeq_BoxLifter::OnRun_Move()
 		{
 			stSync.nResp_Lifter2Clamp_Work = SYNC_RESP_WORK_;
 			stSync.nReq_Lifter2XYZRbt_Work = SYNC_REQ_RESET_;
+			
 			st_map.nLiftWorkSite = SIDE_REAR_;		// Accy 작업 영역 설정 (작업 순서 : Rear -> Front)
-			m_nStep_Run = 200;
+			//m_nStep_Run = 200;
+			//kwlee 2017.0721
+			m_nBoxLift_Step = 100;
 		}
 		break;
 
-	case 200:
+	case 100:
 		// Lifter 유닉을 Rear 작업 영역으로 이동
-		nRet = CTL_Lib.OnSingleMove(m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_REAR_], (int)st_handler.md_run_speed);
-		if (nRet == CTLBD_RET_GOOD)
+		nRet_1 = CTL_Lib.OnSingleMove(m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_REAR_], (int)st_handler.md_run_speed);
+		if (nRet_1 == CTLBD_RET_GOOD)
 		{
 			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				memset(st_work.nAccyCNT, 0, sizeof(st_work.nAccyCNT));
 			}
-			m_nStep_Run = 300;
+			//m_nStep_Run = 300;
+			//kwlee 2017.0721
+			m_nBoxLift_Step = 200;
 
 		}
-		else if (nRet == CTLBD_RET_ERROR || nRet == CTLBD_RET_RETRY)
+		else if (nRet_1 == CTLBD_RET_ERROR || nRet_1 == CTLBD_RET_RETRY)
 		{
 			// 041001 0 00 "LIFTER_Y_ACC_REAR_MOVE_ERR."
 			alarm.mstr_code		= "041001";
@@ -363,7 +368,7 @@ void CSeq_BoxLifter::OnRun_Move()
 		}
 		break;
 
-	case 300:
+	case 200:
 		m_nStandByOK[0] = CTL_NO;
 		m_nStandByOK[1] = CTL_NO;
 		m_nStandByOK[2] = CTL_NO;
@@ -373,10 +378,12 @@ void CSeq_BoxLifter::OnRun_Move()
 		dCurrPos[1] = COMI.Get_MotCurrentPos(m_nMotZ1);
 		dCurrPos[2] = COMI.Get_MotCurrentPos(m_nMotZ2);	
 		dCurrPos[3] = COMI.Get_MotCurrentPos(m_nMotZ3);
-		m_nStep_Run = 400;
+		//m_nStep_Run = 300;
+		//kwlee 2017.0721
+		m_nBoxLift_Step = 300;
 		break;
 
-	case 400:
+	case 300:
 		if (m_nStandByOK[0] == CTL_NO)
 		{
 			if (dCurrPos[0] > st_motor[m_nMotZ0].d_pos[Z_ACC_LIFT_SAFETY_] + 10)
@@ -410,6 +417,7 @@ void CSeq_BoxLifter::OnRun_Move()
 			if (dCurrPos[1] > st_motor[m_nMotZ1].d_pos[Z_ACC_LIFT_SAFETY_] + 10)
 			{
 				// WithOut모드에서는 Offset 간격으로 UP
+				// - int nzMode : [0:악세사리 공급 요청, 1:안전 위치 이동, 2:Offset 만큼 이동]
 				nRetData[1] = OnSupplyStandBy1(2, st_map.nLiftWorkSite);		// Accy 작업 영역 설정 (작업 순서 : Rear -> Front)
 			}
 			else
@@ -505,36 +513,36 @@ void CSeq_BoxLifter::OnRun_Move()
 		{
 			// [XYZ Robot <- BoxLifter] 작업 완료 했다고 응답
 			stSync.nReq_Lifter2XYZRbt_Work = SYNC_REQ_ACC_LIFT_COMPLETE_;
-			m_nStep_Run = 1300;
+			
+			//m_nStep_Run = 1300;
+			//kwlee 2017.0721
+			//여기서 자재 없을 때까지 밀어 준다.
+			//
+			m_nBoxLift_Step = 1000;
 		}
 		// Lifter Z(0,1,2,3)에 대해서 모든 리프터가 정상적으로 자재 공급을 하지 못하였기 때문에 Down Step 진행
 		else
 		{
-			m_nStep_Run = 2600;
+			m_nBoxLift_Step = 2600;
 		}
 		break;
+		//m_nBoxLift_Step = 100;
+	//	break;
 
-
-
-
-
-		m_nBoxLift_Step = 100;
-		break;
-
-	case 100:
+	case 1000:
 		//XYZ Robot에게서 작업 완료, 배출 신호 받음.
 		if (stSync.nReq_Lifter2XYZRbt_Work == SYNC_REQ_ACC_LIFT_COMPLETE_)
 		{
-			m_nBoxLift_Step = 110;
+			m_nBoxLift_Step = 1100;
 		}
 		break;
 	
-	case 110:
+	case 1100:
 		//안전한 대기 위치로 빠진다.
 		nRet_1 = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_BOX_AVOID_], (int)st_handler.md_run_speed );
 		if( nRet_1 == CTLBD_RET_GOOD )
 		{
-			m_nBoxLift_Step = 200;
+			m_nBoxLift_Step = 1200;
 		}
 		else if( nRet_1 == CTLBD_RET_ERROR || nRet_1 == CTLBD_RET_RETRY )
 		{
@@ -543,7 +551,7 @@ void CSeq_BoxLifter::OnRun_Move()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1400, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2006, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -564,23 +572,23 @@ void CSeq_BoxLifter::OnRun_Move()
 // 		break;
 	
 	//Box Lift -> ox Clamp Cylinder Off 하라고 명령.
-	case 200:
+	case 1200:
 		stSync.nResp_Lifter2Clamp_Work = SYNC_RESP_WORK_COMPLETE_;
-		m_nBoxLift_Step = 400;
+		m_nBoxLift_Step = 1300;
 		break;
 
 		//Box Clamp Clamp 해제하고 Lift 까지 Down
-	case 400:
+	case 1300:
 		if (stSync.nReq_Clamp2Lifter_Work == SYNC_REQ_WORK_)
 		{
-			m_nBoxLift_Step = 500;
+			m_nBoxLift_Step = 1400;
 		}
 		break;
 
 		//Out Conv Check Sensor B 접점.
 		//1,2,3 Check 하여 모두 감지 시 Alarm
 		//하나라도 비어 있으면 Push.
-	case 500:
+	case 1400:
 		nCnt = 0;
 		for (i =0; i<3; i++)
 		{
@@ -594,21 +602,21 @@ void CSeq_BoxLifter::OnRun_Move()
 
 		if (nCnt > 0)
 		{
-			m_nBoxLift_Step = 600;
+			m_nBoxLift_Step = 1500;
 		}
 		else
 		{
 			//150000 0 00 "ACCY_UNLOADER_FULL_ERR."
-			CTL_Lib.Alarm_Error_Occurrence( 1402, CTL_dWARNING, "150000");
+			CTL_Lib.Alarm_Error_Occurrence( 2007, CTL_dWARNING, "150000");
 		}
 		break;
 
 		//Box Out Conv로 민다.
-	case 600:
+	case 1500:
 		nRet_1 = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_FRONT_], (int)st_handler.md_run_speed );
 		if( nRet_1 == CTLBD_RET_GOOD )
 		{
-			m_nBoxLift_Step = 700;
+			m_nBoxLift_Step = 1600;
 		}
 		else if( nRet_1 == CTLBD_RET_ERROR || nRet_1 == CTLBD_RET_RETRY )
 		{
@@ -617,17 +625,17 @@ void CSeq_BoxLifter::OnRun_Move()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1403, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2008, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
 		//Y Robot Avoid 위치 이동 하였다. Lift 올리자.
-	case 700:
+	case 1600:
 		nRet_1 = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_BOX_AVOID_], (int)st_handler.md_run_speed );
 		if( nRet_1 == CTLBD_RET_GOOD )
 		{
 			stSync.nResp_Lifter2Clamp_Work = SYNC_RESP_BOX_REMOVE_COMPLETE;
-			m_nBoxLift_Step = 800;
+			m_nBoxLift_Step = 1700;
 		}
 		else if( nRet_1 == CTLBD_RET_ERROR || nRet_1 == CTLBD_RET_RETRY )
 		{
@@ -636,11 +644,11 @@ void CSeq_BoxLifter::OnRun_Move()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1404, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2009, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
-	case 800:
+	case 1700:
 // 		nRet_1 = g_ioMgr.get_in_bit(stIO.i_Chk_GripperSafetyPos,IO_OFF);
 // 		if (nRet_1 == IO_OFF)
 // 		{
@@ -664,19 +672,19 @@ void CSeq_BoxLifter::OnRun_Move()
 
 		if (nCnt > 0)
 		{
-			m_nBoxLift_Step = 900;
+			m_nBoxLift_Step = 1800;
 		}
 		else
 		{
 			//150000 0 00 "ACCY_UNLOADER_FULL_ERR."
-			CTL_Lib.Alarm_Error_Occurrence( 1405, CTL_dWARNING, "150000");
+			CTL_Lib.Alarm_Error_Occurrence( 2010, CTL_dWARNING, "150000");
 		}
 		break;
 	//Avoid 위치로 빠진 상태. Lift Up 상태 확인  Elevator Front 위치 이동 
-	case 900:
+	case 1800:
 		if (stSync.nReq_Clamp2Lifter_Work == SYNC_REQ_RESET_)
 		{
-			m_nBoxLift_Step = 1000;
+			m_nBoxLift_Step = 2000;
 		}
 		break;
 
@@ -695,7 +703,7 @@ void CSeq_BoxLifter::OnRun_Move()
 // 		break;
 	
 		//작업 위치 이동.
-	case 1000:
+	case 2000:
 		nRet_1 = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_FRONT_], (int)st_handler.md_run_speed );
 		if( nRet_1 == CTLBD_RET_GOOD )
 		{
@@ -708,7 +716,7 @@ void CSeq_BoxLifter::OnRun_Move()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 1404, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 2011, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -1169,13 +1177,39 @@ int CSeq_BoxLifter::OnSupplyStandBy0(int nzMode, int nzSite)
 {
 	int nFuncRet = CTLBD_RET_PROCEED;
 	
+	
 	return nFuncRet;
 }
 
 int CSeq_BoxLifter::OnSupplyInitial1() 
 {
+	//kwlee 2017.0721
 	int nFuncRet = CTLBD_RET_PROCEED;
-
+	int nRet = VAR_INIT_;
+	
+	switch(m_nMotZInitStep[1])
+	{
+	case 0:
+		nRet = COMI.HomeCheck_Mot(m_nMotZ1, 0, MOT_TIMEOUT);
+		if (nRet == CTLBD_RET_GOOD)	
+		{
+			m_nMotZInitStep[1] = 5000;
+		}
+		else if (nRet == CTLBD_RET_ERROR)
+		{
+			//  000007 0 00 "LIFTER_UP_DOWN_SHIFT2_NOT_READY_HOME_CHK_ERR."
+			alarm.mstr_code		= "010007";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+		}
+		break;
+		
+	case 5000:
+		nFuncRet = CTLBD_RET_GOOD;  // HOMING 완료
+		m_nMotZInitStep[1] = 0;
+		break;
+	}
 	return nFuncRet;
 }
 
@@ -1188,12 +1222,40 @@ int CSeq_BoxLifter::OnSupplyInitial1()
 int CSeq_BoxLifter::OnSupplyStandBy1(int nzMode, int nzSite) 
 {
 
+	
 	return true;
 }
 
 int CSeq_BoxLifter::OnSupplyInitial2() 
 {
-	return true;
+	//kwlee 2017.0721
+	int nFuncRet = CTLBD_RET_PROCEED;
+	int nRet = VAR_INIT_;
+	
+	switch(m_nMotZInitStep[2])
+	{
+	case 0:
+		nRet = COMI.HomeCheck_Mot(m_nMotZ2, 0, MOT_TIMEOUT);
+		if (nRet == CTLBD_RET_GOOD)	
+		{
+			m_nMotZInitStep[2] = 5000;
+		}
+		else if (nRet == CTLBD_RET_ERROR)
+		{
+			//  000007 0 00 "LIFTER_UP_DOWN_SHIFT2_NOT_READY_HOME_CHK_ERR."
+			alarm.mstr_code		= "020007";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+		}
+		break;
+		
+	case 5000:
+		nFuncRet = CTLBD_RET_GOOD;  // HOMING 완료
+		m_nMotZInitStep[2] = 0;
+		break;
+	}
+	return nFuncRet;
 
 }
 
@@ -1211,7 +1273,34 @@ int CSeq_BoxLifter::OnSupplyStandBy2(int nzMode, int nzSite)
 
 int CSeq_BoxLifter::OnSupplyInitial3() 
 {
-	return true;
+	//kwlee 2017.0721
+	int nFuncRet = CTLBD_RET_PROCEED;
+	int nRet = VAR_INIT_;
+	
+	switch(m_nMotZInitStep[3])
+	{
+	case 0:
+		nRet = COMI.HomeCheck_Mot(m_nMotZ3, 0, MOT_TIMEOUT);
+		if (nRet == CTLBD_RET_GOOD)	
+		{
+			m_nMotZInitStep[3] = 5000;
+		}
+		else if (nRet == CTLBD_RET_ERROR)
+		{
+			//  000007 0 00 "LIFTER_UP_DOWN_SHIFT3_NOT_READY_HOME_CHK_ERR."
+			alarm.mstr_code		= "030007";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+		}
+		break;
+		
+	case 5000:
+		nFuncRet = CTLBD_RET_GOOD;  // HOMING 완료
+		m_nMotZInitStep[3] = 0;
+		break;
+	}
+	return nFuncRet;
 
 }
 

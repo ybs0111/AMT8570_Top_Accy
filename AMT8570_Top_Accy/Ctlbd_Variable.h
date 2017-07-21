@@ -148,7 +148,7 @@
 #define CTL_READY				2 //해당 동작의 요청에 따라 동작을 완료하여 준비된 상태 - 응대한 상태
 #define CTL_FREE				3 //요청한 측에서 동작을 모두 완료한 상태로 간섭등을 벗어났을때 상태측이 동작할 수 있도록 자류롭게 데이터를 놓아준다.
 #define CTL_CHANGE				4 //목표물을 교체를 요청할때 사용한다(Remove Buffer 교체를 요청할때 사용한다)
-#define CTL_SORT				5
+
 
 #define CTL_DOWN				3
 #define CTL_UP					4
@@ -156,6 +156,7 @@
 #define CTL_COMPLETE			5
 #define CTL_BUSY				7
 #define CTL_POSSIBLE			8
+#define CTL_SORT				9
 
 //가동상태 저장 
 #define CTL_dSTOP			0
@@ -249,20 +250,22 @@ enum
 {
 	// yangkyu [2015.03.25]
 	// 모터 값 수정
- 	//M_LIFTER_Z1				= 0,
- 	//M_LIFTER_Z2				= 1,
- 	//M_LIFTER_Z3				= 2,
- 	//M_LIFTER_Z4				= 3,
-	M_LIFTER_Z3				= 0,
-	M_LIFTER_Z1				= 1,
-	M_LIFTER_Z4				= 2,
-	M_LIFTER_Z2				= 3,
+// 	M_LIFTER_Z3				= 0,
+// 	M_LIFTER_Z1				= 1,
+// 	M_LIFTER_Z4				= 2,
+// 	M_LIFTER_Z2				= 3,
+	//kwlee 2017.0712
+	
+	M_LIFTER_Z1				= 0,
+	M_LIFTER_Z2				= 1,
+	M_LIFTER_Z3				= 2,
+ 	M_LIFTER_Z4				= 3,
 
 	M_LIFTER_Y				= 4,
 
 	M_BCRREAD_ROBOT_Y		= 5,
-	M_BCRREAD_ROBOT_X		= 6,
-	M_BCRREAD_ROBOT_Z		= 7,
+	M_BCRREAD_ROBOT_Z		= 6,
+	M_BCRREAD_ROBOT_X		= 7,
 };
 
 
@@ -270,8 +273,11 @@ enum
 // Y축
 #define Y_ACC_BOX_AVOID_		0
 #define Y_ACC_FRONT_			1
-#define Y_ACC_MIDDLE_			2//2017.0713
+#define Y_ACC_MIDDLE_			2
 #define Y_ACC_REAR_				3
+
+
+
 // Z축
 #define Z_ACC_LIFT_SAFETY_		0
 #define Z_ACC_LIFT_LIMIT_		1

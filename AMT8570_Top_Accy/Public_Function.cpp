@@ -133,8 +133,8 @@ void CPublic_Function::OnReset_FlagInitialize()
 //==================================================================//
 void CPublic_Function::OnReset_FlagInterLock() 
 {
-	stSync.nLotEnd_LoadingConv[0]	= TRUE;
-	stSync.nLotEnd_LoadingConv[1]	= TRUE;
+	stSync.nLotEnd_LoadingConv		= TRUE;
+//	stSync.nLotEnd_LoadingConv[1]	= TRUE;
 	stSync.nLotEnd_BoxClamp			= TRUE;
 	stSync.nLotEnd_BoxLifter		= TRUE;
 	stSync.nLotEnd_XYZRobot			= TRUE;
@@ -154,8 +154,8 @@ void CPublic_Function::OnReset_FlagSyncVar()
 //==================================================================//
 void CPublic_Function::OnReset_FlagLotVar() 
 {
-	stSync.nLotEnd_LoadingConv[0]	= FALSE;
-	stSync.nLotEnd_LoadingConv[1]	= FALSE;
+	stSync.nLotEnd_LoadingConv	= FALSE;
+	//stSync.nLotEnd_LoadingConv[1]	= FALSE;
 	stSync.nLotEnd_BoxClamp			= FALSE;
 	stSync.nLotEnd_BoxLifter		= FALSE;
 	stSync.nLotEnd_XYZRobot			= FALSE;
@@ -396,8 +396,10 @@ void CPublic_Function::OnSet_MappingIO()
 
 	for(i=0; i<MAX_DOOR_; i++)
 	{
-		if(i<=3)stIO.i_Chk_Door[i]	= 12+i;
-		else stIO.i_Chk_Door[i]		= 100 + i;
+// 		if(i<=3)stIO.i_Chk_Door[i]	= 12+i;
+// 		else stIO.i_Chk_Door[i]		= 100 + i;
+		//kwlee 2017.0717
+		stIO.i_Chk_Door[i]		= 100 + i;
 	}
 
 	//==============================================================//
@@ -409,6 +411,15 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.o_LampStop					= 201;
 	stIO.o_LampJamClear				= 202;
 	stIO.o_LampBuzzStop				= 203;
+	//kwlee 2017.0717
+	stIO.o_BufferConvMotor_Left		= 204;
+	stIO.o_BufferConvMotor_Right	= 205;
+	
+	for(i=0; i<MAX_SITE_; i++)
+	{
+		stIO.o_BufferConvMotor[i] = 204 + i;
+ 	}
+	//
 
 	stIO.i_Chk_StartSwitch			= 208;
 	stIO.i_Chk_StopSwitch			= 209;
@@ -426,7 +437,7 @@ void CPublic_Function::OnSet_MappingIO()
 	//==============================================================//
 	stIO.o_LampManualLoading = 300;
 	stIO.o_LampLoadingStart = 301;
-	stIO.o_AccyBoxConvMotor = 302;
+	stIO.o_AccyBoxConvMotor2 = 302;
 	stIO.o_Cyl_AccyBoxConvStopperUp2 = 303;
 	stIO.o_Cyl_AccyBoxConvStopperDn2 = 304;
 // 	stIO.o_Cyl_AccyBoxPusher = 305;
@@ -452,20 +463,36 @@ void CPublic_Function::OnSet_MappingIO()
 	//==============================================================//
 	// 모듈 번호 : 04
 	//==============================================================//
-	stIO.o_Cyl_AccyBoxLifterUp = 400;
-	stIO.o_Cyl_AccyBoxLifterDn = 401;	
-	stIO.o_AccyBoxConvMotor = 402;
-	stIO.o_Cyl_AccyBoxConvStopperUp = 403;
-	stIO.o_Cyl_AccyBoxConvStopperDn = 404;
+// 	stIO.o_Cyl_AccyBoxLifterUp = 400;
+// 	stIO.o_Cyl_AccyBoxLifterDn = 401;	
+	//kwlee 2017.0710
+	stIO.o_Load_BoxPusherCylPusher		= 400;
+	stIO.o_Load_BoxPusherCylPull		= 401;
+	//kwlee 2017.0710
+	stIO.o_AccyBoxConvMotor				= 402;
+	stIO.o_Cyl_AccyBoxConvStopperUp		= 403;
+	stIO.o_Cyl_AccyBoxConvStopperDn		= 404;
+	stIO.o_Load_BoxClampOnOff			= 405;
 
+// 	for(i=0; i<MAX_SITE_; i++)
+// 	{
+// 		stIO.i_Chk_AccyBoxLifterUp[i] = 408 + (i * 2);
+// 		stIO.i_Chk_AccyBoxLifterDn[i] = 409 + (i * 2);
+// 	}
 
-	for(i=0; i<MAX_SITE_; i++)
-	{
-		stIO.i_Chk_AccyBoxLifterUp[i] = 408 + (i * 2);
-		stIO.i_Chk_AccyBoxLifterDn[i] = 409 + (i * 2);
-	}
-	stIO.i_Chk_AccyBoxConvStopperUp = 412;
-	stIO.i_Chk_AccyBoxConvStopperDn = 413;
+	//kwlee 2017.0710
+	stIO.i_Chk_Load_BoxPusherCylPusherCheck            = 408;
+	stIO.i_Chk_Load_BoxPusherCylPullCheck			   = 409;
+
+// 	stIO.i_Chk_AccyBoxConvStopperUp = 412;
+// 	stIO.i_Chk_AccyBoxConvStopperDn = 413;
+	//kwlee 2017.0710
+	stIO.i_Chk_AccyBoxConvStopperUp						= 410;
+	stIO.i_Chk_AccyBoxConvStopperDn						= 411;
+	//kwlee 2017.0710
+	stIO.i_Chk_Load_BoxClampOnCheck						= 412;
+	stIO.i_Chk_Load_BoxClampOffCheck					= 413;
+	
 
 	//==============================================================//
 
@@ -513,14 +540,33 @@ void CPublic_Function::OnSet_MappingIO()
 	// 모듈 번호 : 07
 	//==============================================================//
 	
-	stIO.o_Load_BoxClampOnOff							= 700;
-	stIO.o_Load_BoxPusherFwBw							= 701;
+// 	stIO.o_Load_BoxClampOnOff							= 700;
+// 	//stIO.o_Load_BoxPusherFwBw							= 701;
+// 	//kwlee 2017.0706
+// 	stIO.o_Load_BoxPusherCylPusher						= 701;
+// 	stIO.o_Load_BoxPusherCylPull						= 702;
+// 
+// 	stIO.i_Chk_Load_BoxClampOnCheck						= 707;
+// 	stIO.i_Chk_Load_BoxClampOffCheck					= 708;
+// 
+// // 	stIO.i_Chk_Load_BoxPusherFwCheck					= 709;
+// // 	stIO.i_Chk_Load_BoxPusherBwCheck					= 710;	
+// 	//kwlee 2017.07
+// 	stIO.i_Chk_Load_BoxPusherCylPusherCheck             = 709;
+// 	stIO.i_Chk_Load_BoxPusherCylPullCheck			   = 710;
 
-	stIO.i_Chk_Load_BoxClampOnCheck						= 707;
-	stIO.i_Chk_Load_BoxClampOffCheck					= 708;
-	stIO.i_Chk_Load_BoxPusherFwCheck					= 709;
-	stIO.i_Chk_Load_BoxPusherBwCheck					= 710;	
+	//kwlee 2017.0710
+	stIO.o_Cyl_AccyBoxLifterUp = 700;
+	stIO.o_Cyl_AccyBoxLifterDn = 701;	
+
+	for(i=0; i<MAX_SITE_; i++)
+	{
+	 	stIO.i_Chk_AccyBoxLifterUp[i] = 708 + (i * 2);
+		stIO.i_Chk_AccyBoxLifterDn[i] = 709 + (i * 2);
+	}
 	
+	//kwlee 2017.0710
+	stIO.i_Chk_AccyBox_Arrive_End = 714;
 	//==============================================================//
 	
 	//==============================================================//
@@ -546,6 +592,7 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.i_Chk_Out_Rear_Left_Accy_DetectionChk			= 1014;
 	stIO.i_Chk_Out_Rear_Right_Accy_DetectionChk			= 1015;
 
+	//kwlee 2017.0715
 	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][0]	= 1004;
 	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][1]	= 1005;	
 	
@@ -558,11 +605,16 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_]  = 1010;
 	stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_] = 1011;	
 
-	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_LEFT_]  = 1012;
-	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_RIGHT_] = 1013;	
-	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_LEFT_]   = 1014;
-	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_RIGHT_]  = 1015;
+// 	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_LEFT_]  = 1012;
+// 	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_RIGHT_] = 1013;	
+// 	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_LEFT_]   = 1014;
+// 	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_RIGHT_]  = 1015;
 
+	//kwlee 2017.0717
+	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_LEFT_]  = 1012;
+	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_REAR][SIDE_RIGHT_] = 1013;	
+	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_LEFT_]   = 1014;
+	stIO.i_Chk_BufferTryAccyDetection[SIDE_OUT_FRONT][SIDE_RIGHT_]  = 1015;
 
 	//==============================================================//
 
@@ -573,13 +625,14 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.o_Slop_Variable_Front_Right_OpenClose			= 1101;
 	stIO.o_Slop_Variable_Rear_Left_OpenClose			= 1102;
 	stIO.o_Slop_Variable_Rear_Right_OpenClose			= 1103;
-	stIO.o_BufferConvMotor_Left							= 1104;
-	stIO.o_BufferConvMotor_Right						= 1105;
+	//kwlee 2017.0717
+// 	stIO.o_BufferConvMotor_Left							= 1104;
+// 	stIO.o_BufferConvMotor_Right						= 1105;
 	
-	for(i=0; i<MAX_SITE_; i++)
-	{
-		stIO.o_BufferConvMotor[i] = 1104 + i;
-	}
+// 	for(i=0; i<MAX_SITE_; i++)
+// 	{
+// 		stIO.o_BufferConvMotor[i] = 1104 + i;
+// 	}
 
 	
 	stIO.i_Slop_Variable_Font_Left_Open_Check			= 1108;
@@ -636,13 +689,27 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.o_Vac_Rbt_VacOnOff_Rear_Right					= 1306;
 	stIO.o_Vac_Rbt_Eject_Rear_Right						= 1307;
 
+
+//  	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1300;
+//  	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1302;
+//  	
+// 	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1304;
+//  	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1306;
+//  	
+// 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1301;
+//  	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1303;
+//  	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1305;
+//  	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1307;
+
+	//kwlee 2017.0717
 	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1300;
-	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1302;
-	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1304;
+	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1302;
+	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1304;	
 	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1306;
+	
 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1301;
-	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1303;
-	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1305;
+	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1303;
+	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1305;
 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1307;
 
 	
@@ -651,11 +718,16 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.i_Chk_Vac_Rbt_VacOnOff_Rear_Left				= 1310;
 	stIO.i_Chk_Vac_Rbt_VacOnOff_Rear_Right				= 1311;
 
+//  	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_LEFT_]		= 1308;
+//  	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1309;
+//  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1310;
+//  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
+//kwlee 2017.0717
 	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_LEFT_]		= 1308;
-	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1309;
-	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1310;
-	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
-
+	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1309;
+	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1310;
+ 	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
+	
 	stIO.i_Chk_OutLeftBufferAccyDetection				= 1312;
 	stIO.i_Chk_OutRightBufferAccyDetection				= 1313;
 
@@ -717,9 +789,14 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.o_Smema_Ready2Main = 1500;
 	stIO.o_Smema_Emergency2Main = 1501;
 	
-	stIO.i_Chk_UnloaderFull[0] = 1508;
-	stIO.i_Chk_UnloaderFull[1] = 1509;
+// 	stIO.i_Chk_UnloaderFull[0] = 1508;
+// 	stIO.i_Chk_UnloaderFull[1] = 1509;
 	
+	//kwlee 2017.0711
+	stIO.i_Chk_UnloaderFull[0] = 1500;
+	stIO.i_Chk_UnloaderFull[1] = 1501;
+	stIO.i_Chk_UnloaderFull[2] = 1502;
+
 	stIO.i_Chk_ReqFromMain = 1510;
 	stIO.i_Chk_TrsfFromMain = 1511;
 

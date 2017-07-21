@@ -820,6 +820,7 @@ enum
 
 #define MAX_EMO_			2
 
+
 // *****************************************************************************
 // 화면 동작 관련 기본 데이터 저장 구조체 변수 선언                             
 // *****************************************************************************
@@ -932,7 +933,8 @@ struct st_handler_param
 	int  nModeManual;
 
 	int nRecoveryReq;
-
+	
+	int nSimulation; //kwlee 2017.0711
 	// 규이리 추가 [2014.12.16]
 	int nDetect_DoorOpen[16];
 } ;
@@ -993,11 +995,14 @@ struct tagSYNC_PARAM
 {
 	int nRcvyComplete[RCVY_MAX_SITE_];	
 	
-	int nReq_LoadingConv2Conv2_Work;
-	int nReq_LoadingConv2Clamp_Work;//[2];//Conv2-> Conv1 Loading conv box
+	//int nReq_LoadingConv2Conv2_Work;
 
-	int nResp_Clamp2LoadingConv_Work;//Box Pusher Clamp->Conv Req
-	
+	//kwlee 2017.0707
+	int nReq_LoadingConv2Conv1_Work; 
+
+	int nReq_LoadingConv2Clamp_Work;//Conv2-> Conv1 Loading conv box
+	int nResp_Clamp2LoadingConv_Work;//Box Pusher Clamp->Conv Req	
+
 	int nReq_Clamp2Lifter_Work;
 	int nResp_Lifter2Clamp_Work;
 	
@@ -1008,7 +1013,7 @@ struct tagSYNC_PARAM
 	int nResp_BufferAlaignConv2XYZRbt_Work;
 	
 	
-	int nLotEnd_LoadingConv[2];
+	int nLotEnd_LoadingConv;
 	int nLotEnd_BoxClamp;
 	int nLotEnd_BoxLifter;
 	int nLotEnd_XYZRobot;
@@ -1571,6 +1576,17 @@ enum LAMP_CTRL
 // 백상현 추가 [2014.07.30]
 #define MAX_LAMP_STATUS_TYPE 9
 
+//kwlee 2017.0707
+#define CONV_REQ              1
+#define CONV_READY            2
+#define CONV_CLR              3
+#define CONV_FREE             4
+#define CONV_COMP             5
+#define CONV_WORK             6
+#define CONV_CHANGE           7 
+#define CONV_CHANGE_COMP       8
+
+
 struct tagLAMP_PARAM
 {
 	int nLampR[MAX_LAMP_STATUS_TYPE];  // RED 램프 [0:OFF, 1:ON, 2:FLICK]
@@ -1715,7 +1731,7 @@ struct tagIO_PARAM
 	//==============================================================//
 	int o_LampManualLoading;
 	int o_LampLoadingStart;
-	int o_AccyBoxConvMotor;
+	int o_AccyBoxConvMotor2;
 	int o_Cyl_AccyBoxConvStopperUp2;
 	int o_Cyl_AccyBoxConvStopperDn2;
 // 	int o_Cyl_AccyBoxPusher;											// Nomal Bw
@@ -1734,18 +1750,28 @@ struct tagIO_PARAM
 	//==============================================================//
 	// 모듈 번호 : 04
 	//==============================================================//
-	int o_Cyl_AccyBoxLifterUp;
-	int o_Cyl_AccyBoxLifterDn;
-	int o_AccyBoxConvMotor2;
+// 	int o_Cyl_AccyBoxLifterUp;
+// 	int o_Cyl_AccyBoxLifterDn;
+	//kwlee 2017.0710
+	int o_Load_BoxPusherCylPusher;
+	int o_Load_BoxPusherCylPull;
+	///
+	int o_AccyBoxConvMotor;
 	int o_Cyl_AccyBoxConvStopperUp;
 	int o_Cyl_AccyBoxConvStopperDn;
+	int o_Load_BoxClampOnOff;
 
-			
-	int i_Chk_AccyBoxLifterUp[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
-	int i_Chk_AccyBoxLifterDn[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
+
+// 	int i_Chk_AccyBoxLifterUp[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
+// 	int i_Chk_AccyBoxLifterDn[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
+	//kwlee 2017.0710
+	int i_Chk_Load_BoxPusherCylPusherCheck;
+	int i_Chk_Load_BoxPusherCylPullCheck;
 	int i_Chk_AccyBoxConvStopperUp;
 	int i_Chk_AccyBoxConvStopperDn;
-	int i_Chk_AccyBox_Arrive_End;
+	int i_Chk_Load_BoxClampOnCheck;
+	int i_Chk_Load_BoxClampOffCheck;
+	//int i_Chk_AccyBox_Arrive_End;
 
 	//==============================================================//
 	// 모듈 번호 : 05
@@ -1769,16 +1795,27 @@ struct tagIO_PARAM
 	//==============================================================//
 	// 모듈 번호 : 07
 	//==============================================================//
+//	int o_Load_BoxClampOnOff;
+	//int o_Load_BoxPusherFwBw;
+	//kwlee 2017.0706
+// 	int o_Load_BoxPusherCylPusher;
+// 	int o_Load_BoxPusherCylPull;
+	
+	//kwlee 2017.0710
+	int o_Cyl_AccyBoxLifterUp;
+ 	int o_Cyl_AccyBoxLifterDn;
+// 	int i_Chk_Load_BoxClampOnCheck;
+// 	int i_Chk_Load_BoxClampOffCheck;
 
-	int o_Load_BoxClampOnOff;
-	int o_Load_BoxPusherFwBw;
-
-	int i_Chk_Load_BoxClampOnCheck;
-	int i_Chk_Load_BoxClampOffCheck;
-
-	int i_Chk_Load_BoxPusherFwCheck;
-	int i_Chk_Load_BoxPusherBwCheck;
-
+// 	int i_Chk_Load_BoxPusherFwCheck;
+// 	int i_Chk_Load_BoxPusherBwCheck;
+	//kwlee 2017.0710
+	int i_Chk_AccyBoxLifterUp[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
+	int i_Chk_AccyBoxLifterDn[MAX_SITE_];								//MAX_SITE_ = [Left = 0, Right = 1]
+	//kwlee 2017.0707
+// 	int i_Chk_Load_BoxPusherCylPusherCheck;
+// 	int i_Chk_Load_BoxPusherCylPullCheck;
+	int i_Chk_AccyBox_Arrive_End;
 
 	//==============================================================//
 	// 모듈 번호 : 10
@@ -1855,17 +1892,12 @@ struct tagIO_PARAM
 	int i_Picker_front_up_chk;
 	int i_Picker_rear_up_chk;
 
-
-
-
-
-
-
-
 	int o_Smema_Ready2Main;
 	int o_Smema_Emergency2Main;
 	
-	int i_Chk_UnloaderFull[MAX_SITE_];									//MAX_SITE_ = [ 자중 구간 위치 = 0, 맨마지막 위치 = 1]	
+	//int i_Chk_UnloaderFull[MAX_SITE_];									//MAX_SITE_ = [ 자중 구간 위치 = 0, 맨마지막 위치 = 1]	
+	//kwlee 22017.0711
+	int i_Chk_UnloaderFull[MAX_CONV_];									//MAX_SITE_ = [ 처음 구간 위치 = 0, 중간 구간  =1,  맨마지막 위치 = 2]	
 	int i_Chk_ReqFromMain;
 	int i_Chk_TrsfFromMain;
 
@@ -1924,10 +1956,6 @@ struct tagIO_PARAM
 	int i_Chk_OutLeftBufferAccyDetection;
 	int i_Chk_OutRightBufferAccyDetection;
 	
-
-
-
-
 	//==============================================================//
 	// 모듈 번호 : 15
 	//==============================================================//

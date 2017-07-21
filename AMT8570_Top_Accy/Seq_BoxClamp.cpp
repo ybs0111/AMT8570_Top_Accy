@@ -145,7 +145,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		{
 			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
 			m_nStep_Init = 100;
-			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1000, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -164,7 +164,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Init = 200;
-			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1001, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -182,7 +182,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Init = 300;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1002, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -208,7 +208,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Init = 500;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -242,7 +242,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Init = 600;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1004, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -351,7 +351,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Run = 1000;
-			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1005, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -369,7 +369,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Run = 1200;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1006, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -389,7 +389,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Run = 2000;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1007, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -408,7 +408,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Run = 2200;
-			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1008, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -425,7 +425,7 @@ void CSeq_BoxClamp::OnRun_Move()
 			if( m_lTime_GoesBy[2] < 0) m_lTime_GoesBy[0] = GetCurrentTime();
 			if( m_lTime_GoesBy[2] < 100 ) break;
 			//132000 0 00 "PS0407_LOAD_BOX_ARRIVE_END_OFF_CHK_ERR."
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, "132000" );
+			CTL_Lib.Alarm_Error_Occurrence( 1009, CTL_dWARNING, "132000" );
 		}
 		break;
 
@@ -465,7 +465,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		}
 		else if ( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1011, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 2600;
 		}
 		break;
@@ -498,13 +498,13 @@ void CSeq_BoxClamp::OnRun_Move()
 			}
 			// BoxClamp가 작업 영역에 도착 했다고 Loading Conv에 알림
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
-		
+			
 			m_nStep_Run = 2800;
 		}
 		else if( nRet == CTL_ERROR )
 		{
 			m_nStep_Run = 2700;
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1012, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -559,7 +559,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		}
 		else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1013, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 3100;
 		}
 		break;
@@ -579,7 +579,7 @@ void CSeq_BoxClamp::OnRun_Move()
  			if( m_lTime_GoesBy[2] < 0) m_lTime_GoesBy[0] = GetCurrentTime();
  			if( m_lTime_GoesBy[2] < 100 ) break;
  			//131001 0 00 "PS0702_PS0703_LOAD_BOX_PUSHER_FORWARD_CHK_ERR."
- 			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, "131001" );
+ 			CTL_Lib.Alarm_Error_Occurrence( 1014, CTL_dWARNING, "131001" );
  		}
 		break;
 
@@ -600,7 +600,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		}
 		else if( nRet == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1015, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 4100;
 		}
 		break;
@@ -644,7 +644,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		}
 		else if (nRet == CTL_ERROR)
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 1016, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 4500;
 		}
 		break;

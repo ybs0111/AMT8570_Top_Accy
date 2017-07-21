@@ -153,7 +153,7 @@ void CSeq_XYZRobot::OnSeq_Execute(void)
 		}
 
 		// Run 상태일때가 아닌 Stop 상태일때 동작을 하도록 수정.
-		OnRun_ForceDischarge();
+		//OnRun_ForceDischarge(); kwlee 2017.0706 del 수정 예정.
 		break;
 
 	}
@@ -203,7 +203,9 @@ void CSeq_XYZRobot::OnRun_Initial()
 		break;
 
 	case 130:
-		nRet = OnGet_PickerPitch( IO_ON );
+		//nRet = OnGet_PickerPitch( IO_ON );
+		//kwlee 2017.0706
+		nRet = OnGet_PickerPitchOPenClose( IO_ON );
 		if( nRet == CTL_GOOD)
 		{
 			m_nStep_Init = 120;
@@ -407,7 +409,9 @@ void CSeq_XYZRobot::OnRun_Initial()
 		break;
 		
 	case 370:
-		nRet = OnGet_PickerPitch( IO_ON );
+		//nRet = OnGet_PickerPitch( IO_ON );
+		//kwlee 2017.0706
+		nRet = OnGet_PickerPitchOPenClose( IO_ON );
 		if( nRet == CTL_GOOD)
 		{
 			m_nStep_Init = 380;
@@ -795,6 +799,8 @@ void CSeq_XYZRobot::OnRun_Move()
 		// 리프터에서 악세사리 준비가 되었는지 확인
 		// - 준비됨 : 리프터가 준비한 악세사리 집으러 이동
 		// - 미준비 : NG 버퍼 영역으로 일단 이동 [이동 시간을 줄이기 위함]
+
+		// Lift가 FRont 위치에서 push 하고 주나?? 여긴 아직 작업 안됨..되었다고 보고.
 		if( stSync.nReq_Lifter2XYZRbt_Work == SYNC_REQ_ACC_LIFT_COMPLETE_ )
 		{
 			m_nStep_Run = 1000;
@@ -857,7 +863,7 @@ void CSeq_XYZRobot::OnRun_Move()
 		if( st_work.m_sRcvAccyMathCode !="" )
 		{
 			// 처음 시작인 경우 st_work.m_sCurrntAccyMathCode 값이 NULL 이기 때문에 st_work.m_sRcvAccyMathCode 값을 저장 한다.
-			if( st_work.m_sCurrntAccyMathCode = "" )
+			if( st_work.m_sCurrntAccyMathCode == "" )
 			{
 				st_work.m_sCurrntAccyMathCode = st_work.m_sRcvAccyMathCode;
 				for( i = 0; i<4; i++)
@@ -948,8 +954,6 @@ void CSeq_XYZRobot::OnRun_Move()
 			m_nStep_Run = 9000;
 		}
 		break;
-
-
 		///////////////////////////////////////////////////////////////////////////
 		// Lift Z축을 2mm씩 10회 시도 후 Gripper의 센서가 감지가 되지 않앗을 경우
 		// Lift Z축을 내리면서 다음 동작을 위해 수행 하는 부분 
@@ -972,11 +976,9 @@ void CSeq_XYZRobot::OnRun_Move()
 			// 바코드 상태 표시 초기화 요청
 			st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, READ_BCR_DATA);
 		}
-		
 		m_nStep_Run = 0;
 		m_nPickRetryCnt = 0;
 		break;
-
 	}
 }
 
@@ -1310,8 +1312,10 @@ int CSeq_XYZRobot::OnProc_AccyPlace()
 		
 		if (nRet == CTL_GOOD)
 		{
+			//Align Conv에게 Place 완료 신호 줌.
 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_AccyPlace_500_Good]");
 			stSync.nReq_XYZRbt2BufferAlaignConv_Work = SYNC_REQ_WORK_COMPLETE_;
+				   
 			m_nStep_AccyPlace = 1000;
 		}
 		break;
@@ -1710,6 +1714,7 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 			nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BoxClampAccyDetection[st_map.nLiftWorkSite][1]);
 			nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BoxClampAccyDetection[st_map.nLiftWorkSite][2]);
 			nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BoxClampAccyDetection[st_map.nLiftWorkSite][3]);
+
 			if (nRetData[0] == IO_OFF || nRetData[1] == IO_OFF || nRetData[2] == IO_OFF || nRetData[3] == IO_OFF)
 			{
 				stSync.nResp_XYZRbt2Lifter_Work = SYNC_RESP_PASS_;
@@ -1789,13 +1794,13 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 					st_map.nBCR_State[0] = BCR_READ_BAD_;
 				}
 			}
+
 			if (st_handler.cwnd_main != NULL)
 			{
 				// 바코드 상태 표시 초기화 요청
 				st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, READ_BCR_DATA);
 			}
 			m_nStep_ReadMove = 300;
-			
 		}
 		break;
 		
@@ -3365,7 +3370,9 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 			// 다른 위치의 악세사리 보급을 위해 1800 Step로 이동
 			else if(st_map.nBCR_State[0] == BCR_READ_BAD_ || st_map.nBCR_State[1] == BCR_READ_BAD_ || st_map.nBCR_State[2] == BCR_READ_BAD_ || st_map.nBCR_State[3] == BCR_READ_BAD_)
 			{
-				m_nStep_BCRBad = 1800;
+				//m_nStep_BCRBad = 1800; 
+				//kwlee 2017.0713
+				m_nStep_BCRBad = 1400; 
 			}
 		}
 		break;
@@ -3383,8 +3390,6 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 		m_nStep_BCRBad = 0;
 		nFuncRet = CTL_GOOD;
 		break;
-		
-
 	}
 
 	return nFuncRet;

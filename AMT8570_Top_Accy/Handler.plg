@@ -6,139 +6,138 @@
 --------------------Configuration: Handler - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating command line "rc.exe /l 0x412 /fo"Debug/Handler.res" /d "_DEBUG" /d "_AFXDLL" "D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Handler.rc"" 
-Creating temporary file "C:\Users\윤범수\AppData\Local\Temp\RSP2004.tmp" with contents
+Creating temporary file "C:\Users\yusj\AppData\Local\Temp\RSP8631.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/Handler.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ABpcManager.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Alg_Mysql.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\AMTLotManager.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\AMTRegistry.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BCMenu.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BmpImage.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BmpImageST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BtnST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CeXDib.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CharSetCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ClockST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Cmmsdk.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ColorListBox.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\COMI_Manager.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ComizoaPublic.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ControlToolTip.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CtlBd_Function.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CtlBd_Library.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_About.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Alarm.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Copy.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Event_Msg.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Exit.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Infor.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Keyboard.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_KeyPad.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_List.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Menu.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Message.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Axis_1.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Axis_Tab.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Part.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Multi_Msg.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Network.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Part_IO.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Pass_Change.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Pass_Check.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Select.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_SetReset.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Smema.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Title.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Digit.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\editex.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\EXDigitST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\exgem.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FastechPublic_IO.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FileDialogST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FileManagement.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FloatST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDatePickerCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimeButtonCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimeCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimePopupCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSMiniCalendarCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSMiniCalendarListCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\GradientStatic.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\GridControlAlg.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Handler.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\HandlerDoc.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\HandlerView.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\InitDialogBar.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\IO_Manager.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\LedButton.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ListBoxST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MacButtons.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MainFrm.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MatrixStatic.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MyBasicData.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MyJamData.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\NetWork_Comm.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\NewLabel.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\OleDateTimeEx.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Picture.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\PictureEx.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Admin.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Basic.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_File_Editor.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Initial.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_IO.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_List_Data_View.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_List_Operation.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Lock.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Main.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Motor.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Motor_Speed.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Set_Maintenance.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Wait_Time.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ShadeButtonST.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SingleInstanceApp.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\StarWarsCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SuperProgressCtrl.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\TrueColorToolBar.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\UniButtonEx.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\VLabel.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\XPButton.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\XPGroupBox.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\common\ShareMem.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SrcBase\AMotor.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CommonFunc.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ExternFunctions.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Public_Function.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\LogFile.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Logger.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ClientSocket.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MainEvent.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ServerItem.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ServerSocket.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BufferAlignConv.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_IO_ReadWrite.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LampSwitch.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_MotMove.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_TowerLamp.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_XYZRobot.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Thread.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BcrEvent.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SerialCommBase.cpp"
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SerialPort.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ABpcManager.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Alg_Mysql.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\AMTLotManager.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\AMTRegistry.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BCMenu.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BmpImage.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BmpImageST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BtnST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CeXDib.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CharSetCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ClockST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Cmmsdk.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ColorListBox.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\COMI_Manager.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ComizoaPublic.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ControlToolTip.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CtlBd_Function.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CtlBd_Library.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_About.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Alarm.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Copy.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Event_Msg.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Exit.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Infor.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Keyboard.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_KeyPad.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_List.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Menu.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Message.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Axis_1.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Axis_Tab.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Motor_Part.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Multi_Msg.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Network.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Part_IO.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Pass_Change.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Pass_Check.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Select.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_SetReset.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Smema.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Dialog_Title.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Digit.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\editex.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\EXDigitST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\exgem.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FastechPublic_IO.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FileDialogST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FileManagement.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FloatST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDatePickerCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimeButtonCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimeCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSDateTimePopupCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSMiniCalendarCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\FPSMiniCalendarListCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\GradientStatic.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\GridControlAlg.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Handler.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\HandlerDoc.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\HandlerView.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\InitDialogBar.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\IO_Manager.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\LedButton.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ListBoxST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MacButtons.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MainFrm.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MatrixStatic.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MyBasicData.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MyJamData.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\NetWork_Comm.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\NewLabel.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\OleDateTimeEx.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Picture.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\PictureEx.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Admin.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Basic.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_File_Editor.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Initial.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_IO.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_List_Data_View.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_List_Operation.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Lock.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Main.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Motor.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Motor_Speed.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Set_Maintenance.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Screen_Wait_Time.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ShadeButtonST.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SingleInstanceApp.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\StarWarsCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SuperProgressCtrl.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\TrueColorToolBar.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\UniButtonEx.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\VLabel.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\XPButton.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\XPGroupBox.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\common\ShareMem.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SrcBase\AMotor.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\CommonFunc.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ExternFunctions.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Public_Function.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\LogFile.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Logger.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ClientSocket.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\MainEvent.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ServerItem.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\ServerSocket.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BufferAlignConv.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_IO_ReadWrite.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LampSwitch.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_MotMove.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_TowerLamp.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_XYZRobot.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Thread.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\BcrEvent.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SerialCommBase.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\SerialPort.cpp"
 ]
-Creating command line "cl.exe @"C:\Users\윤범수\AppData\Local\Temp\RSP2004.tmp"" 
-Creating temporary file "C:\Users\윤범수\AppData\Local\Temp\RSP2005.tmp" with contents
+Creating command line "cl.exe @C:\Users\yusj\AppData\Local\Temp\RSP8631.tmp" 
+Creating temporary file "C:\Users\yusj\AppData\Local\Temp\RSP8632.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/Handler.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\StdAfx.cpp"
+"D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\StdAfx.cpp"
 ]
-Creating command line "cl.exe @"C:\Users\윤범수\AppData\Local\Temp\RSP2005.tmp"" 
-Creating temporary file "C:\Users\윤범수\AppData\Local\Temp\RSP2006.tmp" with contents
+Creating command line "cl.exe @C:\Users\yusj\AppData\Local\Temp\RSP8632.tmp" 
+Creating temporary file "C:\Users\yusj\AppData\Local\Temp\RSP8633.tmp" with contents
 [
 TipsWareExt.lib libmysql.lib FM_8000.lib netapi32.lib HSSI.lib Spr32d70.lib wininet.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Handler.pdb" /debug /machine:I386 /out:"Debug/Handler.exe" /pdbtype:sept 
 ".\Debug\ABpcManager.obj"
@@ -264,12 +263,17 @@ TipsWareExt.lib libmysql.lib FM_8000.lib netapi32.lib HSSI.lib Spr32d70.lib wini
 ".\Debug\SerialPort.obj"
 ".\Debug\Handler.res"
 ]
-Creating command line "link.exe @"C:\Users\윤범수\AppData\Local\Temp\RSP2006.tmp""
+Creating command line "link.exe @C:\Users\yusj\AppData\Local\Temp\RSP8633.tmp"
 <h3>Output Window</h3>
-Compiling resources...
 Compiling...
 StdAfx.cpp
 Compiling...
+XPButton.cpp
+ShareMem.cpp
+Seq_BoxLifter.cpp
+D:\Work\Amt_Program\AMT8570\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(313) : warning C4101: 'nRet_2' : unreferenced local variable
+Generating Code...
+Skipping... (no relevant changes detected)
 ABpcManager.cpp
 Alg_Mysql.cpp
 AMTLotManager.cpp
@@ -290,8 +294,6 @@ CtlBd_Function.cpp
 CtlBd_Library.cpp
 Dialog_About.cpp
 Dialog_Alarm.cpp
-Generating Code...
-Compiling...
 Dialog_Copy.cpp
 Dialog_Event_Msg.cpp
 Dialog_Exit.cpp
@@ -312,8 +314,6 @@ Dialog_Pass_Check.cpp
 Dialog_Select.cpp
 Dialog_SetReset.cpp
 Dialog_Smema.cpp
-Generating Code...
-Compiling...
 Dialog_Title.cpp
 Digit.cpp
 editex.cpp
@@ -334,8 +334,6 @@ GridControlAlg.cpp
 Handler.cpp
 HandlerDoc.cpp
 HandlerView.cpp
-Generating Code...
-Compiling...
 InitDialogBar.cpp
 IO_Manager.cpp
 LedButton.cpp
@@ -356,8 +354,6 @@ Screen_File_Editor.cpp
 Screen_Initial.cpp
 Screen_IO.cpp
 Screen_List_Data_View.cpp
-Generating Code...
-Compiling...
 Screen_List_Operation.cpp
 Screen_Lock.cpp
 Screen_Main.cpp
@@ -372,14 +368,10 @@ SuperProgressCtrl.cpp
 TrueColorToolBar.cpp
 UniButtonEx.cpp
 VLabel.cpp
-XPButton.cpp
 XPGroupBox.cpp
-ShareMem.cpp
 AMotor.cpp
 CommonFunc.cpp
 ExternFunctions.cpp
-Generating Code...
-Compiling...
 Public_Function.cpp
 LogFile.cpp
 Logger.cpp
@@ -388,130 +380,10 @@ MainEvent.cpp
 ServerItem.cpp
 ServerSocket.cpp
 Seq_BoxClamp.cpp
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(278) : error C2446: '==' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(278) : error C2040: '==' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(326) : error C2039: 'i_Chk_Load_BoxPusherCylPusherCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(327) : error C2039: 'i_Chk_Load_BoxPusherCylPullCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(569) : error C2039: 'i_Chk_Load_BoxPusherCylPusherCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(570) : error C2039: 'i_Chk_Load_BoxPusherCylPullCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(901) : error C2039: 'o_Load_BoxPusherCylPusher' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxClamp.cpp(902) : error C2039: 'o_Load_BoxPusherCylPull' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-Seq_BoxLifter.cpp
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(345) : error C2440: '=' : cannot convert from 'int' to 'int [3]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(346) : error C2446: '==' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(346) : error C2040: '==' : 'int [3]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(355) : error C2446: '==' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(355) : error C2040: '==' : 'int [3]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(355) : error C2446: '==' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(355) : error C2040: '==' : 'int [3]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(567) : error C2196: case value '200' already used
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_BoxLifter.cpp(573) : error C2196: case value '400' already used
 Seq_BufferAlignConv.cpp
 Seq_IO_ReadWrite.cpp
 Seq_LampSwitch.cpp
 Seq_LoadingConv.cpp
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(25) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(74) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(350) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(403) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(507) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(532) : error C2446: '!=' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(532) : error C2040: '!=' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(534) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(544) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(548) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(607) : error C2446: '!=' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(607) : error C2040: '!=' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(609) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(619) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(739) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(783) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(790) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(927) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(941) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(961) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1206) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1246) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1293) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1313) : error C2446: '!=' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1313) : error C2040: '!=' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1315) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1327) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1365) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1384) : error C2446: '!=' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1384) : error C2040: '!=' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1386) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1398) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1408) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1419) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1463) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1479) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1491) : error C2446: '!=' : no conversion from 'const int' to 'int *'
-        Conversion from integral type to pointer type requires reinterpret_cast, C-style cast or function-style cast
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1491) : error C2040: '!=' : 'int [2]' differs in levels of indirection from 'const int'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1493) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1505) : error C2440: '=' : cannot convert from 'const int' to 'int [2]'
-        There are no conversions to array types, although there are conversions to references or pointers to arrays
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1517) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1569) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1583) : error C2039: 'nSimulation' : is not a member of 'st_handler_param'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(827) : see declaration of 'st_handler_param'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(1591) : error C2039: 'nReq_LoadingConv2Conv1_Work' : is not a member of 'tagSYNC_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(993) : see declaration of 'tagSYNC_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(2105) : error C2039: 'o_Load_BoxPusherCylPusher' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(2106) : error C2039: 'o_Load_BoxPusherCylPull' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(2116) : error C2039: 'i_Chk_Load_BoxPusherCylPusherCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
-D:\Work\AMT8570_AMT8580_AMT8590_Packing(etc(서안))\AMT8570_AMT8580_AMT8690_Packing\개조개선\AMT8570_TOP_ACCY\13.버전별프로그램\AMT8570_Top_Accy_Version_1차버전\AMT8570_Top_Accy\Seq_LoadingConv.cpp(2117) : error C2039: 'i_Chk_Load_BoxPusherCylPullCheck' : is not a member of 'tagIO_PARAM'
-        d:\work\amt8570_amt8580_amt8590_packing(etc(서안))\amt8570_amt8580_amt8690_packing\개조개선\amt8570_top_accy\13.버전별프로그램\amt8570_top_accy_version_1차버전\amt8570_top_accy\variable.h(1680) : see declaration of 'tagIO_PARAM'
 Seq_MotMove.cpp
 Seq_TowerLamp.cpp
 Seq_XYZRobot.cpp
@@ -519,9 +391,8 @@ Thread.cpp
 BcrEvent.cpp
 SerialCommBase.cpp
 SerialPort.cpp
-Generating Code...
-Error executing cl.exe.
-Creating temporary file "C:\Users\윤범수\AppData\Local\Temp\RSP466B.tmp" with contents
+Linking...
+Creating temporary file "C:\Users\yusj\AppData\Local\Temp\RSP910D.tmp" with contents
 [
 /nologo /o"Debug/Handler.bsc" 
 ".\Debug\StdAfx.sbr"
@@ -645,14 +516,14 @@ Creating temporary file "C:\Users\윤범수\AppData\Local\Temp\RSP466B.tmp" with co
 ".\Debug\BcrEvent.sbr"
 ".\Debug\SerialCommBase.sbr"
 ".\Debug\SerialPort.sbr"]
-Creating command line "bscmake.exe @"C:\Users\윤범수\AppData\Local\Temp\RSP466B.tmp""
+Creating command line "bscmake.exe @C:\Users\yusj\AppData\Local\Temp\RSP910D.tmp"
 Creating browse info file...
 <h3>Output Window</h3>
 
 
 
 <h3>Results</h3>
-Handler.exe - 65 error(s), 0 warning(s)
+Handler.exe - 0 error(s), 1 warning(s)
 </pre>
 </body>
 </html>

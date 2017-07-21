@@ -235,7 +235,7 @@ void CSeq_LoadingConv::OnRun_Initial()
 		}
 		else if( nRet_1 == CTL_ERROR || nRet_2 == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1000, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 4000, CTL_dWARNING, m_strAlarmCode );
 			m_nStep_Init = 100;
 		}
 		break;
