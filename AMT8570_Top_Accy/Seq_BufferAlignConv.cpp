@@ -1682,7 +1682,6 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		break;
 
 	case 610:
-		//4개 모두 놓는 구나..
 		//Front, Rear 모두 감지 상태.
 		nRetData[0] = OnCheck_FrontAccySupply(IO_ON);//Buffer Accy
 		nRetData[1] = OnCheck_RearAccySupply(IO_ON);

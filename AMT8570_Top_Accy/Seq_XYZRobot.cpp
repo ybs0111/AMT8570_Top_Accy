@@ -89,6 +89,9 @@ void CSeq_XYZRobot::OnSeq_INIT(void)
 
 	m_nBCRReadAllBadCount = 0;
 
+	//kwlee 2017.0727
+	m_nPicker_Num = -1;
+
 	st_work.m_sCurrntAccyMathCode = "";
 
 	// [리셋] 복구 동작 요청 플래그
@@ -756,7 +759,7 @@ void CSeq_XYZRobot::OnRun_Initial()
 
 
 	}
-
+	//Init.
 }
 
 void CSeq_XYZRobot::OnRun_Move() 
@@ -987,7 +990,6 @@ void CSeq_XYZRobot::OnRun_Move()
 //////////////////////////////////////////////////////////////////////////
 int CSeq_XYZRobot::OnProc_AccyVacPick()
 {
-
 	int nFuncRet = CTL_PROCEED;
 	
 	int nRet = VAR_INIT_;
@@ -1252,7 +1254,6 @@ int CSeq_XYZRobot::OnProc_AccyVacPick()
 			m_nStep_AccyVacPick = 0;
 		}
 		break;
-
 	}
 
 	return nFuncRet;
@@ -1263,13 +1264,14 @@ int CSeq_XYZRobot::OnProc_AccyVacPick()
 //////////////////////////////////////////////////////////////////////////
 int CSeq_XYZRobot::OnProc_AccyPlace()
 {
-
 	int nFuncRet = CTL_PROCEED;
 	
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
 	int i = 0;
 	int iCheckCount = 0;
+	int iPickCheckCnt = 0;
+	int nRetNGBuffData[2] ={0,};
 	CString sTmp;
 	Func.OnTrace_ThreadStep(26, m_nStep_AccyPlace);
 	
@@ -1289,6 +1291,7 @@ int CSeq_XYZRobot::OnProc_AccyPlace()
 		}
 		break;
 
+		//Bcr 읽지 못했을때.
 	case 100:
 		nRet = OnProc_BCRStateBad();
 		
@@ -1298,7 +1301,8 @@ int CSeq_XYZRobot::OnProc_AccyPlace()
 			m_nStep_AccyPlace = 1000;
 		}
 		break;
-
+	
+		//Bcr 모두 읽었을 떄.
 	case 500:
 		// [1:4개씩, 0:2개씩]
 		if (st_basic.nMode_PlaceType == 0)
@@ -1316,6 +1320,148 @@ int CSeq_XYZRobot::OnProc_AccyPlace()
 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_AccyPlace_500_Good]");
 			stSync.nReq_XYZRbt2BufferAlaignConv_Work = SYNC_REQ_WORK_COMPLETE_;
 				   
+			//m_nStep_AccyPlace = 1000;
+			//kwlee 2017.0724
+			m_nStep_AccyPlace = 600;
+		}
+		break;
+
+		
+	//kwlee 2017.0724
+	case 600:
+		iCheckCount = 0;
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
+		//있으면 NG 버퍼 확인.
+		for (i = 0; i<MAX_PICKER_; i++)
+		{
+			 if(st_map.nXYZRbtPickerInfo[i] == CTL_YES )
+			{
+				//Place 동작 위하여.
+				iPickCheckCnt++;
+			}
+		}
+
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+		 if (iPickCheckCnt > 0)
+		{
+// 			nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+// 			nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+			if (nRetNGBuffData[0] == IO_OFF || nRetNGBuffData[1] == IO_OFF)
+			{
+				Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_1310_Detect NG_Buffer PLACE]");
+				m_nStep_AccyPlace = 700;
+			}
+			else
+			{
+				m_nStep_AccyPlace = 1000;	
+			}
+		}
+		else
+		{
+			m_nStep_AccyPlace = 1000;	
+		}
+		break;
+		////////////
+		
+	case 700:
+		 //Place는 집고 있는 상태여야 함.
+
+		// 번호는 메인 설비 정면 기준으로 0(앞쪽 좌), 1(앞쪽 우), 2(뒤쪽 좌), 3(뒤쪽 우)
+		// NG Buffer 자재 확인
+// 		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// 		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+		//kwlee 2017.0723
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+		//kwlee 2017.0724
+// 		nRetData[2] = IO_OFF;
+// 		nRetData[3] = IO_OFF;
+		iCheckCount = 0;
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			for (i = 0; i < 4; i++)
+			{
+				nRetNGBuffData[i] = st_map.nNGBuffer[i];
+			}
+		}
+
+		for (i = 0; i < 2; i++)
+		{
+			if (st_map.nNGBuffer[i] != nRetNGBuffData[i])
+			{
+				iCheckCount++;
+			}
+		}
+
+		if (iCheckCount > 0)
+		{
+			// 151000 0 00 "PS1204_PS1205_PS1206_PS1207_NG_BUFFER_DATA_MISS_MATH."
+			alarm.mstr_code		= "151000";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
+			break;
+		}
+		
+		// Gripper 와 NG Buffer 간의 1:1 비교 
+// 		if (st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+// 			st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[1] == IO_ON ||
+// 			st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[2] == IO_ON ||
+// 			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[3] == IO_ON)
+
+		//kwlee 2017.0722
+// 		if (st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+// 			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[1] == IO_ON)
+		//kwlee 2017.0726
+		if (st_map.nBCR_State[2] == BCR_READ_GOOD_ && nRetNGBuffData[0] == IO_OFF ||
+			st_map.nBCR_State[3] == BCR_READ_GOOD_ && nRetNGBuffData[1] == IO_OFF)
+		{
+			// 정상 적인 위치에 보급 자재가 있는 경우
+			//m_nNGBufferPickSite = SIDE_BOTH_; 
+			//kwlee 2017.0724
+			m_nNGBufferPickSite = SIDE_REAR_; 
+		}		
+		// 같은 Line 선상 비교
+		// Gripper 0 또는 1의 BCR 상태가 Bad인 경우 NG Buffer Rear의 자재를 확인
+// 		else if(st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[2] == IO_ON || st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[3] == IO_ON )
+// 		{
+// 			m_nNGBufferPickSite = SIDE_REAR_; 
+// 		}
+// 		// Gripper 2 또는 3의 BCR 상태가 Bad인 경우 NG Buffer Front의 자재를 확인
+// 		else if(st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[0] == IO_ON || st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[1] == IO_ON)
+// 		{
+// 			m_nNGBufferPickSite = SIDE_FRONT_; 
+// 		}
+		else if(st_map.nBCR_State[0] == BCR_READ_GOOD_ && nRetNGBuffData[0] == IO_OFF ||
+				st_map.nBCR_State[1] == BCR_READ_GOOD_ && nRetNGBuffData[1] == IO_OFF )
+		{
+			m_nNGBufferPickSite = SIDE_FRONT_; 
+		}
+		//m_nStep_BCRBad = 2000;
+		//kwlee 2017.0724
+		m_nStep_AccyPlace = 800;	
+		break;
+
+		//NG Buffer에 놓는다.
+		//kwlee 2017.0724
+	case 800:
+		//nRet = OnProc_NGBufferPlace(m_nNGBufferPickSite);
+		//kwlee 2017.0727
+		nRet = OnProc_NGBufferPlace();
+		if (nRet == CTL_GOOD)
+		{
+			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_2000_Good]");
+			//m_nStep_BCRBad = 2000;
+			//kwlee 2017.0726
 			m_nStep_AccyPlace = 1000;
 		}
 		break;
@@ -1734,6 +1880,7 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 	case 100:
 		// Y_RBT_ACC_BCR_ 위치에 d_Y_Gripper_Size를 (st_map.nLiftWorkSite * 2) + Site만큼을 곱한 위치로 이동함.
 		// st_map.nLiftWorkSite(SIDE_FRONT = 0, SIDE_REAR = 1)
+
 		m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_BCR_] - (st_accy.d_Y_Gripper_Size * ( (st_map.nLiftWorkSite * 2) + SIDE_FRONT_) );
 		nRet = CTL_Lib.OnSingleMove(m_nMotY, m_dTargetPos, (int)st_handler.md_run_speed);
 		
@@ -1867,6 +2014,7 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 			// 051002 0 00 "BARCODE_ROBOT_Y_RBT_ACC_BCR_2_MOVE_ERR."
 			// 051003 0 00 "BARCODE_ROBOT_Y_RBT_ACC_BCR_3_MOVE_ERR."
 			// 051004 0 00 "BARCODE_ROBOT_Y_RBT_ACC_BCR_4_MOVE_ERR."
+
 			alarm.mstr_code.Format("05100%d", 1 + ( (st_map.nLiftWorkSite * 2) + SIDE_REAR_) );
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
@@ -2617,6 +2765,7 @@ int CSeq_XYZRobot::OnProc_AccyOut(int nzNGAccyInfo[4], int nzSite)
 		}
 		break;
 
+		
 	case 200:
 		for( i = 0; i < MAX_PICKER_; i++ )
 		{
@@ -2649,7 +2798,9 @@ int CSeq_XYZRobot::OnProc_AccyOut(int nzNGAccyInfo[4], int nzSite)
 	case 600:
 		OnSet_PickerUpDn( IO_ON, m_nPickerUnDn[TYPE_FLAG_] );
 		OnSet_SolVacuum( IO_OFF, m_nPicker[TYPE_FLAG_]);
-		OnSet_SolVacuum( IO_ON, m_nPicker[TYPE_FLAG_]);
+		//OnSet_SolVacuum( IO_ON, m_nPicker[TYPE_FLAG_]);
+		//kwlee 2017.0723
+		OnSet_EjectOnOff( IO_ON, m_nPicker[TYPE_FLAG_]);
 		m_nStep_NGAccyOut = 610;
 		break;
 
@@ -3100,8 +3251,10 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 	
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
+	int nRetNGBuffData[2] ={0,}; //kwlee 2017.0727
 	int i = 0;
 	int iCheckCount = 0;
+	int iPickCheckCnt = 0;
 	int nSupplyMathCount = 0;
 	
 	Func.OnTrace_ThreadStep(11, m_nStep_BCRBad);	// 쓰레드 스텝 정보 TRACE
@@ -3111,22 +3264,154 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 	case 0:
 		// 번호는 메인 설비 정면 기준으로 0(앞쪽 좌), 1(앞쪽 우), 2(뒤쪽 좌), 3(뒤쪽 우)
 		// NG Buffer 자재 확인
-		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
-		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
-// 		nRetData[2] = OnCheck_NGBufferRearAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
-// 		nRetData[3] = OnCheck_NGBufferRearAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+//   	nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+//   	nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+// // 		nRetData[2] = OnCheck_NGBufferRearAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// // 		nRetData[3] = OnCheck_NGBufferRearAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+	
+		//kwlee 2017.0723
+		//Ready Conv에 빈공간 찾기.
+// 		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+// 		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+// 		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+// 		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
 
-		if (st_basic.n_mode_device == WITHOUT_DVC_)
-		{
-			nRetData[0] = st_map.nNGBuffer[0];
-			nRetData[1] = st_map.nNGBuffer[1];
-// 			nRetData[2] = st_map.nNGBuffer[2];
-// 			nRetData[3] = st_map.nNGBuffer[3];			
-		}
+	
+		//kwlee 2017.0724
+// 		if (st_basic.n_mode_device == WITHOUT_DVC_)
+// 		{
+// 			nRetData[0] = st_map.nNGBuffer[0];
+// 			nRetData[1] = st_map.nNGBuffer[1];
+// // 			nRetData[2] = st_map.nNGBuffer[2];
+// // 			nRetData[3] = st_map.nNGBuffer[3];			
+// 		}
 
-		for (i = 0; i < 2/*4*/; i++)
+		//data 상 버퍼 갯수 와 실질적 투입 가능 공간 계산.
+		// 안맞으면 ..에러.
+		//for (i = 0; i < 2/*4*/; i++)
+		//kwlee 2017.0724
+// 		for (i = 0; i < 4; i++)
+// 		{
+// 			//if (st_map.nNGBuffer[i] != nRetData[i])
+// 			//kwlee 2017.0724
+// 			if (st_map.nBufferCovAccyExist[i] != nRetData[i])
+// 			{
+// 				iCheckCount++;
+// 			}
+// 		}
+// 
+// 		if (iCheckCount > 0)
+// 		{
+// 			// 143000 0 00 "PS1506_PS1507_NG_BUFFER_ACCY_EXSIT_CHK_ERR."
+// 			alarm.mstr_code		= "143000";
+// 			alarm.mn_count_mode	= 0;
+// 			alarm.mn_type_mode	= eWARNING;
+// 			st_work.nEqpStatus	= dWARNING;
+// 			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
+// 			break;
+// 		}
+		// 1번 Gripper(왼쪽) : Ready Conv 버퍼 확인
+// 		if(st_map.nBCR_State[0] == BCR_READ_BAD_)
+// 		{
+// 			if (nRetData[0] == IO_ON)
+// 			{
+// 				nSupplyMathCount++;
+// 				nRetData[0] = IO_OFF;
+// 			}
+// // 			else if (nRetData[2] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[2] = IO_OFF;
+// // 			}
+// 		}
+// 		else if(st_map.nBCR_State[0] == BCR_READ_GOOD_)
+// 		{
+// 			nSupplyMathCount++;
+// 		}
+// 
+// 		// 2번 Gripper(오른쪽) : NG Buffer(2, 4) 확인
+// 		if(st_map.nBCR_State[1] == BCR_READ_BAD_)
+// 		{	
+// 			if (nRetData[1] == IO_ON)
+// 			{
+// 				nSupplyMathCount++;
+// 				nRetData[1] = IO_OFF;
+// 			}
+// // 			else if (nRetData[3] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[3] = IO_OFF;
+// // 			}
+// 		}
+// 		else if(st_map.nBCR_State[1] == BCR_READ_GOOD_)
+// 		{
+// 			nSupplyMathCount++;
+// 		}
+// 
+// 		// 3번 Gripper : NG Buffer(3, 4) 확인
+// 		if(st_map.nBCR_State[2] == BCR_READ_BAD_)
+// 		{
+// // 			if (nRetData[2] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[2] = IO_OFF;
+// // 			}
+// // 			else if (nRetData[0] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[0] = IO_OFF;
+// // 			}
+// 			//kwlee 2017.0723
+// 			if (nRetData[0] == IO_ON)
+// 			{
+// 				nSupplyMathCount++;
+// 				nRetData[0] = IO_OFF;
+// 			}
+// 		}
+// 		else if(st_map.nBCR_State[2] == BCR_READ_GOOD_)
+// 		{
+// 			nSupplyMathCount++;
+// 		}
+// 
+// 		// 4번 Gripper : NG Buffer(3, 4) 확인
+// 		if(st_map.nBCR_State[3] == BCR_READ_BAD_)
+// 		{
+// // 			if (nRetData[3] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[3] = IO_OFF;
+// // 			}
+// // 			else if (nRetData[1] == IO_ON)
+// // 			{
+// // 				nSupplyMathCount++;
+// // 				nRetData[1] = IO_OFF;
+// // 			}
+// 			//kwlee 2017.0723
+// 			if (nRetData[1] == IO_ON)
+// 			{
+// 				nSupplyMathCount++;
+// 				nRetData[1] = IO_OFF;
+// 			}
+// 		}
+// 		else if(st_map.nBCR_State[3] == BCR_READ_GOOD_)
+// 		{
+// 			nSupplyMathCount++;
+// 		}
+		//Ready Conv에 빈공간 찾기.
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+	
+
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+		for (i = 0; i < 4; i++)
 		{
-			if (st_map.nNGBuffer[i] != nRetData[i])
+			//if (st_map.nNGBuffer[i] != nRetData[i])
+			//kwlee 2017.0724
+			if (st_map.nBufferCovAccyExist[i] != nRetData[i])
 			{
 				iCheckCount++;
 			}
@@ -3142,99 +3427,69 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
 			break;
 		}
-
-		// 1번 Gripper : NG Buffer(1, 3) 확인
-		if(st_map.nBCR_State[0] == BCR_READ_BAD_)
+	
+		//kwlee 2017.0724
+		//Bcr Fail Accy인 경우와 BCR good 인데 버퍼 넣을 공간에 Accy 있을 경우 버린다.
+		for (i =0; i< MAX_PICKER_; i++)
 		{
-			if (nRetData[0] == IO_ON)
-			{
+			if (st_map.nBCR_State[i] == BCR_READ_BAD_ || (st_map.nBCR_State[i] == BCR_READ_GOOD_ && nRetData[i] == IO_ON))
+			{	
+				if (st_map.nBCR_State[i] == BCR_READ_GOOD_ && nRetData[i] == IO_ON)
+				{
+					//Buffer 확인 하여 최종 버린다.
+					//Buffer 비어 있으면 Ready Conv 놓은 후 
+					
+					//겹치는 부분 확인.
+					//NG 버퍼에 있으면 다 버려야 됨.
+					if (i%2 == 0)
+					{
+						if (st_map.nBCR_State[i] == BCR_READ_GOOD_ && nRetNGBuffData[0] == IO_ON)
+						{
+							st_map.nBCR_State[i] = BCR_READ_BAD_;
+							Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_0_Left_BCR_READ_GOOD_NG_BUFFER EXIST]");
+						}
+					}
+					else
+					{
+						if (st_map.nBCR_State[i] == BCR_READ_GOOD_ && nRetNGBuffData[1] == IO_ON)
+						{
+							st_map.nBCR_State[i] = BCR_READ_BAD_;
+							Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_0_Right_BCR_READ_GOOD_NG_BUFFER EXIST]");
+						}
+					}	
+				}
 				nSupplyMathCount++;
-				nRetData[0] = IO_OFF;
-			}
-			else if (nRetData[2] == IO_ON)
-			{
-				nSupplyMathCount++;
-				nRetData[2] = IO_OFF;
 			}
 		}
-		else if(st_map.nBCR_State[0] == BCR_READ_GOOD_)
+
+		//if (nSupplyMathCount == 2/*4*/)
+		//kwlee 2017.0723
+		if (st_handler.cwnd_main != NULL)
 		{
-			nSupplyMathCount++;
+			st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, READ_BCR_DATA);
 		}
+		//
 
-		// 2번 Gripper : NG Buffer(2, 4) 확인
-		if(st_map.nBCR_State[1] == BCR_READ_BAD_)
-		{
-			if (nRetData[1] == IO_ON)
-			{
-				nSupplyMathCount++;
-				nRetData[1] = IO_OFF;
-			}
-			else if (nRetData[3] == IO_ON)
-			{
-				nSupplyMathCount++;
-				nRetData[3] = IO_OFF;
-			}
-		}
-		else if(st_map.nBCR_State[1] == BCR_READ_GOOD_)
-		{
-			nSupplyMathCount++;
-		}
-
-// 		// 3번 Gripper : NG Buffer(3, 4) 확인
-// 		if(st_map.nBCR_State[2] == BCR_READ_BAD_)
-// 		{
-// 			if (nRetData[2] == IO_ON)
-// 			{
-// 				nSupplyMathCount++;
-// 				nRetData[2] = IO_OFF;
-// 			}
-// 			else if (nRetData[0] == IO_ON)
-// 			{
-// 				nSupplyMathCount++;
-// 				nRetData[0] = IO_OFF;
-// 			}
-// 		}
-// 		else if(st_map.nBCR_State[2] == BCR_READ_GOOD_)
-// 		{
-// 			nSupplyMathCount++;
-// 		}
-
-// 		// 4번 Gripper : NG Buffer(3, 4) 확인
-// 		if(st_map.nBCR_State[3] == BCR_READ_BAD_)
-// 		{
-// 			if (nRetData[3] == IO_ON)
-// 			{
-// 				nSupplyMathCount++;
-// 				nRetData[3] = IO_OFF;
-// 			}
-// 			else if (nRetData[1] == IO_ON)
-// 			{
-// 				nSupplyMathCount++;
-// 				nRetData[1] = IO_OFF;
-// 			}
-// 		}
-// 		else if(st_map.nBCR_State[3] == BCR_READ_GOOD_)
-// 		{
-// 			nSupplyMathCount++;
-// 		}
-
-		// 보급 할 자재가 있을 경우
-		if (nSupplyMathCount == 2/*4*/)
+		if (nSupplyMathCount > 0/*4*/)
 		{
 			m_nStep_BCRBad = 1000;
 		}
-		// 보급 할 자재가 없는 경우 NG Buffer와 중복되는 Gripper를 제거 한 후 Accy 보급
-		else
+		else 
 		{
-			m_nStep_BCRBad = 8000;
+			m_nStep_BCRBad = 10000;
 		}
+		// 보급 할 자재가 없는 경우 NG Buffer와 중복되는 Gripper를 제거 한 후 Accy 보급
+		//kwlee 2017.0724
+// 		else
+// 		{
+// 			m_nStep_BCRBad = 8000;
+// 		}
 		break;
 
+		//버린다.
 	case 1000:
 		// Gripper가 잡고 있는 Accy 배출 (SIDE_FRONT_ : 1, 2번 Gripper, SIDE_REAR_ : 3, 4번 Gripper)
 		nRet = OnProc_AccyOut(st_map.nBCR_State, SIDE_FRONT_);
-		
 		if (nRet == CTL_GOOD)
 		{
 			m_nStep_BCRBad = 1100;
@@ -3244,15 +3499,35 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 	case 1100:
 		// Gripper가 잡고 있는 Accy 배출 (SIDE_FRONT_ : 1, 2번 Gripper, SIDE_REAR_ : 3, 4번 Gripper)
 		nRet = OnProc_AccyOut(st_map.nBCR_State, SIDE_REAR_);
-		
 		if (nRet == CTL_GOOD)
 		{
-			stSync.nReq_XYZRbt2BufferAlaignConv_Work = SYNC_REQ_BUFFER_LOADING_READY_;
+			//kwlee 2017.0723
+			//stSync.nReq_XYZRbt2BufferAlaignConv_Work = SYNC_REQ_BUFFER_LOADING_READY_; 
 			m_nStep_BCRBad = 1300;
 		}
 		break;
 
+		//버퍼에 놓는다.
+		//놓구 나서
+		//1. Picker에는 없는데 Ready Conv에도 넣을 곳이 있다 -> Buffer 확인.
+		//2. Picker에는 있는데 Ready Conv에는 넣을 곳이 없다
 	case 1300:
+		iCheckCount = 0;
+		for (i = 0; i< MAX_PICKER_; i++)
+		{
+			if (st_map.nXYZRbtPickerInfo[i]	== CTL_NO)
+			{
+				iCheckCount++;
+			}
+		}
+		
+		// Ready Conv에 놓을게 없다..
+		if (iCheckCount == MAX_PICKER_)
+		{
+			m_nStep_BCRBad = 10000;
+			break;
+		}
+
 		// [1:4개씩, 0:2개씩]
 		if (st_basic.nMode_PlaceType == 0)
 		{
@@ -3264,32 +3539,184 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 		}
 		
 		if (nRet == CTL_GOOD)
-		{
+		{	
 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_1300_Good]");
-			m_nStep_BCRBad = 1400;
+		//	m_nStep_BCRBad = 1400;
+			//kwlee 2017.0724
+			m_nStep_BCRBad = 1310;
 		}
 		break;
 
+		//자재 집고 있는지 확인 한다.
+		//kwlee 2017.0724
+	case 1310:
+		iCheckCount = 0;
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
+		//있으면 NG 버퍼 확인.
+		for (i = 0; i<MAX_PICKER_; i++)
+		{
+			if (st_map.nXYZRbtPickerInfo[i]	== CTL_NO && nRetData[i] == IO_OFF)
+			{
+				//Pick up 동작 위하여.
+				iCheckCount++;
+			}
+			else if(st_map.nXYZRbtPickerInfo[i] == CTL_YES )
+			{
+				//Place 동작 위하여.
+				iPickCheckCnt++;
+			}
+		}
+
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+		if (iCheckCount > 0)
+		{
+// 			nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+// 			nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+			
+			//Conv에 넣을 공간이 있고 들고 있는 자재가 없으면 NG 버퍼 확인 하여 있으면 NG 버퍼에 있는거 투입.
+			if (nRetNGBuffData[0] == IO_ON || nRetNGBuffData[1] == IO_ON)
+			{
+				Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_1310_Detect NG_Buffer PICKUP]");
+				m_nStep_BCRBad = 1320;
+			}
+			else
+			{
+				m_nStep_BCRBad = 10000;
+			}
+		}
+		//kwlee 2017.0726 Place 후 들고 있는 자재가 있으면 Buffer 확인 하여 Place 동작
+		else if (iPickCheckCnt > 0)
+		{
+// 			nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+// 			nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+
+			if (nRetNGBuffData[0] == IO_OFF || nRetNGBuffData[1] == IO_OFF)
+			{
+				Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_1310_Detect NG_Buffer PLACE]");
+				m_nStep_BCRBad = 1400;
+			}
+			else
+			{
+				m_nStep_BCRBad = 10000;	
+			}
+		}
+		else
+		{
+			m_nStep_BCRBad = 10000;	
+		}
+		break;
+
+	case 1320:
+// 		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+// 		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+		//kwlee 2017.0727
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+		
+		//kwlee 2017.0724
+		// 		nRetData[2] = IO_OFF;
+		// 		nRetData[3] = IO_OFF;
+		iCheckCount = 0;
+		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		{
+			//for (i = 0; i < 4; i++)
+			//kwlee 2017.0724
+			for (i = 0; i < 2; i++)
+			{
+				nRetNGBuffData[i] = st_map.nNGBuffer[i];
+			}
+		}
+		
+		//for (i = 0; i < 4; i++)
+		//kwlee 2017.0724
+		for (i = 0; i < 2; i++)
+		{
+			if (st_map.nNGBuffer[i] != nRetNGBuffData[i])
+			{
+				iCheckCount++;
+			}
+		}
+		
+		if (iCheckCount > 0)
+		{
+			// 151000 0 00 "PS1204_PS1205_PS1206_PS1207_NG_BUFFER_DATA_MISS_MATH."
+			alarm.mstr_code		= "151000";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
+			break;
+		}
+
+		//kwlee 2017.0722
+//  		if (st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+//  			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[1] == IO_ON)
+		//kwlee 2017.0727
+		if (st_map.nXYZRbtPickerInfo[2] == CTL_NO && nRetNGBuffData[0] == IO_ON ||
+ 			st_map.nXYZRbtPickerInfo[3] == CTL_NO && nRetNGBuffData[1] == IO_ON)
+		{
+			// 정상 적인 위치에 보급 자재가 있는 경우
+			//m_nNGBufferPickSite = SIDE_BOTH_; 
+			//kwlee 2017.0724
+			m_nNGBufferPickSite = SIDE_REAR_; 
+		}		
+//  		else if(st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+//  			st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[1] == IO_ON )
+		//kwlee 2017.0727
+		else if(st_map.nXYZRbtPickerInfo[0] == CTL_NO && nRetNGBuffData[0] == IO_ON ||
+ 			st_map.nXYZRbtPickerInfo[1] == CTL_NO && nRetNGBuffData[1] == IO_ON )
+		{
+			m_nNGBufferPickSite = SIDE_FRONT_; 
+		}
+		//m_nStep_BCRBad = 2000;
+		//kwlee 2017.0724
+		m_nStep_BCRBad = 1330;
+		break;
+
+	case  1330:
+		//nRet = OnProc_NGBufferPick(m_nNGBufferPickSite);
+		//kwlee 2017.0727
+		nRet = OnProc_NGBufferPick();
+		if (nRet == CTL_GOOD)
+		{
+			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_1330_Good]");
+			m_nStep_BCRBad = 2100;	
+		}
+		break;
+		////////////
+		
 	case 1400:
+		 //Place는 집고 있는 상태여야 함.
+
 		// 번호는 메인 설비 정면 기준으로 0(앞쪽 좌), 1(앞쪽 우), 2(뒤쪽 좌), 3(뒤쪽 우)
 		// NG Buffer 자재 확인
-		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
-		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
-		nRetData[2] = IO_OFF;
-		nRetData[3] = IO_OFF;
-		iCheckCount = 0;
+// 		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// 		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+		//kwlee 2017.0723
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
 
+		//kwlee 2017.0724
+// 		nRetData[2] = IO_OFF;
+// 		nRetData[3] = IO_OFF;
+		iCheckCount = 0;
 		if (st_basic.n_mode_device == WITHOUT_DVC_)
 		{
 			for (i = 0; i < 4; i++)
 			{
-				nRetData[i] = st_map.nNGBuffer[i];
+				nRetNGBuffData[i] = st_map.nNGBuffer[i];
 			}
 		}
 
 		for (i = 0; i < 4; i++)
 		{
-			if (st_map.nNGBuffer[i] != nRetData[i])
+			if (st_map.nNGBuffer[i] != nRetNGBuffData[i])
 			{
 				iCheckCount++;
 			}
@@ -3305,15 +3732,24 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
 			break;
 		}
-
+		
 		// Gripper 와 NG Buffer 간의 1:1 비교 
-		if (st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
-			st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[1] == IO_ON ||
-			st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[2] == IO_ON ||
-			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[3] == IO_ON)
+// 		if (st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+// 			st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[1] == IO_ON ||
+// 			st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[2] == IO_ON ||
+// 			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[3] == IO_ON)
+
+		//kwlee 2017.0722
+// 		if (st_map.nBCR_State[2] == BCR_READ_BAD_ && nRetData[0] == IO_ON ||
+// 			st_map.nBCR_State[3] == BCR_READ_BAD_ && nRetData[1] == IO_ON)
+		//kwlee 2017.0726
+		if (st_map.nBCR_State[2] == BCR_READ_GOOD_ && nRetNGBuffData[0] == IO_OFF ||
+			st_map.nBCR_State[3] == BCR_READ_GOOD_ && nRetNGBuffData[1] == IO_OFF)
 		{
 			// 정상 적인 위치에 보급 자재가 있는 경우
-			m_nNGBufferPickSite = SIDE_BOTH_; 
+			//m_nNGBufferPickSite = SIDE_BOTH_; 
+			//kwlee 2017.0724
+			m_nNGBufferPickSite = SIDE_REAR_; 
 		}		
 		// 같은 Line 선상 비교
 		// Gripper 0 또는 1의 BCR 상태가 Bad인 경우 NG Buffer Rear의 자재를 확인
@@ -3326,21 +3762,40 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 // 		{
 // 			m_nNGBufferPickSite = SIDE_FRONT_; 
 // 		}
-		else if(st_map.nBCR_State[0] == BCR_READ_BAD_ && nRetData[0] == IO_ON || st_map.nBCR_State[1] == BCR_READ_BAD_ && nRetData[1] == IO_ON )
+		else if(st_map.nBCR_State[0] == BCR_READ_GOOD_ && nRetNGBuffData[0] == IO_OFF ||
+				st_map.nBCR_State[1] == BCR_READ_GOOD_ && nRetNGBuffData[1] == IO_OFF )
 		{
 			m_nNGBufferPickSite = SIDE_FRONT_; 
 		}
-		m_nStep_BCRBad = 2000;
+		//m_nStep_BCRBad = 2000;
+		//kwlee 2017.0724
+		m_nStep_BCRBad = 1500;
 		break;
 
-	case  2000:
-		nRet = OnProc_NGBufferPick(m_nNGBufferPickSite);
+		//NG Buffer에 놓는다.
+		//kwlee 2017.0724
+	case 1500:
+		//nRet = OnProc_NGBufferPlace(m_nNGBufferPickSite);
+		//kwlee 2017.0727
+		nRet = OnProc_NGBufferPlace();
 		if (nRet == CTL_GOOD)
 		{
 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_2000_Good]");
-			m_nStep_BCRBad = 2100;	
+			//m_nStep_BCRBad = 2000;
+			//kwlee 2017.0726
+			m_nStep_BCRBad = 10000;
 		}
 		break;
+
+		//kwlee 2017.0726
+// 	case  2000:
+// 		nRet = OnProc_NGBufferPick(m_nNGBufferPickSite);
+// 		if (nRet == CTL_GOOD)
+// 		{
+// 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_2000_Good]");
+// 			m_nStep_BCRBad = 2100;	
+// 		}
+// 		break;
 
 	case 2100:
 		// 규이리 수정 [2015.03.25]
@@ -3370,21 +3825,20 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 			// 다른 위치의 악세사리 보급을 위해 1800 Step로 이동
 			else if(st_map.nBCR_State[0] == BCR_READ_BAD_ || st_map.nBCR_State[1] == BCR_READ_BAD_ || st_map.nBCR_State[2] == BCR_READ_BAD_ || st_map.nBCR_State[3] == BCR_READ_BAD_)
 			{
+				m_nStep_BCRBad = 10000;
 				//m_nStep_BCRBad = 1800; 
-				//kwlee 2017.0713
-				m_nStep_BCRBad = 1400; 
 			}
 		}
 		break;
 
-	case 8000:
-		nRet = OnProc_NGBufferPlace(m_nNGBufferPickSite);
-		if (nRet == CTL_GOOD)
-		{
-			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_8000_Good]");
-			m_nStep_BCRBad = 10000;
-		}
-		break;
+// 	case 8000:
+// 		nRet = OnProc_NGBufferPlace(m_nNGBufferPickSite);
+// 		if (nRet == CTL_GOOD)
+// 		{
+// 			Func.OnLogBCRData("[Seq_XYZRobot_OnProc_BCRStateBad_8000_Good]");
+// 			m_nStep_BCRBad = 10000;
+// 		}
+// 		break;
 		
 	case 10000:
 		m_nStep_BCRBad = 0;
@@ -3826,6 +4280,7 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 
 	case 50:
 		// 전체 피커 갯수 가운데
+		
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPicker[TYPE_FLAG_][i] = CTL_NO;
@@ -3842,11 +4297,11 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 		}
 		
 		// (m_nPicker[TYPE_FLAG_]에 Accy 유무를 확인
-		if (m_nPicker[TYPE_FLAG_][2] == ACCY_YES_ || m_nPicker[TYPE_FLAG_][3] == ACCY_YES_)
+		if (m_nPicker[TYPE_FLAG_][2] == ACCY_YES_ || m_nPicker[TYPE_FLAG_][3] == ACCY_YES_) //Rear
 		{
 			m_nStep_BufferConvPlace = 100;
 		}
-		else if(m_nPicker[TYPE_FLAG_][0] == ACCY_YES_ || m_nPicker[TYPE_FLAG_][1] == ACCY_YES_)
+		else if(m_nPicker[TYPE_FLAG_][0] == ACCY_YES_ || m_nPicker[TYPE_FLAG_][1] == ACCY_YES_) //Front
 		{
 			m_nStep_BufferConvPlace = 500;
 		}
@@ -3976,7 +4431,6 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 		}
 		break;	
 
-
 	case 190:
 		// [Conv->Xyz] 악세사리 공급 요청 기다림
 		if (stSync.nResp_BufferAlaignConv2XYZRbt_Work == SYNC_RESP_LOADING_)
@@ -3987,6 +4441,12 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 
 	case 200:
 		// 전체 피커 갯수 가운데
+		//kwlee 2017.0724
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPicker[TYPE_FLAG_][i] = CTL_NO;
@@ -3995,7 +4455,9 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 			// 자재 존재 여부를 검사 [구조체 플래그 정보]
 			// - 악세사리 내려놓는 동작을 진행할 피커를 설정
 			iExist = st_map.nBCR_State[i];
-			if (iExist == BCR_READ_GOOD_)
+			//if (iExist == BCR_READ_GOOD_ )
+			//kwlee 2017.0724
+			if (iExist == BCR_READ_GOOD_ && nRetData[i] == IO_OFF)
 			{
 				// Rear 부분만 동작하도록 함.
 				if (i > 1)
@@ -4051,7 +4513,6 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 		}
 		break;
 
-
 	case 225:
 		OnSet_PickerUpDn( IO_ON, m_nPickerUnDn[TYPE_FLAG_] );
 		m_nStep_BufferConvPlace = 180;
@@ -4059,6 +4520,7 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 		
 	case 230:
 		nRet = OnGet_PickerUpDn( IO_ON, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_]);
+
 		if( nRet == CTL_GOOD )
 		{
 			m_nStep_BufferConvPlace = 300;
@@ -4069,7 +4531,6 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
-
 
 	case 300:
 		OnSet_SolVacuum(IO_OFF, m_nPicker[TYPE_FLAG_]);	// 그립퍼 Vacuum [ON:진공설정, OFF:진공해제]
@@ -4361,6 +4822,12 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 
 	case 700:
 		// 전체 피커 갯수 가운데
+		//kwlee 2017.0724
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPicker[TYPE_FLAG_][i] = CTL_NO;
@@ -4369,7 +4836,9 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 			// 자재 존재 여부를 검사 [구조체 플래그 정보]
 			// - 악세사리 내려놓는 동작을 진행할 피커를 설정
 			iExist = st_map.nBCR_State[i];
-			if (iExist == BCR_READ_GOOD_)
+			//if (iExist == BCR_READ_GOOD_)
+			//kwlee 2017.0724
+			if (iExist == BCR_READ_GOOD_ && nRetData[i] == IO_OFF)
 			{
 				// Front 부분만 동작하도록 함.
 				if (i < 2)
@@ -4426,7 +4895,7 @@ int CSeq_XYZRobot::OnProc_BufferPlace()
 		break;
 
 	case 1015:
-		OnSet_PickerUpDn( IO_ON, m_nPickerUnDn[TYPE_FLAG_]);
+		OnSet_PickerUpDn(IO_ON, m_nPickerUnDn[TYPE_FLAG_]);
 		m_nStep_BufferConvPlace = 1020;
 		break;
 
@@ -4627,7 +5096,7 @@ int CSeq_XYZRobot::OnProc_4BufferPlace()
 		break;
 
 	case 50:
-		// 전체 피커 갯수 가운데
+		// 전체 피커 갯수 가운데 Ready Conv 놓을수 있는 것만 놓는다.
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_NO;
@@ -4793,6 +5262,7 @@ int CSeq_XYZRobot::OnProc_4BufferPlace()
 	case 200:
 		// 악세사리 내려놓는 위치로 Z축 모터 이동
 		nRet = CTL_Lib.OnSingleMove(m_nMotZ, st_motor[m_nMotZ].d_pos[Z_RBT_ACC_BUFFER_CONV_PLACE_]  -15, (int)st_handler.md_run_speed);
+
 		if (nRet == CTLBD_RET_GOOD)
 		{
 			m_nStep_BufferConvPlace = 300;
@@ -4810,6 +5280,12 @@ int CSeq_XYZRobot::OnProc_4BufferPlace()
 
 	case 300:
 		// 전체 피커 갯수 가운데
+		//kwlee 2017.0724
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPicker[TYPE_FLAG_][i] = CTL_NO;
@@ -4818,7 +5294,9 @@ int CSeq_XYZRobot::OnProc_4BufferPlace()
 			// 자재 존재 여부를 검사 [구조체 플래그 정보]
 			// - 악세사리 내려놓는 동작을 진행할 피커를 설정
 			iExist = st_map.nBCR_State[i];
-			if (iExist == BCR_READ_GOOD_)
+			//if (iExist == BCR_READ_GOOD_)
+			//kwlee 2017.0724
+			if (iExist == BCR_READ_GOOD_ && nRetData[i] == IO_OFF)
 			{
 				if (st_work.sRbtBCR_Data[i] !="")
 				{
@@ -4941,12 +5419,15 @@ int CSeq_XYZRobot::OnProc_4BufferPlace()
 //////////////////////////////////////////////////////////////////////////
 // NG Accy를 버린 후 NG Buffer를 놓는 작업
 //////////////////////////////////////////////////////////////////////////
-int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
+//int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
+//kwlee 2017.0727
+int CSeq_XYZRobot::OnProc_NGBufferPick()
 {
 	int nFuncRet = CTL_PROCEED;
 	
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
+	int nRetNGBuffData[2] = {0,};
 	int i = 0;
 	int iCheckCount = 0;
 	
@@ -4972,20 +5453,63 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 		break;
 
 	case 10:
-		if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
+// 		if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
+// 		}
+// 		else if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size;
+// 		}
+// 		else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] - st_accy.d_Y_Gripper_Size;
+// 		}
+		
+	
+// 		//kwlee 2017.0724
+// 		if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size;
+// 		}
+// 		else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] - st_accy.d_Y_Gripper_Size;
+//  		}
+		// nzSite값에 따라 NG Buffer 이동
+// 		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// 		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+
+		//kwlee 2017.0727
+		//Pick위치 이동.
+// 		nRetNGBuffData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// 		nRetNGBuffData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+		
+		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+		
+		
+		for (i = 0; i<MAX_PICKER_; i++)
 		{
-			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
-		}
-		else if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
-		{
-			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size;
-		}
-		else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
-		{
-			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] - st_accy.d_Y_Gripper_Size;
+			if (st_map.nXYZRbtPickerInfo[i] == CTL_NO && nRetData[i] == IO_OFF)
+			{
+				if (i < 2) //Front
+				{
+					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
+					m_nPicker_Num = i;
+					break;
+				}
+				else //Rear
+				{
+					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size; 
+					m_nPicker_Num = i;
+					break;
+				}
+			}
 		}
 		
-		// nzSite값에 따라 NG Buffer 이동
 		nRet = CTL_Lib.OnSingleMove(m_nMotY, m_dTargetPos, (int)st_handler.md_run_speed);
 		if (nRet == CTLBD_RET_GOOD)
 		{
@@ -5006,40 +5530,54 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 	case 100:
 		// 번호는 메인 설비 정면 기준으로 0(앞쪽 좌), 1(앞쪽 우), 2(뒤쪽 좌), 3(뒤쪽 우)
 		// NG Buffer 자재 확인	
-		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
-		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
-		nRetData[2] = IO_OFF;
-		nRetData[3] = IO_OFF;
-		
+// 		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+// 		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+// 		nRetData[2] = IO_OFF;
+// 		nRetData[3] = IO_OFF;
+		//kwlee 2017.0727
+		nRetNGBuffData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+		nRetNGBuffData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
 		if (st_basic.n_mode_device == WITHOUT_DVC_)
 		{
-			nRetData[0] = st_map.nNGBuffer[0];
-			nRetData[1] = st_map.nNGBuffer[1];
-			nRetData[2] = st_map.nNGBuffer[2];
-			nRetData[3] = st_map.nNGBuffer[3];
-			
+			nRetNGBuffData[0] = st_map.nNGBuffer[0];
+			nRetNGBuffData[1] = st_map.nNGBuffer[1];
+// 			nRetData[2] = st_map.nNGBuffer[2];
+// 			nRetData[3] = st_map.nNGBuffer[3];
 		}
-		
-		m_nRepickCount = 0;  // [리셋] 자재 집기 시도 횟수
-		
+
+		if (m_nRepickCount < 1)
+		{
+			m_nRepickCount = 0;  // [리셋] 자재 집기 시도 횟수
+		}
+	
 		for(i=0; i<MAX_PICKER_; i++)
 		{
 			m_nPicker[TYPE_FLAG_][i] = CTL_NO;	// [리셋] 플래그 정보
 			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_NO;
 		}
-		
-		if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
-		{
-			for(i=0; i<MAX_PICKER_; i++)
-			{	
-				// NG Buffer에서 보급 할 부분에 대해서만 Vaccum 동작
-				if(st_map.nBCR_State[i] == BCR_READ_BAD_ && nRetData[i] == IO_ON)
-				{
-					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// 동작할 Vacuum으로 설정
-					m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
-				}
-			}
+
+		if (m_nPicker_Num > -1)
+		{		
+			m_nPicker[TYPE_FLAG_][m_nPicker_Num] = CTL_YES;
+			m_nPickerUnDn[TYPE_FLAG_][m_nPicker_Num] = CTL_YES;
+			m_nStep_NGBufferPick = 200;
 		}
+			
+		//kwlee 2017.0727
+// 		if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
+// 		{
+// 			for(i=0; i<MAX_PICKER_; i++)
+// 			{	
+// 				// NG Buffer에서 보급 할 부분에 대해서만 Vaccum 동작
+// 				if(st_map.nBCR_State[i] == BCR_READ_BAD_ && nRetData[i] == IO_ON)
+// 				{
+// 					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// 동작할 Vacuum으로 설정
+// 					m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+// 				}
+// 			}
+			
+
+		//}
 // 		else if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
 // 		{
 // 			for(i = 2; i < MAX_PICKER_; i++)
@@ -5062,17 +5600,18 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 // 				}
 // 			}
 // 		}
-		else if (nzSite == SIDE_FRONT_)	// NG Buffer SIDE_REAR
-		{
-			for(i = 0; i < 2; i++)
-			{
-				if(st_map.nBCR_State[i] == BCR_READ_BAD_ && nRetData[i] == IO_ON)
-				{
-					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// 동작할 Vacuum으로 설정
-				}
-			}
-		}		
-		m_nStep_NGBufferPick= 200;
+		//kwlee 2017.0727
+// 		else if (nzSite == SIDE_FRONT_)	// NG Buffer SIDE_REAR
+// 		{
+// 			for(i = 0; i < 2; i++)
+// 			{
+// 				if(st_map.nBCR_State[i] == BCR_READ_BAD_ && nRetData[i] == IO_ON)
+// 				{
+// 					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// 동작할 Vacuum으로 설정
+// 				}
+// 			}
+// 		}
+	
 		break;
 
 	case 200:
@@ -5100,11 +5639,11 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 		nRet = COMI.Check_SingleMove(m_nMotZ, st_motor[m_nMotZ].d_pos[Z_RBT_ACC_NG_BUFFER_PICK_]);
 		if (nRet == CTLBD_RET_GOOD)
 		{
-			m_nStep_NGBufferPick= 220;
+			m_nStep_NGBufferPick = 220;
 		}
 		else if (nRet == CTLBD_RET_RETRY)
 		{
-			m_nStep_NGBufferPick= 210;
+			m_nStep_NGBufferPick = 210;
 		}
 		else if (nRet == CTLBD_RET_ERROR || nRet == CTLBD_RET_SAFETY)
 		{
@@ -5126,7 +5665,7 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 		// - 피커를 들고 알람을 출력시키기 위함
 		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
 		{
-			m_nStep_NGBufferPick= 230;
+			m_nStep_NGBufferPick = 230;
 		}
 		else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
@@ -5154,7 +5693,9 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 		break;
 
 	case 240:
-		nRet = COMI.Check_SingleMove(m_nMotZ, st_motor[m_nMotZ].d_pos[Z_RBT_ACC_NG_BUFFER_PICK_]);
+	//	nRet = COMI.Check_SingleMove(m_nMotZ, st_motor[m_nMotZ].d_pos[Z_RBT_ACC_NG_BUFFER_PICK_]);
+		//kwlee 2017.0727
+		nRet = COMI.Check_SingleMove(m_nMotZ, st_motor[m_nMotZ].d_pos[Z_RBT_SAFETY_]);
 		if (nRet == CTLBD_RET_GOOD)
 		{
 			m_lTime_GoesBy[0] = GetCurrentTime();
@@ -5219,39 +5760,84 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 		{
 			// [자재 정상] : 곧바로 밑에 부분 실행
 			// [자재 에러] : 일정 시간 대기 후에 밑에 부분 실행
-			
 			// 전체 그립퍼 갯수 가운데
-			for(i=0; i<MAX_PICKER_; i++)
-			{
+
+ 			for(i=0; i<MAX_PICKER_; i++)
+ 			{
 				// 악세사리 집기 동작 진행한 그리퍼에 한해서 악세사리가 Vacuum 센서에 감지된 경우
 				if (m_nPicker[TYPE_FLAG_][i] == CTL_YES && m_nPicker[TYPE_SEN_][i] == CTL_YES)
 				{
-					// 그립퍼의 구조체 정보 갱신 [자재 지었음]
+					// 그립퍼의 구조체 정보 갱신 [자재 비었음]
 					st_map.nXYZRbtPickerInfo[i]	= CTL_YES;
 					m_nPicker[TYPE_FLAG_][i]	= CTL_NO;
 					// 바코드 구조체 정보 갱싱 [Good 자재]
 					st_map.nBCR_State[i]		= BCR_READ_GOOD_;
-					if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
+					
+					//kwlee 2017.0727
+// 					if (nzSite == SIDE_BOTH_)	// NG Buffer SIDE_BOTH_
+// 					{
+// 						st_map.nNGBuffer[i] = CTL_NO;
+// 						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i];
+// 						st_work.sNGBufferBCR_Data[i] = "";
+// 					}
+// 					else if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
+// 					{
+// 						st_map.nNGBuffer[i-2] = CTL_NO;
+// 						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i-2];
+// 						st_work.sNGBufferBCR_Data[i-2] = "";
+// 					}
+// 					else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
+// 					{
+// 						st_map.nNGBuffer[i+2] = CTL_NO;
+// 						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i+2];
+// 						st_work.sNGBufferBCR_Data[i+2] = "";
+// 					}
+				}
+			}
+
+			//kwlee 2017.0727
+			if (m_nPicker_Num > -1)
+			{
+				if (m_nPicker_Num %2 ==0)
+				{
+					st_map.nNGBuffer[0] = CTL_NO;
+					st_work.sRbtBCR_Data[m_nPicker_Num] = st_work.sNGBufferBCR_Data[0];
+					st_work.sNGBufferBCR_Data[0] = "";
+				}
+				else
+				{
+					st_map.nNGBuffer[1] = CTL_NO;
+					st_work.sRbtBCR_Data[m_nPicker_Num] = st_work.sNGBufferBCR_Data[1];
+					st_work.sNGBufferBCR_Data[1] = "";
+				}
+				m_nPicker_Num = -1;
+			}
+
+			//m_nStep_NGBufferPick= 1000;
+			//kwlee 2017.0727
+			nRetNGBuffData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+			nRetNGBuffData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
+			
+			nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+			nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+			nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+			nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+
+			for (i = 0; i< MAX_PICKER_; i++)
+			{
+				if (nRetData[i] == IO_OFF && st_map.nXYZRbtPickerInfo[i] == CTL_NO)
+				{
+					if (nRetNGBuffData[0] == IO_ON || nRetNGBuffData[1] == IO_ON)
 					{
-						st_map.nNGBuffer[i] = CTL_NO;
-						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i];
-						st_work.sNGBufferBCR_Data[i] = "";
+						m_nStep_NGBufferPick = 0;
 					}
-					else if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
+					else
 					{
-						st_map.nNGBuffer[i-2] = CTL_NO;
-						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i-2];
-						st_work.sNGBufferBCR_Data[i-2] = "";
-					}
-					else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
-					{
-						st_map.nNGBuffer[i+2] = CTL_NO;
-						st_work.sRbtBCR_Data[i] = st_work.sNGBufferBCR_Data[i+2];
-						st_work.sNGBufferBCR_Data[i+2] = "";
+						m_nStep_NGBufferPick= 1000;
 					}
 				}
 			}
-			m_nStep_NGBufferPick= 1000;
+			//m_nStep_NGBufferPick= 1000;
 		}
 		else
 		{
@@ -5260,7 +5846,9 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 			{
 				m_nRepickCount = 2;
 			}
-			m_nStep_NGBufferPick= 310;	// 악세사리 집기 동작 재시도
+			//m_nStep_NGBufferPick= 310;	// 악세사리 집기 동작 재시도
+			//kwlee 2017.0727
+			m_nStep_NGBufferPick= 100;	// 악세사리 집기 동작 재시도
 			
 			if (m_nRepickCount >= 2)
 			{
@@ -5288,16 +5876,18 @@ int CSeq_XYZRobot::OnProc_NGBufferPick(int nzSite)
 //////////////////////////////////////////////////////////////////////////
 // NG Accy를 버린 후 NG Buffer를 놓는 작업
 //////////////////////////////////////////////////////////////////////////
-int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
+//int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
+//kwlee 2017.0727
+int CSeq_XYZRobot::OnProc_NGBufferPlace()
 {
-	
 	int nFuncRet = CTL_PROCEED;
 	
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
+	int nRetNGBuffData[2] = {0,};
 	int i = 0;
 	int iCheckCount = 0;
-
+	double d_Target_Pos[2] = {0,};
 	Func.OnTrace_ThreadStep(25, m_nStep_NGBufferPlace);
 	
 	switch(m_nStep_NGBufferPlace)
@@ -5307,8 +5897,8 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 		// NG Buffer 자재 확인
 		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
 		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
-		nRetData[2] = IO_OFF;
-		nRetData[3] = IO_OFF;
+// 		nRetData[2] = IO_OFF;
+// 		nRetData[3] = IO_OFF;
 		
 		if (st_basic.n_mode_device == WITHOUT_DVC_)
 		{
@@ -5318,14 +5908,23 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 			}
 		}
 		
-		for (i = 0; i < 4; i++)
+// 		for (i = 0; i < 4; i++)
+// 		{
+// 			if (st_map.nNGBuffer[i] != nRetData[i])
+// 			{
+// 				iCheckCount++;
+// 			}
+// 		}
+
+		//kwlee 2017.0724
+		//데이터와 실제 버퍼 자재 유무 맞지 않으면 alarm
+		for (i = 0; i < 2; i++)
 		{
 			if (st_map.nNGBuffer[i] != nRetData[i])
 			{
 				iCheckCount++;
 			}
 		}
-		
 		if (iCheckCount > 0)
 		{
 			// 151000 0 00 "PS1204_PS1205_PS1206_PS1207_NG_BUFFER_DATA_MISS_MATH."
@@ -5337,22 +5936,43 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 			break;
 		}
 		
-		if (st_map.nNGBuffer[0] == ACCY_NO_ &&  st_map.nNGBuffer[1] == ACCY_NO_ && st_map.nNGBuffer[2] == ACCY_NO_ && st_map.nNGBuffer[3] == ACCY_NO_)
+		//if (st_map.nNGBuffer[0] == ACCY_NO_ &&  st_map.nNGBuffer[1] == ACCY_NO_ && st_map.nNGBuffer[2] == ACCY_NO_ && st_map.nNGBuffer[3] == ACCY_NO_)
+		//kwlee 2017.0721
+		//if (st_map.nNGBuffer[0] == ACCY_NO_ &&  st_map.nNGBuffer[1] == ACCY_NO_)
+		//kwlee 2017.0726
+		if (st_map.nNGBuffer[0] == ACCY_NO_ || st_map.nNGBuffer[1] == ACCY_NO_)
 		{
-			//m_nStep_NGBufferPlace = 200;
-			m_nStep_NGBufferPlace = 100;
+			m_nStep_NGBufferPlace = 200;
 			break;
 		}
 		
 		// Gripper i번의 상태와 NG Buffer i의 상태를 비교하여 중복되는 영역은 배출
 		for (i = 0; i < MAX_PICKER_; i++)
 		{
+// 			if( st_map.nNGBuffer[i] == ACCY_YES_ && st_map.nBCR_State[i] == BCR_READ_GOOD_)
+// 			{
+// 				// BCR 정보 화면 표시를 위해 추가함
+// 				st_map.nBCR_State[i] = BCR_READ_BAD_;
+// 			}
+
+			//kwlee 2017.0727
 			// 바코드 상태가 Bad일 경우에는 확인 필요 없음
-			if( st_map.nNGBuffer[i] == ACCY_YES_ && st_map.nBCR_State[i] == BCR_READ_GOOD_)
+			if (i%2 == 0)
 			{
-				// BCR 정보 화면 표시를 위해 추가함
-				st_map.nBCR_State[i] = BCR_READ_BAD_;
+				if( st_map.nNGBuffer[0] == ACCY_YES_ && st_map.nBCR_State[i] == BCR_READ_GOOD_)
+				{
+					// BCR 정보 화면 표시를 위해 추가함
+					st_map.nBCR_State[i] = BCR_READ_BAD_;
+				}
 			}
+			else
+			{
+				if( st_map.nNGBuffer[1] == ACCY_YES_ && st_map.nBCR_State[i] == BCR_READ_GOOD_)
+				{
+					// BCR 정보 화면 표시를 위해 추가함
+					st_map.nBCR_State[i] = BCR_READ_BAD_;
+				}
+			}	
 		}
 		
 		// 중복 되는 Accy를 버리기 위해 Bad 처리 하엿으므로 바코드 표시를 다시 함.
@@ -5401,7 +6021,76 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 		break;
 	
 	case 300:
-		nRet = CTL_Lib.OnSingleMove(m_nMotY, st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_], (int)st_handler.md_run_speed);
+		//kwlee 2017.0727
+// 		if (nzSite == SIDE_FRONT_) // NG Buffer SIDE_FRONT
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size;
+// 		}
+// 		else if (nzSite == SIDE_REAR_)	// NG Buffer SIDE_REAR
+// 		{
+// 			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] - st_accy.d_Y_Gripper_Size;
+//  	}
+
+		//nRet = CTL_Lib.OnSingleMove(m_nMotY, st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_], (int)st_handler.md_run_speed);
+		//kwlee 2017.0726
+		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
+		nRetNGBuffData[1] =	!g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
+		
+		
+		if (st_map.nXYZRbtPickerInfo[0] == CTL_YES && nRetNGBuffData[0] == IO_OFF &&
+				st_map.nXYZRbtPickerInfo[1] == CTL_YES && nRetNGBuffData[1] == IO_OFF) //Front 한꺼번에 놓을 수 있음.
+		{
+			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
+
+			m_nNGBufferPickSite = SIDE_BOTH_FRONT_;
+		}
+		else if (st_map.nXYZRbtPickerInfo[2] == CTL_YES && nRetNGBuffData[0] == IO_OFF &&
+				st_map.nXYZRbtPickerInfo[3] == CTL_YES && nRetNGBuffData[1] == IO_OFF) //Rear 한꺼번에 놓을 수 있음.
+		{
+			m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size; 
+
+			m_nNGBufferPickSite = SIDE_BOTH_REAR_;
+		}
+		else 
+		{
+			if (st_map.nXYZRbtPickerInfo[0] == CTL_YES && nRetNGBuffData[0] == IO_OFF ||
+				st_map.nXYZRbtPickerInfo[1] == CTL_YES && nRetNGBuffData[1] == IO_OFF ||
+				st_map.nXYZRbtPickerInfo[2] == CTL_YES && nRetNGBuffData[0] == IO_OFF ||
+				st_map.nXYZRbtPickerInfo[3] == CTL_YES && nRetNGBuffData[1] == IO_OFF)
+			{
+				if (st_map.nXYZRbtPickerInfo[0] == CTL_YES || st_map.nXYZRbtPickerInfo[1] == CTL_YES) //Front
+				{
+					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
+
+					m_nNGBufferPickSite = SIDE_FRONT_;
+				}
+				else if (st_map.nXYZRbtPickerInfo[2] == CTL_YES || st_map.nXYZRbtPickerInfo[3] == CTL_YES) //Rear
+				{
+					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size; 
+
+					m_nNGBufferPickSite = SIDE_REAR_;
+				}
+			}
+			//kwlee 2017.0728
+// 			else if (st_map.nXYZRbtPickerInfo[1] == CTL_YES && nRetNGBuffData[1] == IO_OFF ||
+// 				st_map.nXYZRbtPickerInfo[3] == CTL_YES && nRetNGBuffData[1] == IO_OFF)
+// 			{
+// 				if (st_map.nXYZRbtPickerInfo[1] == CTL_YES) //Front
+// 				{
+// 					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_];
+// 
+// 					m_nNGBufferPickSite = SIDE_FRONT_;
+// 				}
+// 				else if (st_map.nXYZRbtPickerInfo[3] == CTL_YES) //Rear
+// 				{
+// 					m_dTargetPos = st_motor[m_nMotY].d_pos[Y_RBT_ACC_NG_BUFFER_] + st_accy.d_Y_Gripper_Size; 
+// 
+// 					m_nNGBufferPickSite = SIDE_REAR_;
+// 				}
+// 			}
+		}
+		
+		nRet = CTL_Lib.OnSingleMove(m_nMotY, m_dTargetPos, (int)st_handler.md_run_speed);
 		if (nRet == CTLBD_RET_GOOD)
 		{
 			m_nStep_NGBufferPlace = 310;
@@ -5465,8 +6154,44 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 		// 전체 피커 갯수 가운데
 		for(i=0; i<MAX_PICKER_; i++)
 		{
-			m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
-			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+// 			m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
+// 			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+			//kwlee 2017.0727
+			if (m_nNGBufferPickSite == SIDE_BOTH_FRONT_)
+			{
+				if (i < 2)
+				{
+					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
+					m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;	
+				}
+			}
+			else if (m_nNGBufferPickSite == SIDE_BOTH_REAR_)
+			{
+				if (i > 1)
+				{				
+					m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
+					m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+				}
+			}
+			else
+			{	//개별 Place 동작
+				if (m_nNGBufferPickSite == SIDE_FRONT_ || m_nNGBufferPickSite == SIDE_REAR_)
+				{	
+					if (st_map.nXYZRbtPickerInfo[i] == CTL_YES)
+					{
+						if (i < 2) //Front
+						{
+							m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
+							m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;	
+						}
+						else if(i > 1) //Rear
+						{
+							m_nPicker[TYPE_FLAG_][i] = CTL_YES;	// [리셋] 플래그 정보
+							m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+						}
+					}
+				}
+			}			
 		}
 		m_nStep_NGBufferPlace = 520;
 		break;
@@ -5632,7 +6357,6 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 		}
 		// [자재 정상] : 곧바로 밑에 부분 실행
 		// [자재 에러] : 일정 시간 대기 후에 밑에 부분 실행
-		
 		// 전체 그립퍼 갯수 가운데
 		for(i=0; i<MAX_PICKER_; i++)
 		{
@@ -5644,11 +6368,29 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 				m_nPicker[TYPE_FLAG_][i]	= CTL_NO;
 			}
 		}
-		
 		// OnGet_PickerStatus() 함수에서는 [CTL_GOOD/CTL_ERROR] 반환되었을 것임
 		if (nRet == CTL_GOOD)
 		{
 			m_nStep_NGBufferPlace = 1000;
+// 			//kwlee 2017.0728
+// 			iCheckCount =0;
+// 			for (i = 0; i< MAX_PICKER_; i++)
+// 			{
+// 				if (st_map.nXYZRbtPickerInfo[i] == CTL_YES)
+// 				{
+// 					iCheckCount++;	
+// 				}
+// 			}
+// 
+// 			if (iCheckCount > 0)
+// 			{
+// 				m_nStep_NGBufferPlace = 700;
+// 			}
+// 			else
+// 			{
+// 				m_nStep_NGBufferPlace = 1000;
+// 			}
+			
 		}
 		else
 		{
@@ -5659,19 +6401,35 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 			CTL_Lib.Alarm_Error_Occurrence( 3000, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
-
+	
 	case 1000:
-		for (i = 0; i <4; i++)
+		for (i = 0; i <MAX_PICKER_; i++)
 		{
 			if (st_map.nBCR_State[i] == BCR_READ_GOOD_)
 			{
 				if (st_work.sRbtBCR_Data[i] != "")
 				{
-					st_map.nNGBuffer[i] = st_map.nBCR_State[i];
-					st_work.sNGBufferBCR_Data[i] = st_work.sRbtBCR_Data[i];
-					st_work.sRbtBCR_Data[i] = "";
+// 					st_map.nNGBuffer[i] = st_map.nBCR_State[i];
+// 					st_work.sNGBufferBCR_Data[i] = st_work.sRbtBCR_Data[i];
+// 					st_work.sRbtBCR_Data[i] = "";
+					//kwlee 2017.0729
+					if (m_nPicker[TYPE_FLAG_][i] == CTL_YES && m_nPicker[TYPE_SEN_][i] == CTL_NO)
+					{
+						if (i%2 == 0)
+						{
+							st_map.nNGBuffer[0] = st_map.nBCR_State[i];
+							st_work.sNGBufferBCR_Data[0] = st_work.sRbtBCR_Data[i];
+							st_work.sRbtBCR_Data[i] = "";
+						}
+						else
+						{
+							st_map.nNGBuffer[1] = st_map.nBCR_State[i];
+							st_work.sNGBufferBCR_Data[1] = st_work.sRbtBCR_Data[i];
+							st_work.sRbtBCR_Data[i] = "";
+						}
+						
+					}
 				}
-				
 			}
 		}
 		
@@ -5680,10 +6438,83 @@ int CSeq_XYZRobot::OnProc_NGBufferPlace(int nzSite)
 			// NG Buffer 자재 상태 표시 요청
 			st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_NG_BUFFER_);
 		}
-		m_nStep_NGBufferPlace = 0;
-		nFuncRet = CTL_GOOD;
-		break;
+		//kwlee 2017.0729
+// 		m_nStep_NGBufferPlace = 0;
+// 		nFuncRet = CTL_GOOD;
+		nRetData[0] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_LEFT_);
+		nRetData[1] = OnCheck_NGBufferAccy(IO_ON, CHK_EXIST_, SIDE_RIGHT_);
 
+		if (nRetData[0] == CTL_YES && st_map.nXYZRbtPickerInfo[0] == CTL_YES||
+			nRetData[0] == CTL_YES && st_map.nXYZRbtPickerInfo[2] == CTL_YES)
+		{
+			if (st_map.nXYZRbtPickerInfo[0] == CTL_YES)
+			{
+				st_map.nBCR_State[0] = BCR_READ_BAD_;
+			}
+			else if (st_map.nXYZRbtPickerInfo[2] == CTL_YES)
+			{
+				st_map.nBCR_State[2] = BCR_READ_BAD_;
+			}
+			m_nStep_NGBufferPlace = 1100;
+		}
+		else if(nRetData[1] == CTL_YES && st_map.nXYZRbtPickerInfo[1] == CTL_YES||
+			nRetData[1] == CTL_YES && st_map.nXYZRbtPickerInfo[3] == CTL_YES)
+		{
+			if (st_map.nXYZRbtPickerInfo[1] == CTL_YES)
+			{
+				st_map.nBCR_State[1] = BCR_READ_BAD_;
+			}
+			else if (st_map.nXYZRbtPickerInfo[3] == CTL_YES)
+			{
+				st_map.nBCR_State[3] = BCR_READ_BAD_;
+			}
+			m_nStep_NGBufferPlace = 1100;
+		}
+		else
+		{
+			iCheckCount =0;
+			for (i = 0; i<MAX_PICKER_; i++)
+			{
+				if (st_map.nXYZRbtPickerInfo[i] == YES)
+				{
+					iCheckCount++;
+				}
+			}
+
+			if (iCheckCount > 0)
+			{
+				m_nStep_NGBufferPlace = 0;
+			}
+			else
+			{
+				m_nStep_NGBufferPlace = 0;
+				nFuncRet = CTL_GOOD;
+			}
+		}
+		break;
+	
+
+	//kwlee 2017.0729
+	case 1100:
+		// Gripper가 잡고 있는 Accy 배출 (SIDE_FRONT_ : 1, 2번 Gripper, SIDE_REAR_ : 3, 4번 Gripper)
+		nRet = OnProc_AccyOut(st_map.nBCR_State, SIDE_FRONT_);
+		
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_NGBufferPlace = 1200;
+		}
+		break;
+		
+	case 1200:
+		// Gripper가 잡고 있는 Accy 배출 (SIDE_FRONT_ : 1, 2번 Gripper, SIDE_REAR_ : 3, 4번 Gripper)
+		nRet = OnProc_AccyOut(st_map.nBCR_State, SIDE_REAR_);
+		
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_NGBufferPlace = 0;
+			nFuncRet = CTL_GOOD;
+		}
+		break;
 	}
 
 	return nFuncRet;

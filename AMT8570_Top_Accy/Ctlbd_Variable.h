@@ -276,8 +276,6 @@ enum
 #define Y_ACC_MIDDLE_			2
 #define Y_ACC_REAR_				3
 
-
-
 // Zรเ
 #define Z_ACC_LIFT_SAFETY_		0
 #define Z_ACC_LIFT_LIMIT_		1

@@ -664,7 +664,7 @@ void CSeq_BoxClamp::OnRun_Move()
 int CSeq_BoxClamp::OnRun_ForceDischarge() 
 {
 	int nFuncRet = CTL_PROCEED;
-	int nRet;
+//	int nRet;
 	int nRetData[4] = {0,};
 	
 	Func.OnTrace_ThreadStep(4, m_nStep_ForceDischarge);	// 쓰레드 스텝 정보 TRACE

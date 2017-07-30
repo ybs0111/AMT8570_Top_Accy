@@ -310,7 +310,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 void CSeq_BoxLifter::OnRun_Move() 
 {
 	//Up Complete
-	int nRet_1,nRet_2;
+	int nRet_1/*,nRet_2*/;
 	int nRet[3] = {0,};
 	int nCnt,i;
 	int nRetData[4] = {0,};

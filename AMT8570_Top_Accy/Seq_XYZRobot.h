@@ -38,13 +38,13 @@ public:
 	int m_nStep_BufferConvPlace;
 	int	m_nStep_NGBufferPick;
 	int m_nStep_NGBufferPlace;
-
-
+	
+	
 	int m_nStep_GripRetry;
 
 	int  m_nResp_Move;
 	int  m_nGripRetryCnt;
-
+	
 
 	double m_dTargetPos;
 	double m_dMaxOffset;
@@ -56,8 +56,7 @@ public:
 
 	int m_nNGBufferPickSite;
 
-
-
+	int m_nPicker_Num; //kwlee 2017.0727
 // Attributes
 private:
 	int  m_nMotX;
@@ -132,9 +131,13 @@ private:
 
 	int OnProc_BufferPlace();
 	int OnProc_4BufferPlace();
+// 
+// 	int OnProc_NGBufferPick(int nzSite);
+// 	int OnProc_NGBufferPlace(int nzSite);
 
-	int OnProc_NGBufferPick(int nzSite);
-	int OnProc_NGBufferPlace(int nzSite);
+	//kwlee 2017.0727
+	int OnProc_NGBufferPick();
+	int OnProc_NGBufferPlace();
 
 	int OnProc_GripRetry();
 
