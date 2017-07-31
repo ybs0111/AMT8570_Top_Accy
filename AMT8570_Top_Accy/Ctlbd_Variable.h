@@ -12,7 +12,7 @@
 #define MOT_DEBUG			0 //2011.0303 1
 
 //모터 수량 정보 
-#define MOT_MAXMOTOR		12
+#define MOT_MAXMOTOR		8
 
 //MOT Speed Setting  
 #define	MOT_SPD_VEL			0
