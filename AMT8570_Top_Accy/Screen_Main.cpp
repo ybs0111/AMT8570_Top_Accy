@@ -489,7 +489,7 @@ void CScreen_Main::OnMain_Display_NGBuffer()
 	// 값이 바뀐 영영이 하나라도 존재하면..
 	if (nCount != 0)
 	{
-		for(i=0; i<4; i++)
+		for(i=0; i<2; i++)
 		{
 			if (m_nCurrent_NGBufferExist[i] == IO_ON)
 			{
@@ -1485,7 +1485,8 @@ void CScreen_Main::OnButtonRealign()
 // 	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxGripperFw, IO_ON);
 // 	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxGripperBw, IO_OFF);
 // 	
-	
+// 	g_ioMgr.set_out_bit(stIO.o_Picker_updn[0][0], IO_OFF);
+// 	return;
 
 	if (0)
 	{

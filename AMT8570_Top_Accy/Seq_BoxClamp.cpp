@@ -94,6 +94,7 @@ void CSeq_BoxClamp::OnSeq_Execute(void)
 
 void CSeq_BoxClamp::OnRun_Initial() 
 {
+	
 	// 초기화 작업이 완료된 경우 강제 리턴함
 	if (st_handler.mn_init_state[INIT_BOX_CLAMP] != CTL_NO)
 	{
@@ -911,8 +912,8 @@ int CSeq_BoxClamp::OnGet_ConvBoxPusher(int nzOnOff)
 	
 	int nReadIO[2] = {0,};
 	//kwlee 2017.0707
-// 	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherFwCheck);
-// 	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherBwCheck);
+ 	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherCylPusherCheck);
+ 	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherCylPullCheck);
 	
 	m_lWait_ConvClamp[1] = GetCurrentTime();
 	m_lWait_ConvClamp[2] = m_lWait_ConvClamp[1] - m_lWait_ConvClamp[0];

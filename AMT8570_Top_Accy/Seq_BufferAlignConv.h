@@ -30,7 +30,7 @@ public:
 private:
 	int  m_nReq_AcMotCtrl;//Req AC action.
 	long m_lTime_GoesBy[3][3];
-
+	
 	bool m_bflag_BufferTrayPathAlign;
 	long m_lWait_BufferTrayPathAlign[3];
 
@@ -42,14 +42,15 @@ private:
 
 	bool m_bflag_Stopper[5];
 	long m_lWait_Stopper[5][3];
-
+	
 	int  m_nReq_Completemsg;
 
 	int m_nTestSupply;			// 0 : 기본 모드, 1 : 테스트 모드
 	int m_nAccySupply;
 	int m_nReqMidConv;
 	int m_nReqOutConv;  //OutConv->BuffConv
-
+    
+	long m_lDelay_Time[3]; //kwlee 2017.0814
 // Operations
 public:
 	void OnSeq_RUN(void);		// 쓰레드 동작

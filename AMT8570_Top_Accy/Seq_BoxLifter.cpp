@@ -116,6 +116,7 @@ void CSeq_BoxLifter::OnSeq_Execute(void)
 
 void CSeq_BoxLifter::OnRun_Initial() 
 {
+
 	int nRet[5] = {0,};
 	int nCnt,i;
 	if( st_handler.mn_init_state[INIT_BOX_LIFT] != CTL_NO )	
@@ -128,42 +129,15 @@ void CSeq_BoxLifter::OnRun_Initial()
 		break;
 
 	case 100:
-		
-		m_nStep_Init = 200;
-		break;
-
-	case 200:
+		//m_nStep_Init = 200;
 		nRet[0] = g_comiMgr.HomeCheck_Mot( m_nMotZ0, 0, MOT_TIMEOUT );
-		nRet[1] = g_comiMgr.HomeCheck_Mot( m_nMotZ1, 0, MOT_TIMEOUT );
-		nRet[2] = g_comiMgr.HomeCheck_Mot( m_nMotZ2, 0, MOT_TIMEOUT );
-		nRet[3] = g_comiMgr.HomeCheck_Mot( m_nMotZ3, 0, MOT_TIMEOUT );
-
-		if( nRet[0] == CTLBD_RET_GOOD && nRet[1] == CTLBD_RET_GOOD && nRet[2] == CTLBD_RET_GOOD && nRet[3] == CTLBD_RET_GOOD)
+		if (nRet[0] == CTLBD_RET_GOOD )
 		{
-			m_nStep_Init = 210;
+			m_nStep_Init = 110;
 		}
-		else 
+		else if (nRet[0] == CTLBD_RET_ERROR)
 		{
-			if (nRet[0] == CTLBD_RET_ERROR)
-			{
-				// 000003 0 00 "LIFTER_UP_DOWN_SHIFT1_HOMING_ERR."
-				alarm.mstr_code		= "000003";
-			}
-			else if (nRet[1] == CTLBD_RET_ERROR)
-			{
-				//010003 0 00 "LIFTER_UP_DOWN_SHIFT2_HOMING_ERR."
-				alarm.mstr_code		= "010003";
-			}
-			else if (nRet[1] == CTLBD_RET_ERROR)
-			{
-				// 020003 0 00 "LIFTER_UP_DOWN_SHIFT3_HOMING_ERR."
-				alarm.mstr_code		= "020003";
-			}
-			else if (nRet[1] == CTLBD_RET_ERROR)
-			{
-				// 030003 0 00 "LIFTER_UP_DOWN_SHIFT4_HOMING_ERR."
-				alarm.mstr_code		= "030003";
-			}
+			alarm.mstr_code		= "000003";
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
@@ -171,7 +145,95 @@ void CSeq_BoxLifter::OnRun_Initial()
 		}
 		break;
 
-	case 210:
+	case 110:
+		nRet[0] = g_comiMgr.HomeCheck_Mot( m_nMotZ1, 0, MOT_TIMEOUT );
+		if (nRet[0] == CTLBD_RET_GOOD )
+		{
+			m_nStep_Init = 120;
+		}
+		else if (nRet[0] == CTLBD_RET_ERROR)
+		{
+			alarm.mstr_code		= "010003";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
+		}
+		break;
+
+	case 120:
+		nRet[0] = g_comiMgr.HomeCheck_Mot( m_nMotZ2, 0, MOT_TIMEOUT );
+		if (nRet[0] == CTLBD_RET_GOOD )
+		{
+			m_nStep_Init = 130;
+		}
+		else if (nRet[0] == CTLBD_RET_ERROR)
+		{
+			alarm.mstr_code		= "020003";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
+		}
+		break;
+
+	case 130:
+		nRet[0] = g_comiMgr.HomeCheck_Mot( m_nMotZ3, 0, MOT_TIMEOUT );
+		if (nRet[0] == CTLBD_RET_GOOD )
+		{
+			m_nStep_Init = 200;
+		}
+		else if (nRet[0] == CTLBD_RET_ERROR)
+		{
+			alarm.mstr_code		= "030003";
+			alarm.mn_count_mode	= 0;
+			alarm.mn_type_mode	= eWARNING;
+			st_work.nEqpStatus	= dWARNING;
+			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
+		}
+		break;
+
+// 	case 200:
+// 		//nRet[0] = g_comiMgr.HomeCheck_Mot( m_nMotZ0, 0, MOT_TIMEOUT );
+// // 		nRet[1] = g_comiMgr.HomeCheck_Mot( m_nMotZ1, 0, MOT_TIMEOUT );
+// // 		nRet[2] = g_comiMgr.HomeCheck_Mot( m_nMotZ2, 0, MOT_TIMEOUT );
+// // 		nRet[3] = g_comiMgr.HomeCheck_Mot( m_nMotZ3, 0, MOT_TIMEOUT );
+// 
+// 		//if( nRet[0] == CTLBD_RET_GOOD && nRet[1] == CTLBD_RET_GOOD && nRet[2] == CTLBD_RET_GOOD && nRet[3] == CTLBD_RET_GOOD)
+// 		if( nRet[0] == CTLBD_RET_GOOD)
+// 		{
+// 			m_nStep_Init = 210;
+// 		}
+// 		else if (nRet[0] == CTLBD_RET_ERROR || nRet[1] == CTLBD_RET_ERROR || nRet[2] == CTLBD_RET_ERROR || nRet[3] == CTLBD_RET_ERROR)
+// 		{
+// 			if (nRet[0] == CTLBD_RET_ERROR)
+// 			{
+// 				// 000003 0 00 "LIFTER_UP_DOWN_SHIFT1_HOMING_ERR."
+// 				alarm.mstr_code		= "000003";
+// 			}
+// 			else if (nRet[1] == CTLBD_RET_ERROR)
+// 			{
+// 				//010003 0 00 "LIFTER_UP_DOWN_SHIFT2_HOMING_ERR."
+// 				alarm.mstr_code		= "010003";
+// 			}
+// 			else if (nRet[2] == CTLBD_RET_ERROR)
+// 			{
+// 				// 020003 0 00 "LIFTER_UP_DOWN_SHIFT3_HOMING_ERR."
+// 				alarm.mstr_code		= "020003";
+// 			}
+// 			else if (nRet[3] == CTLBD_RET_ERROR)
+// 			{
+// 				// 030003 0 00 "LIFTER_UP_DOWN_SHIFT4_HOMING_ERR."
+// 				alarm.mstr_code		= "030003";
+// 			}
+// 			alarm.mn_count_mode	= 0;
+// 			alarm.mn_type_mode	= eWARNING;
+// 			st_work.nEqpStatus	= dWARNING;
+// 			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
+// 		}
+// 		break;
+
+	case 200:
 		nRet[0] = CTL_Lib.OnSingleMove( m_nMotZ0, st_motor[m_nMotZ0].d_pos[Z_ACC_LIFT_SAFETY_], (int)st_handler.md_run_speed );
 		nRet[1] = CTL_Lib.OnSingleMove( m_nMotZ1, st_motor[m_nMotZ1].d_pos[Z_ACC_LIFT_SAFETY_], (int)st_handler.md_run_speed );
 		nRet[2] = CTL_Lib.OnSingleMove( m_nMotZ2, st_motor[m_nMotZ2].d_pos[Z_ACC_LIFT_SAFETY_], (int)st_handler.md_run_speed );
@@ -180,9 +242,9 @@ void CSeq_BoxLifter::OnRun_Initial()
 		if( nRet[0] == CTLBD_RET_GOOD && nRet[1] == CTLBD_RET_GOOD && nRet[2] == CTLBD_RET_GOOD && nRet[3] == CTLBD_RET_GOOD)
 		{
 			st_work.nLiftDownComplete = CTL_YES;
-			m_nStep_Init = 220;
+			m_nStep_Init = 210;
 		}
-		else 
+		else if (nRet[0] == CTLBD_RET_ERROR || nRet[1] == CTLBD_RET_ERROR || nRet[2] == CTLBD_RET_ERROR || nRet[3] == CTLBD_RET_ERROR)
 		{
 			if( nRet[0] == CTLBD_RET_ERROR || nRet[0] == CTLBD_RET_RETRY )
 			{
@@ -212,13 +274,12 @@ void CSeq_BoxLifter::OnRun_Initial()
 		}
 		break;
 
-	case 220:
+	case 210:
 		nCnt =0;
 		for (i =0; i<3; i++)
 		{
 			nRet[i] = !g_ioMgr.get_in_bit(stIO.i_Chk_UnloaderFull[i],IO_OFF);
-			
-			if (nRet[i] == IO_OFF)
+			if (nRet[i] == IO_ON)
 			{
 				nCnt++;
 			}
@@ -241,7 +302,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 		{
 			m_nStep_Init = 400;
 		}
-		else
+		else if (nRet[0] == CTLBD_RET_ERROR)
 		{
 			//040003 0 00 "LIFTER_Y1_HOMING_ERR."
 			alarm.mstr_code		= "040003";
@@ -259,7 +320,7 @@ void CSeq_BoxLifter::OnRun_Initial()
 			stSync.nResp_Lifter2Clamp_Work = SYNC_RESP_WORK_COMPLETE_;
 			m_nStep_Init = 500;
 		}
-		else 
+		else if (nRet[0] == CTLBD_RET_ERROR)
 		{
 			//001002 0 00 "LIFTER_UP_DOWN_SHIFT1_Z_ACC_LIFT_SAFETY_MOVE_ERR."
 			alarm.mstr_code		= "001002";
@@ -279,13 +340,12 @@ void CSeq_BoxLifter::OnRun_Initial()
 		break;
 
 	case 600:
-		nRet[0] = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_FRONT_], (int)st_handler.md_run_speed );
+		nRet[0] = CTL_Lib.OnSingleMove( m_nMotY, st_motor[m_nMotY].d_pos[Y_ACC_REAR_], (int)st_handler.md_run_speed );
 		if( nRet[0] == CTLBD_RET_GOOD)
 		{
-
 			m_nStep_Init = 1000;
 		}
-		else 
+		else if (nRet[0] == CTLBD_RET_ERROR)
 		{
 			//042000 0 00 "LIFTER_Y1_WORK_AREA_MOVE_ERR."
 			alarm.mstr_code		= "042000";

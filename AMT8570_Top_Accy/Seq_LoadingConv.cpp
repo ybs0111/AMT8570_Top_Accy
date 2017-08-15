@@ -204,6 +204,7 @@ void CSeq_LoadingConv::OnSeq_Execute(void)
 
 void CSeq_LoadingConv::OnRun_Initial() 
 {
+
 	int nRet[3] = {0,};
 	
 	if( st_handler.mn_init_state[INIT_LOAD_CONV] != CTL_NO )
@@ -1875,7 +1876,7 @@ int CSeq_LoadingConv::OnGet_CylStopper(int nzOnOff)
 
 
 	m_lWait_Stopper[0][1] = GetCurrentTime();
-	m_lWait_Stopper[0][2] = m_lWait_Stopper[1] - m_lWait_Stopper[0];
+	m_lWait_Stopper[0][2] = m_lWait_Stopper[0][1] - m_lWait_Stopper[0][0];
 
 	if (m_lWait_Stopper[0][2] < 0)
 	{
@@ -1952,6 +1953,7 @@ int CSeq_LoadingConv::OnGet_CylStopper2(int nzOnOff)
 	int nFunRet = CTL_PROCEED;
 	
 	int nReadIO[2] = {0,};
+
 	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvStopperUp2);
 	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxConvStopperDn2);
 	

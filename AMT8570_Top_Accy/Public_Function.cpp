@@ -318,7 +318,7 @@ void CPublic_Function::OnSet_MotorUnitDist()
 
  		st_motor[i].nStepMotor = FALSE;
 
-		//nRet = COMI.Set_HomeSetConfig(i, COMI.mn_homecheck_method[i], 0, 2, 1);
+	
 		nRet = COMI.Set_HomeSetConfig(i, COMI.mn_homecheck_method[i], 0, 1000, 10);
 		if (nRet != CTL_YES)
 		{
@@ -593,8 +593,8 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.i_Chk_Out_Rear_Right_Accy_DetectionChk			= 1015;
 
 	//kwlee 2017.0715
-	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][0]	= 1004;
-	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][1]	= 1005;	
+	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][0]	 = 1004;
+	stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][1]	 = 1005;	
 	
 	stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]  = 1006;
 	stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]  = 1007;	
@@ -633,7 +633,6 @@ void CPublic_Function::OnSet_MappingIO()
 // 	{
 // 		stIO.o_BufferConvMotor[i] = 1104 + i;
 // 	}
-
 	
 	stIO.i_Slop_Variable_Font_Left_Open_Check			= 1108;
 	stIO.i_Slop_Variable_Font_Left_Close_Check			= 1109;
@@ -654,9 +653,14 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.o_Picker_rl_updn		= 1201;//rear left
 	stIO.o_Picker_fr_updn		= 1201;//front right
 	stIO.o_Picker_rr_updn		= 1203;//rear right
+// 	stIO.o_Picker_updn[SIDE_FRONT_][SIDE_LEFT_]  = 1200;
+// 	stIO.o_Picker_updn[SIDE_REAR_][SIDE_LEFT_]   = 1201;
+// 	stIO.o_Picker_updn[SIDE_FRONT_][SIDE_RIGHT_] = 1202;
+// 	stIO.o_Picker_updn[SIDE_REAR_][SIDE_RIGHT_]  = 1203;
+	//kwlee 2017.0814
 	stIO.o_Picker_updn[SIDE_FRONT_][SIDE_LEFT_]  = 1200;
-	stIO.o_Picker_updn[SIDE_REAR_][SIDE_LEFT_]   = 1201;
-	stIO.o_Picker_updn[SIDE_FRONT_][SIDE_RIGHT_] = 1202;
+	stIO.o_Picker_updn[SIDE_FRONT_][SIDE_RIGHT_] = 1201;
+	stIO.o_Picker_updn[SIDE_REAR_][SIDE_LEFT_]	 = 1202;
 	stIO.o_Picker_updn[SIDE_REAR_][SIDE_RIGHT_]  = 1203;
 	stIO.o_Picker_pitch			= 1204;
 
@@ -664,10 +668,15 @@ void CPublic_Function::OnSet_MappingIO()
 	stIO.i_Picker_rl_up_chk		= 1209;
 	stIO.i_Picker_fr_up_chk		= 1210;
 	stIO.i_Picker_rr_up_chk		= 1211;
-	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_LEFT_]  = 1208;
-	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_LEFT_]   = 1209;
-	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_RIGHT_] = 1210;
-	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_RIGHT_]  = 1211;
+// 	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_LEFT_]  = 1208;
+// 	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_LEFT_]   = 1209;
+// 	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_RIGHT_] = 1210;
+// 	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_RIGHT_]  = 1211;
+	//kwlee 2017.0814
+	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_LEFT_]		= 1208;
+	stIO.i_Picker_updn_chk[SIDE_FRONT_][SIDE_RIGHT_]	= 1209;
+	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_LEFT_]		= 1210;
+	stIO.i_Picker_updn_chk[SIDE_REAR_][SIDE_RIGHT_]		= 1211;
 
 	stIO.i_Picker_open_check	= 1212;
 	stIO.i_Picker_close_check	= 1213;
@@ -702,14 +711,24 @@ void CPublic_Function::OnSet_MappingIO()
 //  	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1307;
 
 	//kwlee 2017.0717
+// 	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1300;
+// 	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1302;
+// 	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1304;	
+// 	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1306;
+// 	
+// 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1301;
+// 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1303;
+// 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1305;
+// 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1307;
+	//kwlee 2017.0814
 	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1300;
-	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1302;
-	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1304;	
+	stIO.o_Vac_Rbt_VacOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1302;
+	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_LEFT_]		= 1304;	
 	stIO.o_Vac_Rbt_VacOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1306;
 	
 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_LEFT_]	= 1301;
-	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1303;
-	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1305;
+	stIO.o_Vac_Rbt_EjectOnOff[SIDE_FRONT_][SIDE_RIGHT_]	= 1303;
+	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_LEFT_]	= 1305;
 	stIO.o_Vac_Rbt_EjectOnOff[SIDE_REAR_][SIDE_RIGHT_]	= 1307;
 
 	
@@ -723,9 +742,14 @@ void CPublic_Function::OnSet_MappingIO()
 //  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1310;
 //  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
 //kwlee 2017.0717
+// 	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_LEFT_]		= 1308;
+// 	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1309;
+// 	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1310;
+//  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
+	//kwlee 2017.0814
 	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_LEFT_]		= 1308;
-	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1309;
-	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1310;
+	stIO.i_Chk_Rbt_VacOn[SIDE_FRONT_][SIDE_RIGHT_]		= 1309;
+	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_LEFT_]		= 1310;
  	stIO.i_Chk_Rbt_VacOn[SIDE_REAR_][SIDE_RIGHT_]		= 1311;
 	
 	stIO.i_Chk_OutLeftBufferAccyDetection				= 1312;
@@ -914,7 +938,9 @@ void CPublic_Function::OnSet_MotorSpeed()
 			st_handler.cwnd_list->PostMessage(WM_LIST_DATA, 0, ABNORMAL_MSG);
 		}
 		
-		nRet = COMI.Set_HomeSetConfig(i, COMI.mn_homecheck_method[i], 0, 2, 1);
+		//nRet = COMI.Set_HomeSetConfig(i, COMI.mn_homecheck_method[i], 0, 2, 1);
+		//kwlee 2017.0814
+		nRet = COMI.Set_HomeSetConfig(i, COMI.mn_homecheck_method[i], 0, 1000, 10);
 		if (nRet != BD_GOOD)
 		{
 			sprintf(st_msg.c_abnormal_msg, "HomeSpeed Setting Error [MotNum[%d]]", i);
@@ -1081,7 +1107,7 @@ int CPublic_Function::OnInit_IOBoard()
 	FAS_IO.Set_IO_DefineWord(0, 0, 1, 0x000f); // 0번 Master, 0번 포트, 1번 슬레이브 , 16bit 셋팅
 	FAS_IO.Set_IO_DefineWord(0, 0, 2, 0x00ff); // 0번 Master, 0번 포트, 2번 슬레이브 , 16bit 셋팅
 	FAS_IO.Set_IO_DefineWord(0, 0, 3, 0x007f); // 0번 Master, 0번 포트, 3번 슬레이브 , 16bit 셋팅
-	FAS_IO.Set_IO_DefineWord(0, 0, 4, 0x0007); // 0번 Master, 0번 포트, 4번 슬레이브 , 16bit 셋팅
+	FAS_IO.Set_IO_DefineWord(0, 0, 4, 0x00ff); // 0번 Master, 0번 포트, 4번 슬레이브 , 16bit 셋팅
 	FAS_IO.Set_IO_DefineWord(0, 0, 5, 0x003f); // 0번 Master, 0번 포트, 5번 슬레이브 , 16bit 셋팅
 	FAS_IO.Set_IO_DefineWord(0, 0, 6, 0x000f); // 0번 Master, 0번 포트, 6번 슬레이브 , 16bit 셋팅
 	FAS_IO.Set_IO_DefineWord(0, 0, 7, 0x007f); // 0번 Master, 0번 포트, 7번 슬레이브 , 16bit 셋팅
@@ -3850,6 +3876,7 @@ void CPublic_Function::OnSet_EqpAuto()
 {
 	st_handler.nModeManual = CTL_NO;
 
+//	g_ioMgr.set_out_bit(stIO.o_DoorLock,	IO_ON);
 	/*
 	g_ioMgr.set_out_bit(stIO.o_auto,		IO_ON);
 	g_ioMgr.set_out_bit(stIO.o_manual,	IO_OFF);

@@ -306,7 +306,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//==============================================================//
 	// 타이틀 정보 출력
 	//==============================================================//
-	st_handler.sEqpVersion = "[AMT8570 Accy] v1.13 (2015.05.29)";
+	st_handler.sEqpVersion = "[AMT8570 Accy] v1.13 (2015.09.10)";
 	SetWindowText(st_handler.sEqpVersion);
 
 	CenterWindow();	// 현재 응용 프로그램을 정 중앙에 배치

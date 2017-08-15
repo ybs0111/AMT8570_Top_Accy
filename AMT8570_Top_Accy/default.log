@@ -1,15 +1,30 @@
 ===== FarPoint Technologies, Inc =====
 ===== Begin of Excel Workbook General Load =====
-9/7/2015 - 01:40
+8/15/2017 - 13:30
 
 Col	Row	Information
 ___	___	___________
-		Import Excel File: C:\AMT8570_Accy\ExcelMap\AMT8570_Accy_MOTOR_AXIS_MAP.xls
+		Import Excel File: C:\AMT8570_Accy\ExcelMap\AMT8570_Accy_IO_MAP.xls
 
 ===== End of Excel Workbook General Load =====
 
 ===== Begin of Excel Sheet Load =====
 		Import Sheet:  -1
+0	0	134:Import encountered a function or formula in the Excel file; a float cell has been created in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
+-	-	132:Spread does not support graphic objects. The graphic object will not be represented in Spread.
 -	-	102:Excel reads the AllowDragDrop, AutoClipboard, and EditEnterAction properties from the registry. If you modify these properties in Spread, the changes are not saved at export.
 
 ===== End of Excel Sheet Load =====

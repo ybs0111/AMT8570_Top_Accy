@@ -169,6 +169,8 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 
 void CSeq_BufferAlignConv::OnRun_Initial() 
 {
+
+	
 	// 초기화 작업이 완료된 경우 강제 리턴함
 	if (st_handler.mn_init_state[INIT_BUFFER_CONV] != CTL_NO)
 	{
@@ -201,9 +203,23 @@ void CSeq_BufferAlignConv::OnRun_Initial()
 			OnSet_CylBufferRearTrayPitch(IO_OFF);
 		}
 		m_nStep_Init = 210;
+		m_lDelay_Time[0] = GetCurrentTime();//kwlee 2017.0814
 		break;
 
 	case 210:
+		//kwlee 2017.0814
+		m_lDelay_Time[1] = GetCurrentTime();
+		m_lDelay_Time[2] = m_lDelay_Time[1] - m_lDelay_Time[0];
+		if (m_lDelay_Time[2] < 0)
+		{
+			m_lDelay_Time[0] = GetCurrentTime();
+			break;
+		}
+		if (m_lDelay_Time[2] < 500 )
+		{
+			break;
+		}
+
 		if( st_basic.nMode_Slop_Variable == CTL_YES )
 		{
 			nRetData[0] = OnGet_CylBufferFrontTrayPitch( IO_ON );
@@ -2850,7 +2866,7 @@ int CSeq_BufferAlignConv::OnCheck_OutAccySupply(int nzOnOff, int nzMode, int nzS
 void CSeq_BufferAlignConv::OnSet_CylBufferFrontTrayPitch(int nzOnOff) 
 {
 	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Front_Left_OpenClose, nzOnOff);
-	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Front_Right_OpenClose, !nzOnOff);
+	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Front_Right_OpenClose, nzOnOff);
 	
 	m_bflag_BufferFrontTrayPitch = true;
 	m_lWait_BufferFrontTrayPitch[0] = GetCurrentTime();
@@ -2888,13 +2904,17 @@ int CSeq_BufferAlignConv::OnGet_CylBufferFrontTrayPitch(int nzOnOff, int nzSite)
 	if (nzOnOff == IO_OFF)		// 악세사리를 공급하는 간격
 	{
 		if (m_bflag_BufferFrontTrayPitch == true &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON )
+			//nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON )
+			//kwlee 2017.0814
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF )
 		{
 			m_lWait_BufferFrontTrayPitch[0] = GetCurrentTime();
 			m_bflag_BufferFrontTrayPitch = false;
 		}
 		else if (m_bflag_BufferFrontTrayPitch == false &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON )
+			//nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON )
+			//kwlee 2017.0814
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF )
 		{
 			if (m_lWait_BufferFrontTrayPitch[2] > st_time.nWait_Off[CYL_ACCY_BUFF_PITCH])
 			{
@@ -2952,7 +2972,7 @@ int CSeq_BufferAlignConv::OnGet_CylBufferFrontTrayPitch(int nzOnOff, int nzSite)
 void CSeq_BufferAlignConv::OnSet_CylBufferRearTrayPitch(int nzOnOff) 
 {
 	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Rear_Left_OpenClose, nzOnOff);
-	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Rear_Right_OpenClose, !nzOnOff);
+	g_ioMgr.set_out_bit(stIO.o_Slop_Variable_Rear_Right_OpenClose, nzOnOff);
 	
 	m_bflag_BufferRearTrayPitch = true;
 	m_lWait_BufferRearTrayPitch[0] = GetCurrentTime();
@@ -2991,13 +3011,17 @@ int CSeq_BufferAlignConv::OnGet_CylBufferRearTrayPitch(int nzOnOff, int nzSite)
 	if (nzOnOff == IO_OFF)		// 악세사리를 공급하는 간격
 	{
 		if (m_bflag_BufferFrontTrayPitch == true &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
+			//nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
+			//kwlee 2017.0814
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF )
 		{
 			m_lWait_BufferRearTrayPitch[0] = GetCurrentTime();
 			m_bflag_BufferFrontTrayPitch = false;
 		}
 		else if (m_bflag_BufferFrontTrayPitch == false &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
+			//nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
+			//kwlee 2017.0814
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF )
 		{
 			if (m_lWait_BufferRearTrayPitch[2] > st_time.nWait_Off[CYL_ACCY_BUFF_PITCH])
 			{
@@ -3022,13 +3046,17 @@ int CSeq_BufferAlignConv::OnGet_CylBufferRearTrayPitch(int nzOnOff, int nzSite)
 	else		// 악세사리를 보급 받는 간격
 	{
 		if (m_bflag_BufferFrontTrayPitch == true &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+			//nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+			//kwlee 2017.0814
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 		{
 			m_lWait_BufferRearTrayPitch[0] = GetCurrentTime();
 			m_bflag_BufferFrontTrayPitch = false;
 		}
 		else if (m_bflag_BufferFrontTrayPitch == false &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+			//nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+			//kwlee 2017.0814
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 		{
 			if (m_lWait_BufferRearTrayPitch[2] > st_time.nWait_On[CYL_ACCY_BUFF_PITCH])
 			{
@@ -3218,14 +3246,20 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 	{
 		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][0]);//UP
 		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][1]);//DOWN
-		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][0]);
-		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][1]);
-
+// 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][0]);
+// 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][1]);
+		//kwlee 2017.0814
+		nReadIO[2] = IO_OFF;
+ 		nReadIO[3] = IO_OFF;
 	}
 	else if( nPos == SIDE_REAR_ )
 	{
-		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][0]);
-		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][1]);
+// 		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][0]);
+// 		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][1]);
+		//kwlee 2017.0814
+		nReadIO[0] = IO_OFF;
+		nReadIO[1] = IO_OFF;
+
 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][0]);
 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][1]);
 	}
@@ -3240,13 +3274,20 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 	{
 		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]);	// UP
 		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]);	// Down
-		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][0]);
-		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][1]);
+
+// 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][0]);
+// 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][1]);
+		//kwlee 2017.0814
+		nReadIO[2] = IO_OFF;
+		nReadIO[3] = IO_OFF;
 	}
 	else// if( nPos == SIDE_OUT_REAR )
 	{
-		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]);	// UP
-		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]);	// Down
+		//nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]);	// UP
+		//nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]);	// Down
+		//kwlee 2017.0814
+		nReadIO[0] = IO_OFF;
+		nReadIO[1] = IO_OFF;
 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][0]);
 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][1]);
 	}
@@ -3276,13 +3317,13 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		if( nPos == SIDE_FRONT_ )
 		{
 			if (m_bflag_Stopper[nPos] == true &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF )
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF )
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3305,13 +3346,13 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		else if( nPos == SIDE_REAR_ )
 		{
 			if (m_bflag_Stopper[nPos] == true &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF && nReadIO[2] == IO_OFF && nReadIO[3] == IO_OFF)
+				 nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF && nReadIO[2] == IO_OFF && nReadIO[3] == IO_OFF)
+				 nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3333,12 +3374,12 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		}
 		else if( nPos == SIDE_MIDDLE )
 		{
-			if (m_bflag_Stopper[nPos] == true && nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF)
+			if (m_bflag_Stopper[nPos] == true && nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
-			else if (m_bflag_Stopper[nPos] == false && nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF)
+			else if (m_bflag_Stopper[nPos] == false && nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3361,13 +3402,13 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		else if( nPos == SIDE_OUT_FRONT )
 		{
 			if (m_bflag_Stopper[nPos] == true && 
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF )
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF )
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3390,13 +3431,13 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		else// if( nPos == SIDE_OUT_REAR )
 		{
 			if (m_bflag_Stopper[nPos] == true && 
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF && nReadIO[2] == IO_OFF && nReadIO[3] == IO_OFF)
+				 nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[0] == IO_OFF && nReadIO[1] == IO_OFF && nReadIO[2] == IO_OFF && nReadIO[3] == IO_OFF)
+				nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3419,18 +3460,18 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		}
 
 	}
-	else
+	else //if (nzOnOff == IO_ON)
 	{
 		if( nPos == SIDE_FRONT_ )
 		{
 			if (m_bflag_Stopper[nPos] == true &&
-				nReadIO[1] == IO_ON && nReadIO[0] == IO_ON && nReadIO[3] == IO_ON && nReadIO[2] == IO_ON)
+				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[1] == IO_ON && nReadIO[0] == IO_ON && nReadIO[3] == IO_ON && nReadIO[2] == IO_ON)
+				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_On[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3452,12 +3493,12 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		}
 		else if( nPos == SIDE_REAR_ )
 		{
-			if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+			if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
-			else if (m_bflag_Stopper[nPos] == false && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+			else if (m_bflag_Stopper[nPos] == false && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3479,12 +3520,12 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		}
 		else if( nPos == SIDE_MIDDLE )
 		{
-			if (m_bflag_Stopper[nPos] == true && nReadIO[0] == IO_ON && nReadIO[1] == IO_ON)
+			if (m_bflag_Stopper[nPos] == true && nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
-			else if (m_bflag_Stopper[nPos] == false && nReadIO[0] == IO_ON && nReadIO[1] == IO_ON)
+			else if (m_bflag_Stopper[nPos] == false && nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3507,13 +3548,13 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		else if( nPos == SIDE_OUT_FRONT )
 		{
 			if (m_bflag_Stopper[nPos] == true && 
-				nReadIO[0] == IO_ON && nReadIO[1] == IO_ON && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
 			else if (m_bflag_Stopper[nPos] == false &&
-				nReadIO[0] == IO_ON && nReadIO[1] == IO_ON && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+				nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{
@@ -3535,12 +3576,12 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		}
 		else// if( nPos == SIDE_OUT_REAR )
 		{
-			if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+			if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
-			else if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_ON && nReadIO[3] == IO_ON)
+			else if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{

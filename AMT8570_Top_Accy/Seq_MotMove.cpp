@@ -18,10 +18,7 @@ CSeq_MotMove	seqMotMove;
 
 CSeq_MotMove::CSeq_MotMove()
 {
-	for( int i=0; i<MOTOR_COUNT; i++ )
-	{
-		m_motor[i].SetMotorID( i );
-	}
+
 }
 
 CSeq_MotMove::~CSeq_MotMove()
@@ -50,7 +47,7 @@ void CSeq_MotMove::OnSeq_INIT(void)
 void CSeq_MotMove::OnSeq_Execute(void) 
 {
 	int i=0;
-	for(i=0; i<MOTOR_COUNT; i++)
+	for(i=0; i<MOT_MAXMOTOR; i++)
 	{
 		m_motor[i].MotorMoving_repeat();
 		m_motormap[i].MotorLMoving_repeat();

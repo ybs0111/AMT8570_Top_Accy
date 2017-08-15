@@ -836,6 +836,7 @@ void CMainFrame::OnAbout()
 		return;
 	}
 
+	st_handler.nMenuLock = FALSE;
 	st_handler.nSysLock = FALSE;
 	st_handler.nSwitchLock = FALSE;
 

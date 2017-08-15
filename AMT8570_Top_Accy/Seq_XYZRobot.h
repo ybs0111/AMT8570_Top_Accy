@@ -145,14 +145,14 @@ private:
 	int OnGet_PickerPitch( int nOzOff, int nzMode=0);
 
 	
-	void OnSet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);	
-	int OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzUnDnStatus[MAX_PICKER_], int nzMode=0);
-
-	void OnSet_SolVacuum(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);	// Vacuum [ON:진공설정, OFF:진공해제]
-	int  OnGet_SolVacuum(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzVacStatus[MAX_PICKER_], int nzMode=0);
-
-	void OnSet_EjectOnOff(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);
-	int  OnGet_EjectOnOff(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);
+ 	void OnSet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);	
+ 	int OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzUnDnStatus[MAX_PICKER_], int nzMode=0);
+ 
+ 	void OnSet_SolVacuum(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);	// Vacuum [ON:Aø°ø¼³A¤, OFF:Aø°øCØA|]
+ 	int  OnGet_SolVacuum(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzVacStatus[MAX_PICKER_], int nzMode=0);
+ 
+ 	void OnSet_EjectOnOff(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);
+ 	int  OnGet_EjectOnOff(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);
 
 	void OnSet_PickerPitchOpenClose( int nOzOff, int nzMode=0);
 	int OnGet_PickerPitchOPenClose( int nOzOff, int nzMode=0);

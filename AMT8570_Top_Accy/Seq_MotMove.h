@@ -18,14 +18,24 @@
 // 이 부분은 전역 변수 부분과 일치해야 함
 enum ENUM_MOTOR
 {
-	MOTOR_LIFTER_Z1 =	0,
-	MOTOR_LIFTER_Z2,
-	MOTOR_LIFTER_Z3,
-	MOTOR_LIFTER_Z4,
-	MOTOR_LIFTER_Y,
-	MOTOR_BCRREAD_ROBOT_Y,
-	MOTOR_BCRREAD_ROBOT_Z,
-	MOTOR_BCRREAD_ROBOT_X,
+//  	MOTOR_ROBOT_X =	0,
+//  	MOTOR_ROBOT_Y,
+//  	MOTOR_ROBOT_Z,
+//  	MOTOR_ROBOT_P,
+//  	MOTOR_TRAY_TRANSFER_Y,
+//  	MOTOR_MULTI_STACKER_Z,
+	//kwlee 2017.0814
+	MOTOR_LIFTER_Z1				= 0,
+	MOTOR_LIFTER_Z2				= 1,
+	MOTOR_LIFTER_Z3				= 2,
+	MOTOR_LIFTER_Z4				= 3,
+		
+	MOTOR_LIFTER_Y				= 4,
+		
+	MOTOR_BCRREAD_ROBOT_Y		= 5,
+	MOTOR_BCRREAD_ROBOT_Z		= 6,
+	MOTOR_BCRREAD_ROBOT_X		= 7,
+	//
 	MOTOR_COUNT,
 };
 
@@ -50,7 +60,7 @@ public:
 	void OnSeq_INIT(void);     // 쓰레드 관련 변수 초기화
 	void OnSeq_Execute(void);  // 쓰레드 제어
 
-	AMotor& GetMotor( ENUM_MOTOR motorID )	{ return m_motor[motorID]; }
+	AMotor& GetMotor( ENUM_MOTOR motorID )	{  m_motor[motorID].SetMotorID(motorID); return m_motor[motorID]; }
 	AMotor& GetMotorMap( int motormapID )	{ return m_motormap[motormapID]; }
 
 };

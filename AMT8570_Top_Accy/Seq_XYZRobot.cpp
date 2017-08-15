@@ -183,12 +183,13 @@ void CSeq_XYZRobot::OnRun_Initial()
 		{
 			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
 		}
-		OnSet_SolVacuum(IO_OFF, m_nPickerUnDn[TYPE_FLAG_]);
+		OnSet_PickerUpDn(IO_OFF, m_nPickerUnDn[TYPE_FLAG_]);
 		m_nStep_Init = 110;
 		break;
 
 	case 110:
 		nRet = OnGet_PickerUpDn( IO_OFF, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
+		
 		if (nRet == CTL_GOOD)
 		{
 			m_nStep_Init = 120;
@@ -201,17 +202,17 @@ void CSeq_XYZRobot::OnRun_Initial()
 		break;
 
 	case 120://Pitch close
-		OnSet_PickerPitchOpenClose( IO_ON );
+		OnSet_PickerPitchOpenClose( IO_ON ); 
 		m_nStep_Init = 130;
 		break;
 
 	case 130:
 		//nRet = OnGet_PickerPitch( IO_ON );
 		//kwlee 2017.0706
-		nRet = OnGet_PickerPitchOPenClose( IO_ON );
+		nRet = OnGet_PickerPitchOPenClose( IO_ON ); 
 		if( nRet == CTL_GOOD)
 		{
-			m_nStep_Init = 120;
+			m_nStep_Init = 200;
 		}
 		else if( nRet == CTL_ERROR )
 		{
@@ -304,8 +305,9 @@ void CSeq_XYZRobot::OnRun_Initial()
 		{
 			if (i < 2)
 			{
-				m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
+ 				m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
 				m_nPicker[TYPE_FLAG_][i] = CTL_YES;
+			
 			}
 			else
 			{
@@ -316,10 +318,27 @@ void CSeq_XYZRobot::OnRun_Initial()
 		// [0:좌앞, 1:우앞] 2개의 Vacuum 해제
 		OnSet_PickerUpDn(IO_ON, m_nPickerUnDn[TYPE_FLAG_]);
 		OnSet_SolVacuum(IO_OFF, m_nPicker[TYPE_FLAG_]);	// 그립퍼 Vacuum [ON:진공설정, OFF:진공해제]
+		//kwlee 2017.0814
+		m_lTime_GoesBy[0] = GetCurrentTime();
+
 		m_nStep_Init = 310;
 
 
 	case 310:
+		//kwlee 2017.0814
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			break;
+		}
+		
+		if (m_lTime_GoesBy[2] < 500)
+		{
+			return;
+		}
+		//
 		nRetData[0] = OnGet_PickerUpDn(IO_ON, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
 		nRetData[1] = OnGet_SolVacuum(IO_OFF, m_nPicker[TYPE_FLAG_], m_nPicker[TYPE_SEN_]);
 		// 어찌되었던 동작이 완료될때까지 대기
@@ -339,7 +358,6 @@ void CSeq_XYZRobot::OnRun_Initial()
 		nRet = Func.OnGet_PickerStatus(0, CTL_NO, m_nPicker);
 		if( nRet == CTL_GOOD )
 		{
-
 			m_nStep_Init = 330;
 		}
 		else if (nRet == CTL_ERROR)
@@ -373,7 +391,8 @@ void CSeq_XYZRobot::OnRun_Initial()
 		break;
 		
 	case 340:
-		nRet = OnGet_PickerUpDn( IO_OFF, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
+	
+		nRet = OnGet_SolVacuum( IO_OFF, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
 		if (nRet == CTL_GOOD)
 		{
 			m_nStep_Init = 350;
@@ -393,7 +412,9 @@ void CSeq_XYZRobot::OnRun_Initial()
 		nRet = CTL_Lib.OnSingleMove(m_nMotY, m_dTargetPos, (int)st_handler.md_run_speed);
 		if (nRet == CTLBD_RET_GOOD)
 		{
-			m_nStep_Init = 360;
+			//m_nStep_Init = 360;
+			//kwlee 2017.0814
+			m_nStep_Init = 380;
 		}
 		else if (nRet == CTLBD_RET_ERROR || nRet == CTLBD_RET_RETRY)
 		{
@@ -406,25 +427,25 @@ void CSeq_XYZRobot::OnRun_Initial()
 		}
 		break;
 
-	case 360://Pitch close
-		OnSet_PickerPitchOpenClose( IO_ON );
-		m_nStep_Init = 370;
-		break;
-		
-	case 370:
-		//nRet = OnGet_PickerPitch( IO_ON );
-		//kwlee 2017.0706
-		nRet = OnGet_PickerPitchOPenClose( IO_ON );
-		if( nRet == CTL_GOOD)
-		{
-			m_nStep_Init = 380;
-		}
-		else if( nRet == CTL_ERROR )
-		{
-			m_nStep_Init = 360;
-			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
-		}
-		break;		
+// 	case 360://Pitch close
+// 		OnSet_PickerPitchOpenClose( IO_ON );
+// 		m_nStep_Init = 370;
+// 		break;
+// 		
+// 	case 370:
+// 		//nRet = OnGet_PickerPitch( IO_ON );
+// 		//kwlee 2017.0706
+// 		nRet = OnGet_PickerPitchOPenClose( IO_ON );
+// 		if( nRet == CTL_GOOD)
+// 		{
+// 			m_nStep_Init = 380;
+// 		}
+// 		else if( nRet == CTL_ERROR )
+// 		{
+// 			m_nStep_Init = 360;
+// 			CTL_Lib.Alarm_Error_Occurrence( 2000, CTL_dWARNING, alarm.mstr_code);
+// 		}
+// 		break;		
 		
 	case 380:
 		for(i=0; i<MAX_PICKER_; i++)
@@ -443,10 +464,25 @@ void CSeq_XYZRobot::OnRun_Initial()
 		OnSet_PickerUpDn(IO_ON, m_nPickerUnDn[TYPE_FLAG_]);
 		// [2:좌뒤, 3:우뒤] 2개의 Vacuum 해제
 		OnSet_SolVacuum(IO_OFF, m_nPicker[TYPE_FLAG_]);	// 그립퍼 Vacuum [ON:진공설정, OFF:진공해제]
+		//kwlee 2017.0814
+		m_lTime_GoesBy[0] = GetCurrentTime();
 		m_nStep_Init = 390;
 		break;
 		
 	case 390:
+		//kwlee 2017.0814
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			break;
+		}
+		
+		if (m_lTime_GoesBy[2] < 500)
+		{
+			return;
+		}
 		nRetData[0] = OnGet_PickerUpDn(IO_ON, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
 		nRetData[1] = OnGet_SolVacuum(IO_OFF, m_nPicker[TYPE_FLAG_], m_nPicker[TYPE_SEN_]);
 		// 어찌되었던 동작이 완료될때까지 대기
@@ -493,11 +529,26 @@ void CSeq_XYZRobot::OnRun_Initial()
 		{
 			m_nPickerUnDn[TYPE_FLAG_][i] = CTL_YES;
 		}
-		OnSet_SolVacuum(IO_OFF, m_nPickerUnDn[TYPE_FLAG_]);
+		OnSet_PickerUpDn(IO_OFF, m_nPickerUnDn[TYPE_FLAG_]);
+		//kwlee 2017.0814
+		m_lTime_GoesBy[0] = GetCurrentTime();
 		m_nStep_Init = 420;
 		break;
 		
 	case 420:
+		//kwlee 2017.0814
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			break;
+		}
+		
+		if (m_lTime_GoesBy[2] < 500)
+		{
+			return;
+		}
 		nRet = OnGet_PickerUpDn( IO_OFF, m_nPickerUnDn[TYPE_FLAG_], m_nPickerUnDn[TYPE_SEN_] );
 		if (nRet == CTL_GOOD)
 		{
@@ -3402,7 +3453,6 @@ int CSeq_XYZRobot::OnProc_BCRStateBad()
 		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
 		nRetData[2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
 		nRetData[3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
-	
 
 		nRetNGBuffData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_LEFT_]);
 		nRetNGBuffData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_NGBufferAccyDetection[SIDE_RIGHT_]);
@@ -6857,15 +6907,19 @@ int CSeq_XYZRobot::OnGet_PickerPitchOPenClose( int nOzOff, int nzMode)
 	if (nOzOff == IO_OFF)
 	{
 		if (m_bPickerPitchFlag == false &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_OFF)	== IO_OFF &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_ON)	== IO_ON)
+// 			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_OFF)	== IO_OFF &&
+// 			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_ON)	== IO_ON)
+			//kwlee 2017.0814
+			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
+			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
+
 		{
 			m_bPickerPitchFlag		= true;
 			m_lWaitPickerPitch[0]	= GetCurrentTime();
 		}
 		else if (m_bPickerPitchFlag == true &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_OFF)	== IO_OFF &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_ON)	== IO_ON)
+			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
+			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
 		{
 			m_lWaitPickerPitch[1] = GetCurrentTime();
 			m_lWaitPickerPitch[2] = m_lWaitPickerPitch[1] - m_lWaitPickerPitch[0];
@@ -6902,15 +6956,21 @@ int CSeq_XYZRobot::OnGet_PickerPitchOPenClose( int nOzOff, int nzMode)
 	else
 	{
 		if (m_bPickerPitchFlag == false &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
+// 			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
+// 			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
+			//kwlee 2017.0814
+			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_OFF)	== IO_OFF &&
+			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_ON)	== IO_ON)
 		{
 			m_bPickerPitchFlag		= true;
 			m_lWaitPickerPitch[0]	= GetCurrentTime();
 		}
 		else if (m_bPickerPitchFlag == true &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
-			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
+	//		g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_ON)	== IO_ON &&
+// 			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_OFF)	== IO_OFF)
+			//kwlee 2017.0814
+			g_ioMgr.get_in_bit(stIO.i_Picker_close_check,	IO_OFF)	== IO_OFF &&
+			g_ioMgr.get_in_bit(stIO.i_Picker_open_check,	IO_ON)	== IO_ON)
 		{
 			m_lWaitPickerPitch[1]	= GetCurrentTime();
 			m_lWaitPickerPitch[2]	= m_lWaitPickerPitch[1] - m_lWaitPickerPitch[0];
@@ -6998,10 +7058,10 @@ int CSeq_XYZRobot::OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], 
 		iSlave	= i % 2;	// 나머지 계산
 
 		iSensor[i] = g_ioMgr.get_in_bit(stIO.i_Picker_updn_chk[iMaster][iSlave]);
-		if (nzPickerInfo[i] == CTL_NO)
-		{
-			iSensor[i] = nzOnOff;
-		}
+ 		if (nzPickerInfo[i] == CTL_NO)
+ 		{
+ 			iSensor[i] = nzOnOff;	
+ 		}
 	}
 		
 	if (nzMode == 0)
@@ -7040,14 +7100,18 @@ int CSeq_XYZRobot::OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], 
 
 		if (nzOnOff == IO_ON)
 		{
-			if (m_lWait_Vac[2] >= st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
+			//if (m_lWait_Vac[2] >= st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
+			//kwlee 2017.0814
+			if (m_lWait_Picker[2] >= st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
 			{
 				nFuncRet = CTL_GOOD;
 			}
 		}
 		else
 		{
-			if (m_lWait_Vac[2] >= st_time.nWait_Off[CYL_ACCY_ROBOT_PICKER])
+			//if (m_lWait_Vac[2] >= st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
+			//kwlee 2017.0814
+			if (m_lWait_Picker[2] >= st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
 			{
 				nFuncRet = CTL_GOOD;
 			}
@@ -7070,7 +7134,7 @@ int CSeq_XYZRobot::OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], 
 			m_lWait_Picker[0] = GetCurrentTime();
 			return nFuncRet;
 		}
-		if( m_lWait_Picker[2] > st_time.nWait_On[CYL_ACCY_ROBOT_PICKER])
+		if( m_lWait_Picker[2] > st_time.nWait_Limit[CYL_ACCY_ROBOT_PICKER])
 		{
 			if( iSensor[0] != nzOnOff )
 			{

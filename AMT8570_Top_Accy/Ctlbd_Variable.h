@@ -12,6 +12,8 @@
 #define MOT_DEBUG			0 //2011.0303 1
 
 //모터 수량 정보 
+//#define MOT_MAXMOTOR		12
+//kwlee 2017.0814
 #define MOT_MAXMOTOR		8
 
 //MOT Speed Setting  
@@ -295,10 +297,6 @@ enum
 // KILEE [2015.03.17]
 #define Y_RBT_ACC_CONV_F_BUFF_		7
 
-//X축
-#define X_RBT_ACC_BCR_			0
-#define X_RBT_ACC_BCR_OFFSET_		1
-
 //Z축
 #define Z_RBT_SAFETY_			0
 #define Z_RBT_ACC_GRIP_			1
@@ -306,6 +304,11 @@ enum
 #define Z_RBT_ACC_NG_BUFFER_PICK_	3
 #define Z_RBT_ACC_BUFFER_CONV_PLACE_	4
 #define Z_RBT_ACC_BUFFER_CONV_PICK_	5
+
+//X축
+#define X_RBT_ACC_BCR_			0
+#define X_RBT_ACC_BCR_OFFSET_		1
+
 //GRIP
 #define GRIP_RBT_OPEN_					0
 #define GRIP_RBT_GRIPPER_	1

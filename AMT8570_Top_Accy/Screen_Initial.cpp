@@ -109,6 +109,8 @@ void CScreen_Initial::OnInitialUpdate()
 	// 현재 초기화 작업 중이라고 설정
 	// - 초기화 작업 중에는 프로그램 종료 못하도록 제약하기 위한 인터락 조건
 	st_handler.nFlag_InitComplete = NO;
+	//kwlee 2017.0814
+	stSync.nReq_Clamp2Lifter_Work = -1;
 }
 
 void CScreen_Initial::OnDestroy() 
