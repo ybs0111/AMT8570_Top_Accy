@@ -22,7 +22,12 @@ CSeq_BufferAlignConv::CSeq_BufferAlignConv()
 	//m_nTestSupply = TRUE;
 	m_nTestSupply = FALSE;
 	m_nReqMidConv = CTL_NO;
-	m_nReqOutConv = CTL_NO;
+
+	
+	//m_nReqOutConv = CTL_NO;
+	//kwlee 2017.0829
+	m_nReqOut_Rear_Conv = CTL_NO; 
+	m_nReqOut_Front_Conv = CTL_NO; 
 }
 
 CSeq_BufferAlignConv::~CSeq_BufferAlignConv()
@@ -57,7 +62,10 @@ void CSeq_BufferAlignConv::OnSeq_INIT(void)
 	m_nStep_RunReady = 0;
 	m_nStep_ForceDischarge = 0;
 	m_nReqMidConv = CTL_NO;
-	m_nReqOutConv = CTL_NO;
+	//m_nReqOutConv = CTL_NO;
+	//kwlee 2017.0829
+	m_nReqOut_Rear_Conv = CTL_NO; 
+	m_nReqOut_Front_Conv = CTL_NO; 
 
 	m_nReq_Completemsg = FALSE;
 }
@@ -67,13 +75,15 @@ void CSeq_BufferAlignConv::OnSeq_INIT(void)
 //==================================================================//
 void CSeq_BufferAlignConv::OnSeq_Execute(void) 
 {
+
 	// 시컨스 인터럽트 조건 확인
 	if (Func.OnIsInterruptCondition() == 1)
 	{
 		return;
 	}
 	int nRet = 0;
-	
+	int nRetData[2] = {0,};
+
 	//==============================================================//
 	// AC 모터를 설비 상태에 상관없이 제어하기 위하여 추가함
 	// : 이곳에서는 TIME OUT 처리 하지 않음
@@ -94,7 +104,7 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 	}
 	if (m_nReq_AcMotCtrl == REQ_MV_ACCY_OUT_)			// [Accy Conv] 첫번째 위치에 자재 공급 요청인 경우
 	{
-		nRet = OnCheck_OutAccySupply(IO_ON);	// [SIDE_FIRST_] 악세사리 버퍼에 자재가 존재하는지 확인
+		nRet = OnCheck_OutRearAccySupply(IO_ON);	// [SIDE_FIRST_] 악세사리 버퍼에 자재가 존재하는지 확인
 		if (nRet == IO_ON)	// 센서에 감지됨
 		{
 			m_lTime_GoesBy[0][0] = GetCurrentTime();
@@ -104,18 +114,25 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 	else if (m_nReq_AcMotCtrl == REQ_MV_STABILITY_)	// 일정 시간만큼 감아달라는 요청인 경우
 	{
 		m_lTime_GoesBy[0][1] = GetCurrentTime();
-		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[0][1] - m_lTime_GoesBy[0][0];
 		if (m_lTime_GoesBy[0][2] < 0)
 		{
 			m_lTime_GoesBy[0][0] = GetCurrentTime();
 		}
 		
-		if (m_lTime_GoesBy[0][2] >= st_time.nWait_On[WAIT_ACCY_OUT_AC_OFF])	// 안정 시간 후에 AC 모터 정지시킴
+		if (m_lTime_GoesBy[0][2] >= st_time.nWait_Limit[WAIT_ACCY_OUT_AC_OFF])	// 안정 시간 후에 AC 모터 정지시킴
 		{
-			nRet = OnCheck_OutAccySupply(IO_ON);	// [SIDE_FIRST_] 악세사리 버퍼에 자재가 존재하는지 확인
+			//nRet = OnCheck_OutAccySupply(IO_ON);	// [SIDE_FIRST_] 악세사리 버퍼에 자재가 존재하는지 확인
 			//if (nRet == IO_OFF)	// 센서에 감지됨
 			//kwlee 2017.0716
-			if (nRet == IO_ON)	// 센서에 감지됨
+// 			if (nRet == IO_ON)	// ¼¾¼­¿¡ °¨AoμE
+// 			{
+// 				OnMove_AcMotor(AC_MV_STOP_);	// AC ¸ðAI ±¸μ¿/A¤Ao
+// 			}
+			//kwlee 2017.827
+			nRetData[0] = OnCheck_OutRearAccySupply(IO_ON);
+			nRetData[1] = OnCheck_OutFrontAccySupply(IO_ON);
+			if (nRetData[0] == IO_ON || nRetData[1] == IO_ON)	// 센서에 감지됨
 			{
 				OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
 			}
@@ -126,7 +143,7 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 	else if (m_nReq_AcMotCtrl == REQ_MV_INIT_)
 	{
 		m_lTime_GoesBy[0][1] = GetCurrentTime();
-		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[0][1] - m_lTime_GoesBy[0][0];
 		if (m_lTime_GoesBy[0][2] < 0)
 		{
 			m_lTime_GoesBy[0][0] = GetCurrentTime();
@@ -155,9 +172,13 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 		// st_handler.nIsAllSiteInitEnd : 초기화 화면에서 설정
 		if (st_handler.nIsAllSiteInitEnd == CTL_YES)
 		{
+			//kwlee 2017.0823
  			OnRun_ReadyMove();
  			OnRun_MiddleMove();
- 			OnRun_Move();
+ 			//OnRun_Move();
+			//kwlee 2017.0829
+			OnRun_OutRear_Move();
+			OnRun_OutFront_Move();
 		}
 		break;
 		
@@ -169,7 +190,6 @@ void CSeq_BufferAlignConv::OnSeq_Execute(void)
 
 void CSeq_BufferAlignConv::OnRun_Initial() 
 {
-
 	
 	// 초기화 작업이 완료된 경우 강제 리턴함
 	if (st_handler.mn_init_state[INIT_BUFFER_CONV] != CTL_NO)
@@ -414,7 +434,7 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 			st_work.sBufferMiddleConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_MIDDLE] = CTL_NO;
 			m_nReqMidConv = CTL_CHANGE;
-			m_nStep_Run = 1600;
+			m_nStep_RunMiddle = 1600;
 			break;
 		}
 		//Rear Slope Conv에서 넘어 온 상태.
@@ -451,10 +471,12 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 			st_work.sBufferMiddleConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_MIDDLE] = CTL_NO;
 			m_nReqMidConv = CTL_CHANGE;
-			m_nStep_Run = 1600;
+			m_nStep_RunMiddle = 1600;
 			break;
 		}
-		if( m_nReqMidConv == CTL_NO )
+		//if( m_nReqMidConv == CTL_NO )
+		//kwlee 2017.0827
+		if( m_nReqMidConv == CTL_NO ||  m_nReqMidConv == CTL_CHANGE )
 		{
 			m_nStep_RunMiddle = 2000;
 		}
@@ -495,11 +517,32 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 
 		//Middle Conv에서 자재 있는 상태에서 Out Conv 요청 대기.
 	case 2000:
-		if( m_nReqOutConv == CTL_REQ )
+		//if( m_nReq_OutConv == CTL_REQ )
+		//kwlee 2017.0829
+		if( m_nReqOut_Rear_Conv == CTL_REQ )
+		{
+			/*m_nStep_RunMiddle = 2100;*/
+			m_nStep_RunMiddle = 2010;
+		}
+		break;
+
+		//kwlee 2017.0922
+	case 2010:
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
+		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
+		if( nRetData[0] == IO_ON && nRetData[1] == IO_ON )
 		{
 			m_nStep_RunMiddle = 2100;
 		}
+		else
+		{
+			if( nRetData[0] == IO_OFF ) alarm.mstr_code = "125000";
+			else					    alarm.mstr_code = "125100";
+			CTL_Lib.Alarm_Error_Occurrence( 3007, CTL_dWARNING, alarm.mstr_code );
+		}
 		break;
+		//////////////////
+
 
 	case 2100:
 		//OnSet_CylStopper( IO_OFF, SIDE_MIDDLE );
@@ -554,7 +597,9 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 		//OnSet_CylStopper( IO_ON, SIDE_MIDDLE );
 		//kwlee 2017.0716
 		OnSet_CylStopper( IO_OFF, SIDE_MIDDLE );
-		m_nReqOutConv = CTL_READY;
+		//m_nReqOutConv = CTL_READY;
+		//kwlee 2017.0829
+		m_nReqOut_Rear_Conv = CTL_READY;
 		m_nStep_RunMiddle = 2500;
 		break;
 
@@ -601,9 +646,15 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 		break;
 
 	case 3000:
-		if( m_nReqOutConv == CTL_CHANGE || m_nReqOutConv == CTL_NO)
+// 		if( m_nReqOutConv == CTL_CHANGE || m_nReqOutConv == CTL_NO)
+// 		{
+// 			m_nReqOutConv = CTL_FREE; //kwlee 2017.0717
+// 			m_nStep_RunMiddle = 0;
+// 		}
+		//kwlee 2017.0829
+		if( m_nReqOut_Rear_Conv == CTL_CHANGE || m_nReqOut_Rear_Conv == CTL_NO)
 		{
-			m_nReqOutConv = CTL_FREE; //kwlee 2017.0717
+			m_nReqOut_Rear_Conv = CTL_FREE; //kwlee 2017.0717
 			m_nStep_RunMiddle = 0;
 		}
 		break;
@@ -615,7 +666,9 @@ void CSeq_BufferAlignConv::OnRun_MiddleMove()
 	}
 }
 
-void CSeq_BufferAlignConv::OnRun_Move() 
+//void CSeq_BufferAlignConv::OnRun_Move() 
+//kwlee 2017.0829
+void CSeq_BufferAlignConv::OnRun_OutRear_Move() 
 {
 	// 전체 사이트 복구 동작 완료 여부 확인
 	// - 모든 부분의 복구 동작이 완료된 후에만 시컨스 동작하도록 함
@@ -633,21 +686,6 @@ void CSeq_BufferAlignConv::OnRun_Move()
 	switch(m_nStep_Run)
 	{
 	case 0:
-		if (stSync.nLotEnd_BufferAlignConv == TRUE)
-		{
-			nRet = Func.OnGet_UpStreamSmema();		// [상류 설비] SMEMA 상태 확인
-			if(nRet == REQ_REQUEST_ON_)
-			{
-				if (m_nReq_Completemsg == FALSE)
-				{
-					m_nReq_Completemsg = TRUE;
-					
-					g_client_accy.OnCreate_SendFormat(MAIN_ACCY_SUPPLY_COMPLETE);
-					g_client_accy.OnReq_CommStart();
-				}
-			}
-		}
-		
 		// Lot Start 상태가 될때까지 대기
 		if (st_map.nLotStart != CTL_YES)
 		{
@@ -683,52 +721,44 @@ void CSeq_BufferAlignConv::OnRun_Move()
 		{
 			stSync.nLotEnd_BufferAlignConv = FALSE;
 		}
+		m_nStep_Run = 10;
 		//
- 		if( stSync.nResp_BufferAlaignConv2XYZRbt_Work == SYNC_RESP_LOADING_)
- 		{
- 			m_nReq_Completemsg = FALSE;
- 			//m_nStep_RunReady = 50;
- 			//kwlee 2017.0715
- 			m_nStep_Run = 50;
- 		}
+		
 		break;
 
-	case 50:
-		// [Buffer Conv -> XYZRbt] Work Complete 요청 대기
- 		if(stSync.nReq_XYZRbt2BufferAlaignConv_Work == SYNC_REQ_WORK_COMPLETE_)
- 		{
- 			m_lTime_GoesBy[2][0] = GetCurrentTime();
- 			m_nStep_Run = 80;
- 		}
-		break;
+
 
 		//Out Conv Front, Rear에 자재 없을 경우. Middle Conv 요청.
-	case 80:
-		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);//Out Conv Accy
-		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);
-		//if(nRetData[0] == IO_ON && nRetData[1] == IO_ON)
-		//kwlee 2017.0716
-		if((nRetData[0] == IO_OFF && nRetData[1] == IO_OFF) ||
-			(nRetData[0] == IO_ON && nRetData[1] == IO_OFF))
-		{
-			//m_nStep_Run = 100;
-			//m_nStep_Run = 200;
+	case 10:
+// 		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);//Out Conv Accy
+// 		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);
+// 		if(nRetData[0] == IO_ON && nRetData[1] == IO_ON)
+// 		//kwlee 2017.0716
+// 		if((nRetData[0] == IO_OFF && nRetData[1] == IO_OFF) ||
+// 			(nRetData[0] == IO_ON && nRetData[1] == IO_OFF))
 
+		//kwlee 2017.0829
+		nRetData[0] = OnCheck_OutRearAccySupply(IO_ON);//Out Conv Accy
+		if(nRetData[0] == IO_OFF) 
+		{
 			//kwlee 2017.0716
-			m_nReqOutConv = CTL_REQ;
+			m_nReqOut_Rear_Conv = CTL_REQ;
+			m_lTime_GoesBy[2][0] = GetCurrentTime(); //kwlee 2017.0829
 			m_nStep_Run = 100;
 		}
 		else
 		{
 			m_lTime_GoesBy[2][1] = GetCurrentTime();
 			m_lTime_GoesBy[2][2] = m_lTime_GoesBy[2][1] - m_lTime_GoesBy[2][0];
-			if (m_lTime_GoesBy[0][2] < 0)
+			//if (m_lTime_GoesBy[0][2] < 0)
+			//kwlee 2017.0829
+			if (m_lTime_GoesBy[2][2] < 0)
 			{
 				m_lTime_GoesBy[2][0] = GetCurrentTime();
 				break;
 			}
 			
-			if (m_lTime_GoesBy[2][2] > 500)
+			if (m_lTime_GoesBy[2][2] > 5000)
 			{
 				// 150001 0 00 "ACCY_CONV_ACCY_CHK_ERR."
 				alarm.mstr_code		= "150001";
@@ -744,15 +774,24 @@ void CSeq_BufferAlignConv::OnRun_Move()
 		//Middle Slope에서 자재 내려온 상태.
 		//OutConv 모터 On 일정시간 동안..
 	case 100:
-		if (m_nReqOutConv == CTL_READY)
+		//if (m_nReqOutConv == CTL_READY)
+		//kwlee 2017.0829
+		if (m_nReqOut_Rear_Conv == CTL_READY)
 		{
 			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+			m_nRear_Wait[0] = GetCurrentTime();
+// 			m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime();
+
+			//kwlee 2017.0831
+//  			m_lTime_GoesBy[0][0] = GetCurrentTime();
+//  			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
 			m_nStep_Run = 200;
 		}
 		break;
 		
 	case 200:
+				
 		if( st_basic.nMode_Slop_Variable == CTL_YES )
 		{
 			OnSet_CylBufferFrontTrayPitch(IO_ON);
@@ -761,7 +800,11 @@ void CSeq_BufferAlignConv::OnRun_Move()
 		{
 			OnSet_CylBufferFrontTrayPitch(IO_OFF);
 		}
-		m_nStep_Run = 210;
+		//m_nStep_Run = 210;//kwlee 2017.0830
+		if (m_nReq_AcMotCtrl == REQ_MV_RESET_ )
+		{
+			m_nStep_Run = 210;
+		}
 		break;
 		
 	case 210:
@@ -787,21 +830,23 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			{
 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 				{
-					m_lTime_GoesBy[2][0] = GetCurrentTime();
-					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-					m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
-					m_nStep_Run = 260;
+					//m_lTime_GoesBy[2][0] = GetCurrentTime();
+					//kwlee 2017.0831
+// 					m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+// 					m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+					m_nStep_Run = 230;
 					break;
 				}
 			}
 			else
 			{
 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
-				{
-					m_lTime_GoesBy[2][0] = GetCurrentTime();
-					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-					m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
-					m_nStep_Run = 260;
+				{	
+// 					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+// 					m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 					m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+					m_nStep_Run = 230;
 					break;
 				}
 			}
@@ -810,8 +855,6 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			//m_nStep_Run = 250;
 			//kwlee 2017.0717
 			m_nStep_Run = 230;
-			
-
 		}
 		else if( nRetData[0] == CTL_ERROR )
 		{
@@ -821,171 +864,490 @@ void CSeq_BufferAlignConv::OnRun_Move()
 		break;
 
 		// 테스트를 위해 Main에 공급 하지 않고 테스트를 위해 추가
-	case 220:
-		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
-		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-		//kwlee 2017.0716 del 사용 않함.
-	//	nRetData[2] = OnCheck_OutAccySupply(IO_ON);		// Buffer Conv Out 확인
-		
-		//if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
-		//kwlee 2017.0716
-		if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
-		{
-			memset(st_map.nBufferOutAccyExist, ACCY_NO_, sizeof(st_map.nBufferOutAccyExist));
-			
-			m_nStep_Run = 800;
-		}
-		break;
+		//kwlee 2017.0829 del
+// 	case 220:
+// 		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
+// 		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+// 		//kwlee 2017.0716 del 사용 않함.
+// 	//	nRetData[2] = OnCheck_OutAccySupply(IO_ON);		// Buffer Conv Out 확인
+// 		
+// 		//if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
+// 		//kwlee 2017.0716
+// 		if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
+// 		{
+// 			memset(st_map.nBufferOutAccyExist, ACCY_NO_, sizeof(st_map.nBufferOutAccyExist));
+// 			
+// 			m_nStep_Run = 230;
+// 		}
+// 		break;
 	
 	//kwlee 2017.0717
+		//모터 구동 후 확인 하여 자재 감지 안되었을 경우 재가동.
 	case 230:
-		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		nRetData[0] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
 
-		if (nRetData[1] == IO_OFF)
+		if (nRetData[0] == IO_OFF)
 		{
 			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
 			m_nStep_Run = 231;
 		}
 		else
 		{
-			
+			OnMove_AcMotor(AC_MV_STOP_); //kwlee 2017.0831
 			m_nStep_Run = 231;
 		}
 		break;
 
 	case 231:
-		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)
+	
+		//nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);
+		//nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		//kwlee 2017.0829
+		nRet = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		if (nRet == IO_ON)
 		{
-			nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);
-			nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-
-			m_nReqOutConv = CTL_CHANGE; //kwlee 2017.0718
-
-			if (nRetData[1] == IO_OFF)
+			OnMove_AcMotor(AC_MV_STOP_); //kwlee 2017.0831
+			m_nReqOut_Rear_Conv = CTL_CHANGE;
+			m_nStep_Run = 240;
+		}
+		else
+		{
+			//kwlee 2017.0831
+			m_nRear_Wait[1] = GetCurrentTime();
+			m_nRear_Wait[2] = m_nRear_Wait[1] - m_nRear_Wait[0];
+			if (m_nRear_Wait[2] < 0)
 			{
-				if (nRetData[0] == IO_ON)
-				{
-				//	m_nReqOutConv = CTL_NO;
-					m_nStep_Run = 240;
-				}
-				else
-				{
-					//Rear,Front에 모두 자재 감지 않된 상태.
-					m_nStep_Run = 230;
-				}
+				m_nRear_Wait[0] = GetCurrentTime();
+				break;
 			}
-			else 
+			if (m_nRear_Wait[2] > 5000)
 			{
-				//Rear 자재 감지 센서 감지 되면.
-				if (nRetData[0] == IO_OFF) //FRont 감지 확인 시 자재 없음..
-				{
-					//자재 없으면 Rear Stopper 내려서 Front Conv로 보내면 되고.
-					//m_nReqOutConv = Change신호로 바꾸자.
-					OnSet_CylStopper(IO_ON, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]	
-					m_nStep_Run = 232;
-				}
-				else
-				{
-					//Front Conv자재가 있으면 Main으로 넘기자
-				//	m_nReqOutConv = CTL_NO;
-					m_nStep_Run = 240;
-				}
+				// 150001 0 00 "ACCY_CONV_ACCY_CHK_ERR."
+				
+				alarm.mstr_code		= "150001";
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+				CTL_Lib.Alarm_Error_Occurrence( 30122, CTL_dWARNING, alarm.mstr_code );
+				OnMove_AcMotor(AC_MV_STOP_);
 			}
+			m_nStep_Run = 230;
+		}
+	
+		break;
+
+	 
+	case 240:
+		if (m_nReqOut_Front_Conv == CTL_REQ)
+		{
+			m_nStep_Run = 250;
 		}
 		break;
+
+	case 250:				
+		OnSet_CylStopper(IO_ON, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]	
+		m_nStep_Run = 260;
+		break;
 	
-	case 232:
+	case 260:
 		nRet = OnGet_CylStopper(IO_ON,SIDE_OUT_REAR);
 		if (nRet == CTL_GOOD)
 		{
+			m_nRear_Wait[0] = GetCurrentTime();
+			m_nReqOut_Front_Conv = CTL_READY;
 			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
-			m_nStep_Run = 233;
+// 			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime();
+			
+			m_nStep_Run = 270;
 		}
 		else if (nRet == CTL_ERROR)
 		{
 			CTL_Lib.Alarm_Error_Occurrence( 3014, CTL_dWARNING, alarm.mstr_code);
+			m_nStep_Run = 250;
 		}
 		break;
 
-	case 233:
-		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)
+// 	case 270:
+// 		//kwlee 2017.0829
+//  		if (m_nReq_AcMotCtrl == REQ_MV_RESET_)
+//  		{
+// // 			//nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);
+// // 			//nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+// // 
+// // 			//if (nRetData[0] == IO_OFF && nRetData[1] == IO_ON)
+//  	
+// 			m_lTime_GoesBy[2][0] = GetCurrentTime();
+//  			m_nStep_Run = 271;
+//  		}
+// 		break;
+		//kwlee 2017.0831
+	case 261:
+		OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+		m_nRear_Wait[0] = GetCurrentTime();
+		m_nStep_Run = 270;
+		break;
+
+	case 270:
+		nRet = OnCheck_OutRearAccySupply(IO_ON);
+		if (nRet == IO_OFF)
 		{
-			nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);
-			nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-			
-			if (nRetData[0] == IO_ON && nRetData[1] == IO_OFF)
+			//kwlee 20170922
+			m_nRear_Wait[1] = GetCurrentTime();
+			m_nRear_Wait[2] = m_nRear_Wait[1] - m_nRear_Wait[0];
+
+			if (m_nRear_Wait[2] < 0)
 			{
-				/*m_nReqOutConv = CTL_CHANGE;*///kwlee 2017.0718
-				
-				m_nStep_Run = 234;
+				m_nRear_Wait[0] = GetCurrentTime();
+				break;
+			}
+			
+			if (m_nRear_Wait[2] > 5000)
+			{			
+				OnMove_AcMotor(AC_MV_STOP_); //kwlee 2017.0831
+				m_nStep_Run = 280;
+			}
+			//
+		}
+		else
+		{
+			
+			m_nRear_Wait[1] = GetCurrentTime();
+			m_nRear_Wait[2] = m_nRear_Wait[1] - m_nRear_Wait[0];
+			//if (m_lTime_GoesBy[0][2] < 0)
+			//kwlee 2017.0829
+			if (m_nRear_Wait[2] < 0)
+			{
+				m_nRear_Wait[0] = GetCurrentTime();
+				break;
+			}
+			
+			if (m_nRear_Wait[2] > 5000)
+			{			
+				if (nRet == IO_ON)
+				{
+					// 150001 0 00 "ACCY_CONV_ACCY_CHK_ERR."
+					alarm.mstr_code		= "150001";
+					alarm.mn_count_mode	= 0;
+					alarm.mn_type_mode	= eWARNING;
+					st_work.nEqpStatus	= dWARNING;
+					CTL_Lib.Alarm_Error_Occurrence( 30142, CTL_dWARNING, alarm.mstr_code );
+					m_nStep_Run = 261;
+				}
 			}
 		}
 		break;
 
-	case 234:
-		OnSet_CylStopper(IO_OFF, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]
-		m_nStep_Run = 235;
+	case 280:
+		if (m_nReqOut_Front_Conv == CTL_CHANGE)
+		{		
+			OnSet_CylStopper(IO_OFF, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]
+			m_nStep_Run = 290;
+		}
 		break;
 
-	case 235:
+	case 290:
 		nRet = OnGet_CylStopper(IO_OFF,SIDE_OUT_REAR);
 		if (nRet == CTL_GOOD)
-		{ 		
-			//kwlee 2017.0717
-			if (m_nReqOutConv == CTL_FREE)
-			{
-				m_nReqOutConv = CTL_REQ;
-			}
-// 			m_nStep_Run = 100;
-			//kwlee 2017.0717
-			m_nStep_Run = 236;
-
+		{ 			
+			m_nReqOut_Front_Conv = CTL_NO;
+			m_nStep_Run = 10000;
+			
 		}
 		else if (nRet == CTL_ERROR)
 		{
 			CTL_Lib.Alarm_Error_Occurrence( 3015, CTL_dWARNING, alarm.mstr_code);
-			m_nStep_Run = 234;
+			m_nStep_Run = 280;
 		}
 		break;
+
 		
-
-	case 236:
-		if (m_nReqOutConv == CTL_READY)
-		{
-			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
-			m_nStep_Run = 240;
-		}
+	case 10000:
+		//kwlee 2017.0829
+		//stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_RESET_;
+		m_nStep_Run = 0;
 		break;
-		//////////
+
+	}
+}
+
+//kwlee 2017.0829
+void CSeq_BufferAlignConv::OnRun_OutFront_Move() 
+{
+	// 전체 사이트 복구 동작 완료 여부 확인
+	// - 모든 부분의 복구 동작이 완료된 후에만 시컨스 동작하도록 함
+	// : 복구 동작 중에 시컨스 구동하면 복구하는 영역과 충돌이 발생할 수 있음
+	if (Func.OnIsAllRcvyComplete() != CTL_YES)
+	{
+		return;
+	}
+	int nRet = VAR_INIT_;
+	int nRetData[4] = {0,};
+	int i = 0;
+	CString sTmp;
+	
+	Func.OnTrace_ThreadStep(19, m_nStep_Front_Run);
+	switch(m_nStep_Front_Run)
+	{
+	case 0:
+		//kwlee 2017.0829
+		if (stSync.nLotEnd_BufferAlignConv == TRUE)
+		{
+			nRet = Func.OnGet_UpStreamSmema();		// [상류 설비] SMEMA 상태 확인
+			if(nRet == REQ_REQUEST_ON_)
+			{
+				if (m_nReq_Completemsg == FALSE)
+				{
+					m_nReq_Completemsg = TRUE;
+					
+					g_client_accy.OnCreate_SendFormat(MAIN_ACCY_SUPPLY_COMPLETE);
+					g_client_accy.OnReq_CommStart();
+				}
+			}
+		}
 		
-		//kwlee 2017.0717 여기서는 Main 으로 Smema 통신 
-	case 240:
-		OnSet_CylStopper(IO_ON, SIDE_OUT_FRONT);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]	
-		m_nStep_Run = 241;
+		// Lot Start 상태가 될때까지 대기
+		if (st_map.nLotStart != CTL_YES)
+		{
+			break;
+		}
+		m_nReq_Completemsg = FALSE;
+		m_nStep_Front_Run = 10;
+
 		break;
 
-	case 241:
-		nRet = OnGet_CylStopper(IO_ON,SIDE_OUT_FRONT);
+	case 10:
+// 		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);//Out Conv Accy
+// 		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);
+// 		if(nRetData[0] == IO_ON && nRetData[1] == IO_ON)
+// 		//kwlee 2017.0716
+// 		if((nRetData[0] == IO_OFF && nRetData[1] == IO_OFF) ||
+// 			(nRetData[0] == IO_ON && nRetData[1] == IO_OFF))
 
-		if (nRet == CTL_GOOD)
+		//kwlee 2017.0829
+		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);//Out Conv Accy
+		if(nRetData[0] == IO_OFF) 
 		{
-			//m_nStep_Run = 250;
-			//kwlee 2017.0717
-			m_nReqOutConv = CTL_NO;
-			m_nStep_Run = 250;
+			m_nReqOut_Front_Conv = CTL_REQ;
+			m_lTime_GoesBy[3][0] = GetCurrentTime(); //kwlee 2017.0829
+			m_nStep_Front_Run = 100;
 		}
-		else if (nRet == CTL_ERROR)
+		else
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3016, CTL_dWARNING, alarm.mstr_code);
-			m_nStep_Run = 240;
+			m_lTime_GoesBy[3][1] = GetCurrentTime();
+			m_lTime_GoesBy[3][2] = m_lTime_GoesBy[3][1] - m_lTime_GoesBy[3][0];
+			//if (m_lTime_GoesBy[0][2] < 0)
+			//kwlee 2017.0829
+			if (m_lTime_GoesBy[3][2] < 0)
+			{
+				m_lTime_GoesBy[3][0] = GetCurrentTime();
+				break;
+			}
+			
+			if (m_lTime_GoesBy[3][2] > 5000)
+			{
+				// 150001 0 00 "ACCY_CONV_ACCY_CHK_ERR."
+				alarm.mstr_code		= "150001";
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+				CTL_Lib.Alarm_Error_Occurrence( 3012, CTL_dWARNING, alarm.mstr_code );
+			}
 		}
 		break;
-		//////////	
 
-	case 250:
+	case 100:
+		if (m_nReqOut_Front_Conv == CTL_READY)
+		{
+			m_nStep_Front_Run = 200;
+		}
+		break;
+		//kwlee 2017.0829
+// 	case 200:
+// 		if( st_basic.nMode_Slop_Variable == CTL_YES )
+// 		{
+// 			OnSet_CylBufferFrontTrayPitch(IO_ON);
+// 		}
+// 		else
+// 		{
+// 			OnSet_CylBufferFrontTrayPitch(IO_OFF);
+// 		}
+// 		m_nStep_Front_Run = 210;
+// 		break;
+// 		
+// 	case 210:
+// 		if( st_basic.nMode_Slop_Variable == CTL_YES )
+// 		{
+// 			nRetData[0] = OnGet_CylBufferFrontTrayPitch( IO_ON);
+// 		}
+// 		else
+// 		{
+// 			nRetData[0] = OnGet_CylBufferFrontTrayPitch( IO_OFF);
+// 		}
+// 		
+// 		if( nRetData[0] == CTL_GOOD)
+// 		{
+// 			// 테스트를 위해 Main에 공급 하지 않고 테스트를 위해 추가
+// 			if (m_nTestSupply == TRUE)
+// 			{
+// 				m_nStep_Front_Run = 220;
+// 				break;
+// 			}
+// 			
+// 			if(st_basic.n_mode_device == WITHOUT_DVC_)
+// 			{
+// 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
+// 				{
+// 					//m_lTime_GoesBy[2][0] = GetCurrentTime();
+// 					//kwlee 2017.0829
+// 					m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+// 					m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+// 					m_nStep_Front_Run = 230;
+// 					break;
+// 				}
+// 			}
+// 			else
+// 			{
+// 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
+// 				{	
+// 					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+// 					m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 					m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+// 					m_nStep_Front_Run = 230;
+// 					break;
+// 				}
+// 			}
+// 			//현재 내려와만 있는 상태.
+// 			Func.OnLogBCRData("CSeq_BufferAlignConv::OnRun_Move_210");
+// 			//m_nStep_Run = 250;
+// 			//kwlee 2017.0717
+// 			m_nStep_Front_Run = 230;
+// 		}
+// 		else if( nRetData[0] == CTL_ERROR )
+// 		{
+// 			CTL_Lib.Alarm_Error_Occurrence( 3013, CTL_dWARNING, alarm.mstr_code );
+// 			m_nStep_Front_Run = 200;
+// 		}
+// 		break;
+
+		// 테스트를 위해 Main에 공급 하지 않고 테스트를 위해 추가
+		//kwlee 2017.0829 del
+// 	case 220:
+// 		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
+// 		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+// 		//kwlee 2017.0716 del 사용 않함.
+// 	//	nRetData[2] = OnCheck_OutAccySupply(IO_ON);		// Buffer Conv Out 확인
+// 		
+// 		//if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
+// 		//kwlee 2017.0716
+// 		if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
+// 		{
+// 			memset(st_map.nBufferOutAccyExist, ACCY_NO_, sizeof(st_map.nBufferOutAccyExist));
+// 			
+// 			m_nStep_Run = 230;
+// 		}
+// 		break;
+	
+	//kwlee 2017.0717
+		//모터 구동 후 확인 하여 자재 감지 안되었을 경우 재가동.
+	case 200:
+		nRet = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		if (nRet == IO_OFF)
+		{
+			//kwlee 2017.0831
+ 			OnMove_AcMotor(AC_MV_CW_);	// AC ¸ðAI ±¸μ¿/A¤Ao
+			m_nFront_Wait[0] = GetCurrentTime();
+			//
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+			m_nStep_Front_Run = 210;
+		}
+		else
+		{	
+			m_nStep_Front_Run = 210;
+		}
+		break;
+
+	case 210:
+		//nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);
+		//nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		//kwlee 2017.0831
+		nRet = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
+		if (nRet == IO_ON)
+		{
+			OnMove_AcMotor(AC_MV_STOP_);
+			m_nReqOut_Front_Conv = CTL_CHANGE;
+			m_nStep_Front_Run = 220;
+		}
+		else
+		{
+			m_nFront_Wait[1] = GetCurrentTime();
+			m_nFront_Wait[2] = m_nFront_Wait[1] - m_nFront_Wait[0];
+
+			if (m_nFront_Wait[2] < 0)
+			{
+				m_nFront_Wait[0] = GetCurrentTime();
+				break;
+			}
+			if (m_nFront_Wait[2] > 10000)
+			{
+				if (nRet == IO_OFF)
+				{
+					// 150001 0 00 "ACCY_CONV_ACCY_CHK_ERR."
+					alarm.mstr_code		= "150001";
+					alarm.mn_count_mode	= 0;
+					alarm.mn_type_mode	= eWARNING;
+					st_work.nEqpStatus	= dWARNING;
+					CTL_Lib.Alarm_Error_Occurrence( 30121, CTL_dWARNING, alarm.mstr_code );
+					m_nStep_Front_Run = 200;
+				}
+			}
+		}
+// 			if (nRetData[1] == IO_OFF)
+// 			{
+// 				if (nRetData[0] == IO_ON)
+		//kwlee 2017.0829
+// 			if (nRetData[1] == IO_ON)
+// 			{
+// 				if (nRetData[0] == IO_OFF)
+// 				{
+// 				//	m_nReqOutConv = CTL_NO;
+// 					//m_nStep_Run = 240;
+// 					//kwlee 2017.0829
+// 					m_nStep_Run = 232;
+// 				}
+// 				else
+// 				{
+// 					//Rear,Front에 모두 자재 감지 않된 상태.
+// 					m_nStep_Run = 230;
+// 				}
+// 			}
+// 			else 
+// 			{
+// 				//Rear 자재 감지 센서 감지 되면.
+// 				if (nRetData[0] == IO_OFF) //FRont 감지 확인 시 자재 없음..
+// 				{
+// 					//자재 없으면 Rear Stopper 내려서 Front Conv로 보내면 되고.
+// 					//m_nReqOutConv = Change신호로 바꾸자.
+// 					//kwlee 2017.0827 del
+// 					//OnSet_CylStopper(IO_ON, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]	
+// 					m_nStep_Run = 232;
+// 				}
+// 				else
+// 				{
+// 					//Front Conv자재가 있으면 Main으로 넘기자
+// 				//	m_nReqOutConv = CTL_NO;
+// 					//m_nStep_Run = 240;
+// 					//kwlee 2017.0829
+// 					m_nStep_Run = 250;
+// 				}
+// 			}
+		break;
+
+	case 220:
 		if (st_work.nSkipReq_OutBufferConv[SIDE_OUT_FRONT] == CTL_YES)
 		{
 			st_map.nBufferOutAccyExist[0] = ACCY_NO_;
@@ -993,37 +1355,22 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			st_work.sBufferOutConvBCR_Data[0] = "";
 			st_work.sBufferOutConvBCR_Data[1] = "";
 			st_work.nSkipReq_OutBufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 370;
-			break;
-		}
-		if( st_work.nSkipReq_OutBufferConv[SIDE_OUT_FRONT] == CTL_YES &&
-			st_work.nSkipReq_OutBufferConv[SIDE_OUT_REAR] == CTL_YES )
-		{
-			st_map.nBufferOutAccyExist[0] = ACCY_NO_;
-			st_map.nBufferOutAccyExist[1] = ACCY_NO_;
-			st_map.nBufferOutAccyExist[2] = ACCY_NO_;
-			st_map.nBufferOutAccyExist[3] = ACCY_NO_;
-			st_work.sBufferOutConvBCR_Data[0] = "";
-			st_work.sBufferOutConvBCR_Data[1] = "";
-			st_work.sBufferOutConvBCR_Data[2] = "";
-			st_work.sBufferOutConvBCR_Data[3] = "";
-			st_work.nSkipReq_OutBufferConv[SIDE_OUT_FRONT] = CTL_NO;
-			st_work.nSkipReq_OutBufferConv[SIDE_OUT_REAR] = CTL_NO;
-			
-			m_nStep_Run = 700;
+			m_nStep_Front_Run = 370;
 			break;
 		}
 
 		// [상류 설비] SMEMA 상태 확인
 		//[상류 설비에서 요청 상태 이면.
 		nRet = Func.OnGet_UpStreamSmema();		
-		if( nRet == REQ_REQUEST_ON_ )
+		//if(nRet == REQ_REQUEST_ON_ )
+		//kwlee 2017.0830 Test
+		if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING || nRet == REQ_REQUEST_ON_ )
 		{
 			// SLAVE_MODE(TOP)의 경우 Accy Math 코드를 하지 않음.
 			// BCR가 없으므로 공급 진행.
 			if (st_basic.nMode_SupplyMode == SLAVE_MODE)
 			{
-				m_nStep_Run = 255;
+				m_nStep_Front_Run = 230;
 			}
 			else
 			{
@@ -1033,8 +1380,7 @@ void CSeq_BufferAlignConv::OnRun_Move()
 					if (st_work.m_sCurrntAccyMathCode == st_work.sBufferConvBCR_Data[0] &&
 						st_work.m_sCurrntAccyMathCode == st_work.sBufferConvBCR_Data[1])
 					{
-					
-						m_nStep_Run = 255;
+						m_nStep_Front_Run = 230;
 					}
 					else
 					{
@@ -1051,36 +1397,66 @@ void CSeq_BufferAlignConv::OnRun_Move()
 		}
 		break;
 
+		//kwlee 2017.0829
+	case 230:
+		OnSet_CylStopper(IO_ON, SIDE_OUT_FRONT);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]	
+		m_nStep_Front_Run = 240;
+		break;
+		
+	case 240:
+		nRet = OnGet_CylStopper(IO_ON,SIDE_OUT_FRONT);
+		if (nRet == CTL_GOOD)
+		{
+			m_nStep_Front_Run = 250;
+		}
+		else if (nRet == CTL_ERROR)
+		{
+			CTL_Lib.Alarm_Error_Occurrence( 30171, CTL_dWARNING, alarm.mstr_code);
+			m_nStep_Front_Run = 230;
+		}
+		break;
+		///
+
 		//상류 설비에서 Req받았으면
 		//Ready 신호 주면서 Motor On 자재 보낸다.
-	case 255:
+	case 250:
 		nRet = Func.OnGet_UpStreamSmema();		// [상류 설비] SMEMA 상태 확인
-		if( nRet == REQ_REQUEST_ON_ )
+		//if(nRet == REQ_REQUEST_ON_ )
+		//kwlee 2017.0830 Test
+		if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING || nRet == REQ_REQUEST_ON_ )
 		{
 			Func.OnSet_UpStreamSmema( RDY_READY_ON_ );
 			OnMove_AcMotor( AC_MV_CW_);
-			m_lTime_GoesBy[2][0] = GetCurrentTime();
-			m_nStep_Run = 260;
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+			m_lTime_GoesBy[3][0] = GetCurrentTime();
+			m_nStep_Front_Run = 260;
 		}
 		break;
 
 	case 260:
+		m_lTime_GoesBy[3][1] = GetCurrentTime();
+		m_lTime_GoesBy[3][2] = m_lTime_GoesBy[3][1] - m_lTime_GoesBy[3][0];
+		if (m_lTime_GoesBy[3][2] < 0)
+		{
+			m_lTime_GoesBy[3][0] = GetCurrentTime();
+			break;
+		}
+		
+		//kwlee 2017.0901
+		if (m_lTime_GoesBy[3][2] < 10000 )
+		{
+			break;
+		}
 		if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 		{
-			m_lTime_GoesBy[2][1] = GetCurrentTime();
-			m_lTime_GoesBy[2][2] = m_lTime_GoesBy[2][1] - m_lTime_GoesBy[2][0];
-			if (m_lTime_GoesBy[2][2] < 0)
-			{
-				m_lTime_GoesBy[0][0] = GetCurrentTime();
-				break;
-			}
 			
 			// [WithOut] 모드인지 확인
 			// - 자재가 없기 때문에 센서에 감지되지 않음
 			// - 센서를 보고 멈출 수 있는 조건이 아니므로 일정 시간 후에 강제로 멈춤
 			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
-				if (m_lTime_GoesBy[2][2] >= (MAX_WAIT_ACCY_BOX_CONV_ / 5))
+				if (m_lTime_GoesBy[3][2] >= (MAX_WAIT_ACCY_BOX_CONV_ / 5))
 				{
 					st_map.nBufferOutAccyExist[0] = ACCY_NO_;
 					st_map.nBufferOutAccyExist[1] = ACCY_NO_;
@@ -1093,25 +1469,26 @@ void CSeq_BufferAlignConv::OnRun_Move()
 						st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
 					}
 					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
-					m_nStep_Run = 300;
+					m_nStep_Front_Run = 300;
 				}
 			}
 			else
 			{
-				if(m_nReq_AcMotCtrl == REQ_MV_RESET_)
+// 				if(m_nReq_AcMotCtrl == REQ_MV_RESET_)
+// 				{
+				st_map.nBufferOutAccyExist[0] = ACCY_NO_;
+				st_map.nBufferOutAccyExist[1] = ACCY_NO_;
+				st_work.sBufferOutConvBCR_Data[0] = "";
+				st_work.sBufferOutConvBCR_Data[1] = "";
+				
+				if (st_handler.cwnd_main != NULL)
 				{
-					st_map.nBufferOutAccyExist[0] = ACCY_NO_;
-					st_map.nBufferOutAccyExist[1] = ACCY_NO_;
-					st_work.sBufferOutConvBCR_Data[0] = "";
-					st_work.sBufferOutConvBCR_Data[1] = "";
-					
-					if (st_handler.cwnd_main != NULL)
-					{
-						// Buffer Cov 자재 존재 상태 표시 요청
-						st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
-					}
-					m_nStep_Run = 300;
+					// Buffer Cov 자재 존재 상태 표시 요청
+					st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
 				}
+				OnMove_AcMotor(AC_MV_STOP_); //kwlee 2017.0831
+				m_nStep_Front_Run = 300;
+				//}
 			}
 		}
 		else
@@ -1132,7 +1509,7 @@ void CSeq_BufferAlignConv::OnRun_Move()
 					st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
 				}
 				Func.OnSet_UpStreamSmema(RDY_READY_OFF_);	// [상류 설비] SMEMA 상태 설정
-				m_nStep_Run = 300;
+				m_nStep_Front_Run = 300;
 			}
 		}
 		break;
@@ -1153,7 +1530,7 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			st_map.nResp_AccyReadyCNT -= 2;
 			g_client_accy.OnCreate_SendFormat(MAIN_SUPPLY_READY_CNT);
 			g_client_accy.OnReq_CommStart();
-			m_nStep_Run = 310;
+			m_nStep_Front_Run = 310;
 		}
 		else if (nRet == IO_ON && st_map.nBufferOutAccyExist[0] == ACCY_NO_ && st_map.nBufferOutAccyExist[1] == ACCY_NO_)
 		{
@@ -1168,8 +1545,7 @@ void CSeq_BufferAlignConv::OnRun_Move()
 
 	case 310:				
 		OnSet_CylStopper(IO_OFF, SIDE_OUT_FRONT);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]
-		m_nStep_Run = 320;
-		
+		m_nStep_Front_Run = 320;
 		break;
 
 		//Front Conv Stopper Up
@@ -1181,10 +1557,10 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			{
 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 				{
-					m_lTime_GoesBy[2][0] = GetCurrentTime();
-					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-					m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
-					m_nStep_Run = 380;
+					//m_lTime_GoesBy[2][0] = GetCurrentTime();
+					//OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
+				//	m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
+					m_nStep_Front_Run = 10000;
 					break;
 				}
 			}
@@ -1192,348 +1568,54 @@ void CSeq_BufferAlignConv::OnRun_Move()
 			{
 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 				{
-					m_lTime_GoesBy[2][0] = GetCurrentTime();
-					OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-					m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
-					m_nStep_Run = 380;
+					//m_lTime_GoesBy[2][0] = GetCurrentTime();
+// 					OnMove_AcMotor(AC_MV_CW_);	// AC ¸ðAI ±¸μ¿/A¤Ao
+// 					m_nReq_AcMotCtrl = REQ_MV_ACCY_OUT_;
+					m_nStep_Front_Run = 10000;
 					break;
 				}
 			}
 			//m_nStep_Run = 370;
-			m_nStep_Run = 330;
+			m_nStep_Front_Run = 10000;
 		}
 		else if (nRet == CTL_ERROR)
 		{
-			m_nStep_Run = 310;
+			m_nStep_Front_Run = 310;
 		}
 		break;
 
-		//kwlee 2017.0717
-	case 330:
-		//nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
-		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-	
-		//Rear Conv 대기 하고 있는 자재가 있으면 Front Conv로 이동 시킨다.
-		if (nRetData[1] == IO_ON)
-		{
-			OnSet_CylStopper(IO_ON,SIDE_OUT_REAR);
-			m_nStep_Run = 360;
-		}
-		else
-		{
-			//Rear Conv 자재 감지 되지 않으면 한번더 확인.
-			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
-			m_nStep_Run = 331;
-		}
-		break;
-
-	case 331:
-		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-
-		if (nRetData[1] == IO_ON)
-		{
-			m_nStep_Run = 350;
-		}
-		else
-		{
-			m_nStep_Run = 10000;
-		}
-		break;
-
-	case 350:
-		OnSet_CylStopper(IO_ON,SIDE_OUT_REAR);
-		m_nStep_Run = 360;
-		break;
-
-	case 360:
-		nRet = OnGet_CylStopper(IO_ON,SIDE_OUT_REAR);
-
-		if (nRet == CTL_GOOD)
-		{
-			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
-
-			m_nStep_Run = 800;
-			//kwlee 2017.0718
-			//m_nStep_Run = 370;
-			
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			CTL_Lib.Alarm_Error_Occurrence( 3019, CTL_dWARNING, alarm.mstr_code );
-			m_nStep_Run = 350;
-		}
-		break;
-
-
-
-	
-// 	case 370:
-// 		if (st_work.nSkipReq_OutBufferConv[SIDE_REAR_] == CTL_YES)
-// 		{
-// 			st_map.nBufferOutAccyExist[2] = ACCY_NO_;
-// 			st_map.nBufferOutAccyExist[3] = ACCY_NO_;
-// 			st_work.sBufferOutConvBCR_Data[2] = "";
-// 			st_work.sBufferOutConvBCR_Data[3] = "";
-// 			st_work.nSkipReq_OutBufferConv[SIDE_REAR_] = CTL_NO;
-// 			m_nStep_Run = 700;
-// 			break;
-// 		}
-// 		
-// 		nRet = Func.OnGet_UpStreamSmema();		// [상류 설비] SMEMA 상태 확인
-// 		if(nRet == REQ_REQUEST_ON_)
-// 		{
-// 			// SLAVE_MODE(TOP)의 경우 Accy Math 코드를 하지 않음.
-// 			// BCR가 없으므로 공급 진행.
-// 			if (st_basic.nMode_SupplyMode == SLAVE_MODE)
-// 			{
-// 				m_nStep_Run = 375;
-// 			}
-// 			else
-// 			{
-// 				if (st_work.m_sCurrntAccyMathCode != "")
-// 				{
-// 					if (st_work.m_sCurrntAccyMathCode == st_work.sBufferOutConvBCR_Data[2] &&
-// 						st_work.m_sCurrntAccyMathCode == st_work.sBufferOutConvBCR_Data[3])
-// 					{
-// 						m_nStep_Run = 375;
-// 
-// 					}
-// 					else
-// 					{
-// 						Func.OnLogBCRData("CSeq_BufferAlignConv::OnRun_Move_370");
-// 						// 145000 0 00 "ACCY_CONV_ACCY_BCR_DATA_MISS_MATH."
-// 						alarm.mstr_code		= "145001";
-// 						alarm.mn_count_mode	= 0;
-// 						alarm.mn_type_mode	= eWARNING;
-// 						st_work.nEqpStatus	= dWARNING;
-// 						CTL_Lib.Alarm_Error_Occurrence( 4000, CTL_dWARNING, alarm.mstr_code );
-// 					}
-// 				}
-// 			}
-// 		}
+// 	case 350:
+// 		OnSet_CylStopper(IO_ON,SIDE_OUT_REAR);
+// 		m_nStep_Front_Run = 360;
 // 		break;
 // 
-// 	case 375:
-// 		nRet = Func.OnGet_UpStreamSmema();		// [상류 설비] SMEMA 상태 확인
-// 		if(nRet == REQ_REQUEST_ON_)
+// 	case 360:
+// 		nRet = OnGet_CylStopper(IO_ON,SIDE_OUT_REAR);
+// 
+// 		if (nRet == CTL_GOOD)
 // 		{
-// 			Func.OnSet_UpStreamSmema(RDY_READY_ON_);	// [상류 설비] SMEMA 상태 설정
-// 			OnMove_AcMotor(AC_MV_CW_);	// AC 모터 구동/정지
-// 			m_lTime_GoesBy[2][0] = GetCurrentTime();
-// 			m_nStep_Run = 380;
-// 		}
-// 		break;
-// // 		
-// 	case 380:
-// 		if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
-// 		{
-// 			m_lTime_GoesBy[2][1] = GetCurrentTime();
-// 			m_lTime_GoesBy[2][2] = m_lTime_GoesBy[2][1] - m_lTime_GoesBy[2][0];
-// 			if (m_lTime_GoesBy[2][2] < 0)
-// 			{
-// 				m_lTime_GoesBy[0][0] = GetCurrentTime();
-// 				break;
-// 			}
+// 			OnMove_AcMotor(AC_MV_CW_);	// AC ¸ðAI ±¸μ¿/A¤Ao
+// 			m_lTime_GoesBy[0][0] = GetCurrentTime(); //kwlee 2017.0829
+// 			m_nReq_AcMotCtrl = REQ_MV_STABILITY_;
+// 
+// 			m_nStep_Front_Run = 800;
+// 			//kwlee 2017.0718
+// 			//m_nStep_Run = 370;
 // 			
-// 			// [WithOut] 모드인지 확인
-// 			// - 자재가 없기 때문에 센서에 감지되지 않음
-// 			// - 센서를 보고 멈출 수 있는 조건이 아니므로 일정 시간 후에 강제로 멈춤
-// 			if (st_basic.n_mode_device == WITHOUT_DVC_)
-// 			{
-// 				if (m_lTime_GoesBy[2][2] >= (MAX_WAIT_ACCY_BOX_CONV_ / 5))
-// 				{
-// 					st_map.nBufferOutAccyExist[2] = ACCY_NO_;
-// 					st_map.nBufferOutAccyExist[3] = ACCY_NO_;
-// 					st_work.sBufferOutConvBCR_Data[2] = "";
-// 					st_work.sBufferOutConvBCR_Data[3] = "";
-// 					
-// 					if (st_handler.cwnd_main != NULL)
-// 					{
-// 						// Buffer Cov 자재 존재 상태 표시 요청
-// 						st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
-// 					}
-// 					OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
-// 					m_nStep_Run = 500;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				if(m_nReq_AcMotCtrl == REQ_MV_RESET_)
-// 				{
-// 					st_map.nBufferOutAccyExist[2] = ACCY_NO_;
-// 					st_map.nBufferOutAccyExist[3] = ACCY_NO_;
-// 					st_work.sBufferOutConvBCR_Data[2] = "";
-// 					st_work.sBufferOutConvBCR_Data[3] = "";
-// 					
-// 					if (st_handler.cwnd_main != NULL)
-// 					{
-// 						// Buffer Cov 자재 존재 상태 표시 요청
-// 						st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
-// 					}
-// 					m_nStep_Run = 500;
-// 				}
-// 			}
 // 		}
-// 		else
+// 		else if (nRet == CTL_ERROR)
 // 		{
-// 			nRet = g_ioMgr.get_in_bit(stIO.i_Chk_ReqFromMain);		// [Conv<-Mani] 자재 공급 완료를 기다림
-// 			if (nRet == IO_OFF)
-// 			{
-// 				OnMove_AcMotor(AC_MV_STOP_);	// AC 모터 구동/정지
-// 				st_map.nBufferOutAccyExist[2] = ACCY_NO_;
-// 				st_map.nBufferOutAccyExist[3] = ACCY_NO_;
-// 				st_work.sBufferOutConvBCR_Data[2] = "";
-// 				st_work.sBufferOutConvBCR_Data[3] = "";
-// 				
-// 				if (st_handler.cwnd_main != NULL)
-// 				{
-// 					// Buffer Cov 자재 존재 상태 표시 요청
-// 					st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BUFFER_CONV_);
-// 				}
-// 				Func.OnSet_UpStreamSmema(RDY_READY_OFF_);	// [상류 설비] SMEMA 상태 설정
-// 				m_nStep_Run = 500;
-// 			}
+// 			CTL_Lib.Alarm_Error_Occurrence( 3019, CTL_dWARNING, alarm.mstr_code );
+// 			m_nStep_Front_Run = 350;
 // 		}
 // 		break;
-// 
-// 	case 500:
-// 		//nRet = OnCheck_RearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-// 		//kwlee 2017.0717
-// 		nRet = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-// 		if (st_basic.n_mode_device == WITHOUT_DVC_)
-// 		{
-// 			if (st_map.nBufferOutAccyExist[2] == ACCY_NO_ && st_map.nBufferOutAccyExist[3] == ACCY_NO_)
-// 			{
-// 				nRet = IO_OFF;
-// 			}
-// 		}		
-// 		if(nRet == IO_OFF && st_map.nBufferOutAccyExist[2] == ACCY_NO_ && st_map.nBufferOutAccyExist[3] == ACCY_NO_)
-// 		{
-// 			st_map.nResp_AccyReadyCNT -= 2;
-// 			g_client_accy.OnCreate_SendFormat(MAIN_SUPPLY_READY_CNT);
-// 			g_client_accy.OnReq_CommStart();
-// 			m_nStep_Run = 700;
-// 		}
-// 		else if (nRet == IO_ON && st_map.nBufferOutAccyExist[2] == ACCY_NO_ && st_map.nBufferOutAccyExist[3] == ACCY_NO_)
-// 		{
-// 			// 142000 0 00 "PS1106_PS1107_PS1108_PS1109_ACCY_CONV_ACCY_EXSIT_CHK_ERR."
-// 			alarm.mstr_code		= "142000";
-// 			alarm.mn_count_mode	= 0;
-// 			alarm.mn_type_mode	= eWARNING;
-// 			st_work.nEqpStatus	= dWARNING;
-// 			CTL_Lib.Alarm_Error_Occurrence( 4000, CTL_dWARNING, alarm.mstr_code);
-// 		}
-// 		break;
-// // 
-// 	case 700:
-// 		nRetData[0] = OnCheck_OutFrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
-// 		nRetData[1] = OnCheck_OutRearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
-// 
-// 		//kwlee 2017.0717 del IO map상 없음.
-// 		//nRetData[2] = OnCheck_OutAccySupply(IO_ON);		// Buffer Conv Out 확인
-// 		
-// 		if (st_basic.n_mode_device == WITHOUT_DVC_)
-// 		{
-// 			if (st_map.nBufferOutAccyExist[0] == ACCY_NO_ && st_map.nBufferOutAccyExist[1] == ACCY_NO_)
-// 			{
-// 				nRetData[0] = IO_OFF;
-// 			}
-// 			if (st_map.nBufferOutAccyExist[2] == ACCY_NO_ && st_map.nBufferOutAccyExist[3] == ACCY_NO_)
-// 			{
-// 				nRetData[1] = IO_OFF;
-// 				
-// 			}
-// 			if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
-// 			{
-// 				nRetData[2] = IO_OFF;
-// 			}
-// 		}
-// 		
-// 		//if(nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
-// 		//kwlee 2017.0717
-// 		if(nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
-// 		{
-// 			m_nStep_Run = 800;
-// 		}
-// 		break;
-// 
-	case 800:
-		if( st_basic.nMode_Slop_Variable == CTL_YES )
-		{
-			OnSet_CylBufferFrontTrayPitch(IO_ON);
-			OnSet_CylBufferRearTrayPitch(IO_ON);
-		}
-		else
-		{
-			OnSet_CylBufferFrontTrayPitch(IO_OFF);
-			OnSet_CylBufferRearTrayPitch(IO_OFF);
-		}
-		
-		m_nStep_Run = 810;
-		break;
-		
-	case 810:
-		if( st_basic.nMode_Slop_Variable == CTL_YES )
-		{
-			nRetData[0] = OnGet_CylBufferFrontTrayPitch( IO_ON );
-			nRetData[1] = OnGet_CylBufferRearTrayPitch( IO_ON );
-			if( nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD )
-			{
-				m_nStep_Run = 900;
-			}
-			else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
-			{
-				CTL_Lib.Alarm_Error_Occurrence( 3020, CTL_dWARNING, alarm.mstr_code);
-			}
-		}
-		else
-		{
-			nRetData[0] = OnGet_CylBufferFrontTrayPitch( IO_OFF );
-			nRetData[1] = OnGet_CylBufferRearTrayPitch( IO_OFF );
-			if( nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD )
-			{
-				m_nStep_Run = 900;
-			}
-			else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
-			{
-				CTL_Lib.Alarm_Error_Occurrence( 3021, CTL_dWARNING, alarm.mstr_code);
-			}
-		}
-		break;
 
 
-	case 900:
-		//OnSet_CylStopper(IO_ON, SIDE_FRONT_);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]
-		//kwlee 2017.0717
-		OnSet_CylStopper(IO_OFF, SIDE_OUT_REAR);		// 악세사리 스토퍼 [ON:UP, OFF:DOWN]
-		//OnSet_CylBufferTrayPathAlign(IO_ON);		// Accy를 보급 또는 공급을 위해 Buffer Tray Path를 변경 하는 실린더 [ON:Up, OFF:Down]
-		m_nStep_Run = 910;
-		break;
-		
-	case 910:
-		//nRetData[0] = OnGet_CylStopper(IO_ON);
-		//kwlee 2017.0712
-		//nRetData[0] = OnGet_CylStopper(IO_ON, SIDE_FRONT_);
-		//kwlee 2017.0717
-		nRetData[0] = OnGet_CylStopper(IO_OFF, SIDE_OUT_REAR);
-
-		//nRetData[1] = OnGet_CylBufferTrayPathAlign(IO_ON);
-		
-		if(nRetData[0] == CTL_GOOD /*&& nRetData[1] == CTL_GOOD*/)
-		{
-			m_nStep_Run = 10000;
-		}
-		else if(nRetData[0] == CTL_ERROR/* || nRetData[0] == CTL_ERROR*/)
-		{
-			m_nStep_Run = 900;
-		}
-		break;
 		
 	case 10000:
-		stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_RESET_;
-		m_nStep_Run = 0;
+		//kwlee 2017.0829
+		//stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_RESET_;
+		m_nStep_Front_Run = 0;
 		break;
 
 	}
@@ -1605,7 +1687,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		}
 		else if(nRetData[0] == CTL_ERROR)
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3022, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4003, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_RunReady = 30;
 		}
 		break;
@@ -1659,12 +1741,13 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 3023, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4004, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_RunReady = 80;
 		}
 		break;
 		
 		
+		//Slope Buffer 센서 감지 확인.
 	case 100:
 		nRetData[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][0]);
 		nRetData[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][1]);
@@ -1687,10 +1770,11 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		break;
 
 	case 600:
-		// [Buffer Conv -> XYZRbt] Work Complete 요청 대기
-		//Place 완료 후 XYZ Robot이  SYNC_REQ_WORK_COMPLETE_ 준다.
+		
+		//Place 완료 후 XYZ Robot이 Ready Conv SYNC_REQ_WORK_COMPLETE_ 준다.
 		if(stSync.nReq_XYZRbt2BufferAlaignConv_Work == SYNC_REQ_WORK_COMPLETE_)
 		{
+			
 			m_nAccySupply = 2;
 			m_lTime_GoesBy[1][0] = GetCurrentTime();
 			m_nStep_RunReady = 610;
@@ -1698,13 +1782,15 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		break;
 
 	case 610:
-		//Front, Rear 모두 감지 상태.
+		//Slope Buffer Front, Rear 모두 감지 상태.
 		nRetData[0] = OnCheck_FrontAccySupply(IO_ON);//Buffer Accy
 		nRetData[1] = OnCheck_RearAccySupply(IO_ON);
 		if(nRetData[0] == IO_ON && nRetData[1] == IO_ON)
 		{
-			stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_WORK_;//얜 머지? 
-			m_nStep_Run = 700;
+			//정상 적으로 Place 상태.
+			//stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_WORK_; 
+			stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_RESET_; //kwlee 2017.0914
+			m_nStep_RunReady = 700;
 		}
 		else
 		{
@@ -1719,13 +1805,19 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			if (m_lTime_GoesBy[1][2] > 500)
 			{
 				// 150301 0 00 "PS1008_PS1009_OUT_FRONT_LOST_ACCY_ERR."
-				// 150401 0 00 "PS1010_PS1011_OUT_REAR_LOST_ACCY_ERR."
-				if(nRetData[0] != IO_ON )	alarm.mstr_code = "150301";
-				else                        alarm.mstr_code = "150401";
+// 				// 150401 0 00 "PS1010_PS1011_OUT_REAR_LOST_ACCY_ERR."
+// 				if(nRetData[0] != IO_ON )	alarm.mstr_code = "150301";
+// 				else                        alarm.mstr_code = "150401";
+				
+				//kwlee 2017.0831
+			//	150001 0 00 "PS1406_PS1407_BUFFER_FRONT_ACCY_ON_CHK_ERR."
+			//	150101 0 00 "PS1408_PS1409_BUFFER_REAR_ACCY_ON_CHK_ERR."	
+				if(nRetData[0] != IO_ON )	alarm.mstr_code = "150001";
+				else                        alarm.mstr_code = "150101";
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
-				CTL_Lib.Alarm_Error_Occurrence( 4000, CTL_dWARNING, alarm.mstr_code );
+				CTL_Lib.Alarm_Error_Occurrence( 4005, CTL_dWARNING, alarm.mstr_code );
 			}
 		}
 		break;
@@ -1746,7 +1838,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		else if(nRetData[0] == CTL_ERROR)
 		{
 			//Slope Cylinder Down 안됬으면.
-			CTL_Lib.Alarm_Error_Occurrence( 3024, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4006, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_RunReady = 1100;
 		}
 		break;
@@ -1766,7 +1858,8 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 // 		}
 // 		break;
 
-		//이건 머지?? 가변 Cylinder 체크해서 Left,Right Close 되어 있으면..
+		//가변 Cylinder 체크해서 Left,Right Close 되어 있으면..
+		//Slope 가변실린더 변경.
 	case 1000:
 		{
 			int nReadIO[4] = {0,};
@@ -1820,16 +1913,19 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 				{
 					if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 					{
-						m_nStep_RunReady = 260;
+						//m_nStep_RunReady = 260;
+						//kwlee 2017.0825
+						m_nStep_RunReady = 1010;
 						break;
 					}
 				}
-				
 				Func.OnLogBCRData("CSeq_BufferAlignConv::OnRun_Move_210");
-				m_nStep_RunReady = 250;
+				m_nStep_RunReady = 1010;
 			}
 			else
 			{
+
+				//가변 실린더 변경.
 				if( st_basic.nMode_Slop_Variable == CTL_YES )
 				{
 					OnSet_CylBufferRearTrayPitch(IO_ON);
@@ -1844,6 +1940,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		break;
 
 	case 1010:
+		//가변 실린더 변경 확인.
 		if( st_basic.nMode_Slop_Variable == CTL_YES )
 		{
 			nRet = OnGet_CylBufferRearTrayPitch( IO_ON);
@@ -1874,22 +1971,24 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			{
 				if(st_basic.nMode_SMEMAUsing == SMEMA_NOT_USING)
 				{
-					m_nStep_RunReady = 260;
+					//m_nStep_RunReady = 260;
+					//kwlee 2017.0825
+					m_nStep_RunReady = 1100;
 					break;
 				}
 			}			
 			Func.OnLogBCRData("CSeq_BufferAlignConv::OnRun_MoveReady_1010");
-			m_nStep_RunReady = 1200;
+			m_nStep_RunReady = 1100;
 			
 		}
 		else if( nRet == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3025, CTL_dWARNING, alarm.mstr_code );
-			m_nStep_RunReady = 200;
+			CTL_Lib.Alarm_Error_Occurrence( 4007, CTL_dWARNING, alarm.mstr_code );
+			m_nStep_RunReady = 1000;
 		}
 		break;
 
-		//감지 센서. Frontleft : 1406 Front Right : 1407 RearRight : 1408 RearLeft : 1409
+		//Slope Down 후 감지 센서. Frontleft : 1406 Front Right : 1407 RearRight : 1408 RearLeft : 1409
 	case 1100:
 		nRetData[0] = OnCheck_FrontAccySupply(IO_ON);
 		nRetData[1] = OnCheck_RearAccySupply(IO_ON);
@@ -1898,7 +1997,14 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		if (nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
 		{
 			memset(st_map.nBufferCovAccyExist, ACCY_NO_, sizeof(st_map.nBufferCovAccyExist));
+			
 			m_nStep_RunReady = 4000;
+		}
+		//kwlee 2017.0825
+		//Slope 자재 감지시.
+		else if (nRetData[0] == IO_ON && nRetData[1] == IO_ON)
+		{
+			m_nStep_RunReady = 1200;
 		}
 		break;
 	
@@ -1918,7 +2024,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
 			m_nAccySupply = 0;			
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES)
@@ -1929,7 +2035,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			m_nAccySupply--;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_REAR_] == CTL_YES)
@@ -1940,18 +2046,21 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			m_nAccySupply--;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 
 		
 		//st_work.m_sAccyMathCode = "LA69-01773A";
+		
 		if (st_work.m_sCurrntAccyMathCode != "")
 		{
-			if (st_work.m_sCurrntAccyMathCode == st_work.sBufferConvBCR_Data[0] &&
+			if ( st_work.m_sCurrntAccyMathCode == st_work.sBufferConvBCR_Data[0] &&
 				st_work.m_sCurrntAccyMathCode == st_work.sBufferConvBCR_Data[1])
 			{
-				m_nStep_Run = 2000;
+				//m_nStep_RunReady = 2000;
+				//kwlee 2017.0829
+				m_nStep_RunReady = 2100;
 			}
 			else
 			{
@@ -1961,44 +2070,45 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
-				CTL_Lib.Alarm_Error_Occurrence( 3026, CTL_dWARNING, alarm.mstr_code );
+				CTL_Lib.Alarm_Error_Occurrence( 4008, CTL_dWARNING, alarm.mstr_code );
 			}
 		}
 		break;
 
-	case 1800:
-		OnSet_CylBufferTrayPathAlign(IO_OFF);		// Accy를 보급 또는 공급을 위해 Buffer Tray Path를 변경 하는 실린더 [ON:Up, OFF:Down]
-		m_nStep_RunReady = 1900;
-		break;
-		
-	case 1900:
-		nRetData[0] = OnGet_CylBufferTrayPathAlign(IO_OFF);
-		
-		if(nRetData[0] == CTL_GOOD)
-		{
-			m_nStep_RunReady = 2000;
-		}
-		else if(nRetData[0] == CTL_ERROR)
-		{
-			CTL_Lib.Alarm_Error_Occurrence( 3027, CTL_dWARNING, alarm.mstr_code );
-			m_nStep_RunReady = 1800;
-		}
-		break;
-
-		//Slope 다운 상태 확인.
-	case 2000:
-		nRetData[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryPathAlignUp, IO_OFF);
-		nRetData[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryPathAlignDn, IO_ON);
-
-		if( nRetData[0] == IO_OFF && nRetData[1] == IO_ON )
-		{
-			m_nStep_RunReady = 2100;
-		}
-		else
-		{
-			m_nStep_RunReady = 1900;
-		}
-		break;
+		//kwlee 2017.0829 이미 위에서 SLope Down 상태.
+// 	case 1800:
+// 		OnSet_CylBufferTrayPathAlign(IO_OFF);		// Accy를 보급 또는 공급을 위해 Buffer Tray Path를 변경 하는 실린더 [ON:Up, OFF:Down]
+// 		m_nStep_RunReady = 1900;
+// 		break;
+// 		
+// 	case 1900:
+// 		nRetData[0] = OnGet_CylBufferTrayPathAlign(IO_OFF);
+// 		
+// 		if(nRetData[0] == CTL_GOOD)
+// 		{
+// 			m_nStep_RunReady = 2000;
+// 		}
+// 		else if(nRetData[0] == CTL_ERROR)
+// 		{
+// 			CTL_Lib.Alarm_Error_Occurrence( 4009, CTL_dWARNING, alarm.mstr_code );
+// 			m_nStep_RunReady = 1800;
+// 		}
+// 		break;
+// 
+// 		//Slope 다운 상태 확인.
+// 	case 2000:
+// 		nRetData[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryPathAlignUp, IO_OFF);
+// 		nRetData[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryPathAlignDn, IO_ON);
+// 
+// 		if( nRetData[0] == IO_OFF && nRetData[1] == IO_ON )
+// 		{
+// 			m_nStep_RunReady = 2100;
+// 		}
+// 		else
+// 		{
+// 			m_nStep_RunReady = 1900;
+// 		}
+// 		break;
 
 	case 2100:
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES && 
@@ -2017,7 +2127,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
 			m_nAccySupply = 0;			
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES)
@@ -2028,7 +2138,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			m_nAccySupply--;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_REAR_] == CTL_YES)
@@ -2039,15 +2149,15 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			m_nAccySupply--;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 	
 		//SLope 다운 상태에서 자재 확인.
-		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_], IO_ON );
-		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_], IO_ON );
-		nRetData[2] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_], IO_ON );
-		nRetData[3] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_], IO_ON );
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_], IO_ON );
+		nRetData[1] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_], IO_ON );
+		nRetData[2] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_], IO_ON );
+		nRetData[3] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_], IO_ON );
 
 		if( nRetData[0] == IO_ON && nRetData[1] == IO_ON && nRetData[2] == IO_ON && nRetData[3] == IO_ON )
 		{
@@ -2066,7 +2176,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 // 				150102 0 00 "PS1408_PS1409_BUFFER_REAR_ACCY_OFF_CHK_ERR."
 				if( nRetData[0] != IO_ON || nRetData[1] != IO_ON) alarm.mstr_code = "150002";
 				else                                              alarm.mstr_code = "150102";
-				CTL_Lib.Alarm_Error_Occurrence( 3028, CTL_dWARNING, alarm.mstr_code );
+				CTL_Lib.Alarm_Error_Occurrence( 4010, CTL_dWARNING, alarm.mstr_code );
 			}
 		}
 		break;
@@ -2086,7 +2196,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[3] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES)
@@ -2096,7 +2206,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[0] = "";
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_REAR_] == CTL_YES)
@@ -2106,7 +2216,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[0] = "";
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		//Slope Cylinder 내려간 상태에서 대기, Mid Conv 요청 하면 
@@ -2118,8 +2228,8 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 
 		//중간 SLope 자재 없으면.
 	case 2500:
-		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
-		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
+		nRetData[1] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
 		if( nRetData[0] == IO_OFF && nRetData[1] == IO_OFF )
 		{
 			m_nStep_RunReady = 2510;
@@ -2130,7 +2240,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			//125001 0 00 "PS1007_SLOP_MIDDLE_RIGHT_ACCY_DETECTION_CHK_ERR."
 			if( nRetData[0] == IO_ON ) alarm.mstr_code = "125000";
 			else                       alarm.mstr_code = "125001";
-			CTL_Lib.Alarm_Error_Occurrence( 3029, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4011, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -2165,7 +2275,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		}
 		else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3030, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4012, CTL_dWARNING, alarm.mstr_code);
 			m_nStep_RunReady = 2510;
 		}
 		break;
@@ -2184,7 +2294,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[3] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES)
@@ -2194,21 +2304,22 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[0] = "";
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 2700;
+			m_nStep_RunReady = 2700;
 			break;
 		}
-		//중간 Slope 자재 감지.
-		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
-		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
+		//중간 Slope 자재 감지
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
+		nRetData[1] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
 		if( nRetData[0] == IO_ON && nRetData[1] == IO_ON )
 		{
-			
 			m_nReqMidConv = CTL_READY;
-			st_map.nBufferCovAccyExist[0] = ACCY_NO_;
-			st_map.nBufferCovAccyExist[1] = ACCY_NO_;
-			st_work.sBufferConvBCR_Data[0] = "";
-			st_work.sBufferConvBCR_Data[1] = "";
-			m_nStep_RunReady = 2700;
+ 			st_map.nBufferCovAccyExist[0] = ACCY_NO_;
+ 			st_map.nBufferCovAccyExist[1] = ACCY_NO_;
+// 			st_work.sBufferConvBCR_Data[0] = "";
+// 			st_work.sBufferConvBCR_Data[1] = "";
+			//m_nStep_RunReady = 2700;
+			//kwlee 2017.0827
+			m_nStep_RunReady = 2610;
 		}
 		else
 		{
@@ -2220,9 +2331,32 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			if( m_lTime_GoesBy[0][2] < 5000) break;
 			if( nRetData[0] == IO_ON ) alarm.mstr_code = "125000";
 			else                       alarm.mstr_code = "125001";
-			CTL_Lib.Alarm_Error_Occurrence( 3031, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4013, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
+		//kwlee 2017.0827
+case 2610:
+		//OnSet_CylStopper(IO_OFF, SIDE_FRONT_);
+		//kwlee 2017.0716
+		OnSet_CylStopper(IO_OFF, SIDE_REAR_);
+		m_nStep_RunReady = 2620;
+		break;
+		
+case 2620:
+	//nRet = OnGet_CylStopper(IO_OFF, SIDE_FRONT_);
+	//kwlee 2017.0716
+	nRet = OnGet_CylStopper(IO_OFF, SIDE_REAR_);
+	if( nRet == CTL_GOOD )
+	{
+		m_lTime_GoesBy[0][0] = GetCurrentTime();
+		m_nStep_RunReady = 2700;
+	}
+	else if( nRet == CTL_ERROR )
+	{
+		CTL_Lib.Alarm_Error_Occurrence( 40131, CTL_dWARNING, alarm.mstr_code);
+		m_nStep_RunReady = 2610;
+	}
+	break;
 
 	case 2700:
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES && 
@@ -2238,7 +2372,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[3] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_REAR_] == CTL_YES)
@@ -2255,7 +2389,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 	//	nRet = OnCheck_FrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
 		//kwlee 2017.0715
 		//
-		nRet = OnCheck_RearAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
+		nRet = OnCheck_RearAccySupply(IO_ON);		// Buffer Conv Front Accy 확�
 		
 		if (st_basic.n_mode_device == WITHOUT_DVC_)
 		{
@@ -2264,10 +2398,12 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 				nRet = IO_OFF;
 			}
 		}
-		//Rear Stopper 내려서 자재 내려가서 없다.
+		//Front Stopper 내려서 자재 내려가서 없다.
 		if(nRet == IO_OFF && st_map.nBufferCovAccyExist[0] == ACCY_NO_ && st_map.nBufferCovAccyExist[1] == ACCY_NO_)
 		{
-			m_nStep_Run = 2800;
+			//m_nStep_RunReady = 2800;
+			//kwlee 2017.0827
+			m_nStep_RunReady = 2710;
 		}
 		else if (nRet == IO_ON && st_map.nBufferCovAccyExist[0] == ACCY_NO_ && st_map.nBufferCovAccyExist[1] == ACCY_NO_)
 		{
@@ -2276,10 +2412,28 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 3032, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4014, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 		
+	case 2710:
+		OnSet_CylStopper(IO_ON, SIDE_FRONT_);
+		m_nStep_RunReady = 2720;
+		break;
+
+	case 2720:
+		nRet = OnGet_CylStopper(IO_ON, SIDE_FRONT_);
+		if( nRet == CTL_GOOD )
+		{
+			m_lTime_GoesBy[0][0] = GetCurrentTime();
+			m_nStep_RunReady = 2800;
+		}
+		else if( nRet == CTL_ERROR )
+		{
+			CTL_Lib.Alarm_Error_Occurrence( 40141, CTL_dWARNING, alarm.mstr_code);
+			m_nStep_RunReady = 2710;
+	}
+		break;
 		//Front에 있는 자재 처리 해야 함.
 	case 2800:
 		if( m_nReqMidConv == CTL_CHANGE)
@@ -2300,8 +2454,9 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 	case 3000:
 		//nRet = OnCheck_RearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
 		//kwlee 2017.0715
-		nRet = OnCheck_FrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
-		
+		//nRet = OnCheck_FrontAccySupply(IO_ON);		// Buffer Conv Front Accy 확인
+		//kwlee 2017.0826
+		nRet = OnCheck_RearAccySupply(IO_ON);		// Buffer Conv Rear Accy 확인
 		if (st_basic.n_mode_device == WITHOUT_DVC_)
 		{
 			if (st_map.nBufferCovAccyExist[2] == ACCY_NO_ && st_map.nBufferCovAccyExist[3] == ACCY_NO_)
@@ -2320,16 +2475,17 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
-			CTL_Lib.Alarm_Error_Occurrence( 3033, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4015, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;	
 
 	case 3100:
-		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
-		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
+		nRetData[1] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
 		if( nRetData[0] == IO_OFF && nRetData[1] == IO_OFF )
 		{
 			m_nStep_RunReady = 3200;
+			
 		}
 		else
 		{
@@ -2337,21 +2493,22 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			//125001 0 00 "PS1007_SLOP_MIDDLE_RIGHT_ACCY_DETECTION_CHK_ERR."
 			if( nRetData[0] == IO_ON ) alarm.mstr_code = "125000";
 			else                       alarm.mstr_code = "125001";
-			CTL_Lib.Alarm_Error_Occurrence( 3034, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4016, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
-		
+		//kwlee 2017.0827
+		//자재 내린다.
 	case 3200:
 		//OnSet_CylStopper(IO_OFF, SIDE_FRONT_);
 		//kwlee 2017.0716
-		OnSet_CylStopper(IO_ON, SIDE_FRONT_);
+		OnSet_CylStopper(IO_ON, SIDE_REAR_);
 		m_nStep_RunReady = 3210;
 		break;
 		
 	case 3210:
 		//nRet = OnGet_CylStopper(IO_OFF, SIDE_FRONT_);
 		//kwlee 2017.0716
-		nRet = OnGet_CylStopper(IO_ON, SIDE_FRONT_);
+		nRet = OnGet_CylStopper(IO_ON, SIDE_REAR_);
 		if( nRet == CTL_GOOD )
 		{
 			m_lTime_GoesBy[0][0] = GetCurrentTime();
@@ -2359,7 +2516,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		}
 		else if( nRet == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3035, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4017, CTL_dWARNING, alarm.mstr_code);
 			m_nStep_RunReady = 3200;
 		}
 		break;
@@ -2378,7 +2535,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[3] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
 			st_work.nSkipReq_BufferConv[SIDE_REAR_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_FRONT_] == CTL_YES)
@@ -2388,7 +2545,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[0] = "";
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		if (st_work.nSkipReq_BufferConv[SIDE_REAR_] == CTL_YES)
@@ -2398,13 +2555,13 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			st_work.sBufferConvBCR_Data[0] = "";
 			st_work.sBufferConvBCR_Data[1] = "";
 			st_work.nSkipReq_BufferConv[SIDE_FRONT_] = CTL_NO;
-			m_nStep_Run = 3400;
+			m_nStep_RunReady = 3400;
 			break;
 		}
 		
 		
-		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
-		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
+		nRetData[0] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_LEFT_], IO_OFF );
+		nRetData[1] = !g_ioMgr.get_in_bit( stIO.i_Chk_BufferTryAccyDetection[SIDE_MIDDLE][SIDE_RIGHT_], IO_OFF );
 		if( nRetData[0] == IO_ON && nRetData[1] == IO_ON )
 		{
 			m_nReqMidConv = CTL_READY;
@@ -2424,7 +2581,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			if( m_lTime_GoesBy[0][2] < 5000) break;
 			if( nRetData[0] == IO_ON ) alarm.mstr_code = "125000";
 			else                       alarm.mstr_code = "125001";
-			CTL_Lib.Alarm_Error_Occurrence( 3036, CTL_dWARNING, alarm.mstr_code);
+			CTL_Lib.Alarm_Error_Occurrence( 4018, CTL_dWARNING, alarm.mstr_code);
 		}
 		break;
 
@@ -2450,7 +2607,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 			//kwlee 2017.0716
 			if(nRetData[0] == IO_OFF && nRetData[1] == IO_OFF && nRetData[2] == IO_OFF)
 			{
-				m_nStep_Run = 4000;
+				m_nStep_RunReady = 4000;
 				break;
 			}
 		}
@@ -2459,7 +2616,7 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		//kwlee 2017.0716
 		if(nRetData[0] == IO_OFF && nRetData[1] == IO_OFF)
 		{
-			m_nStep_Run = 4000;
+			m_nStep_RunReady = 4000;
 		}
 		break;
 
@@ -2468,10 +2625,16 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 // 		OnSet_CylStopper(IO_ON, SIDE_FRONT_);
 // 		OnSet_CylStopper(IO_ON, SIDE_REAR_);
 		//kwlee 2017.0716
-		OnSet_CylStopper(IO_OFF, SIDE_FRONT_);
-		OnSet_CylStopper(IO_OFF, SIDE_REAR_);
-		OnSet_CylBufferTrayPathAlign(IO_ON);
-		m_nStep_RunReady = 4100;
+		if (m_nReqMidConv == CTL_CHANGE)
+		{		
+			OnSet_CylStopper(IO_OFF, SIDE_FRONT_);
+			OnSet_CylStopper(IO_OFF, SIDE_REAR_);
+			OnSet_CylBufferTrayPathAlign(IO_ON);
+			m_nReqMidConv = CTL_NO;
+
+			m_nStep_RunReady = 4100;
+			
+		}
 		break;
 		
 		//Slope Conv에 자재가 하나도 없어서 Slope 올린다.
@@ -2493,14 +2656,14 @@ void CSeq_BufferAlignConv::OnRun_ReadyMove()
 		}
 		else if(nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR || nRetData[2] == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 3037, CTL_dWARNING, alarm.mstr_code );
+			CTL_Lib.Alarm_Error_Occurrence( 4019, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_RunReady = 4000;
 		}
 		break;
 		
 	case 10000:
 		stSync.nResp_BufferAlaignConv2XYZRbt_Work = SYNC_RESP_RESET_;
-		m_nStep_Run = 0;
+		m_nStep_RunReady = 0;
 		break;	
 
 	}
@@ -2931,7 +3094,7 @@ int CSeq_BufferAlignConv::OnGet_CylBufferFrontTrayPitch(int nzOnOff, int nzSite)
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
 
-				CTL_Lib.Alarm_Error_Occurrence( 3038, CTL_dWARNING, alarm.mstr_code );	
+				CTL_Lib.Alarm_Error_Occurrence( 4020, CTL_dWARNING, alarm.mstr_code );	
 				nFunRet = CTL_ERROR;
 			}
 		}
@@ -2939,13 +3102,13 @@ int CSeq_BufferAlignConv::OnGet_CylBufferFrontTrayPitch(int nzOnOff, int nzSite)
 	else		// 악세사리를 보급 받는 간격
 	{
 		if (m_bflag_BufferFrontTrayPitch == true &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 		{
 			m_lWait_BufferFrontTrayPitch[0] = GetCurrentTime();
 			m_bflag_BufferFrontTrayPitch = false;
 		}
 		else if (m_bflag_BufferFrontTrayPitch == false &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF && nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 		{
 			if (m_lWait_BufferFrontTrayPitch[2] > st_time.nWait_On[CYL_ACCY_BUFF_PITCH])
 			{
@@ -2961,7 +3124,7 @@ int CSeq_BufferAlignConv::OnGet_CylBufferFrontTrayPitch(int nzOnOff, int nzSite)
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
-				CTL_Lib.Alarm_Error_Occurrence( 3039, CTL_dWARNING, alarm.mstr_code );
+				CTL_Lib.Alarm_Error_Occurrence( 4021, CTL_dWARNING, alarm.mstr_code );
 				nFunRet = CTL_ERROR;
 			}
 		}
@@ -3038,7 +3201,7 @@ int CSeq_BufferAlignConv::OnGet_CylBufferRearTrayPitch(int nzOnOff, int nzSite)
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
 				
-				CTL_Lib.Alarm_Error_Occurrence( 3040, CTL_dWARNING, alarm.mstr_code );	
+				CTL_Lib.Alarm_Error_Occurrence( 4022, CTL_dWARNING, alarm.mstr_code );	
 				nFunRet = CTL_ERROR;
 			}
 		}
@@ -3072,7 +3235,7 @@ int CSeq_BufferAlignConv::OnGet_CylBufferRearTrayPitch(int nzOnOff, int nzSite)
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
-				CTL_Lib.Alarm_Error_Occurrence( 3041, CTL_dWARNING, alarm.mstr_code );
+				CTL_Lib.Alarm_Error_Occurrence( 4023, CTL_dWARNING, alarm.mstr_code );
 				nFunRet = CTL_ERROR;
 			}
 		}
@@ -3201,11 +3364,11 @@ void CSeq_BufferAlignConv::OnSet_CylStopper(int nzOnOff, int nPos, int nzSite)
 	if( nPos == SIDE_FRONT_ )
 	{
 		g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvFrontStopper,	nzOnOff);
-		g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvRearStopper,	nzOnOff);
+	//	g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvRearStopper,	nzOnOff);
 	}
 	else if( nPos == SIDE_REAR_ )
 	{
-		g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvFrontStopper,	nzOnOff);
+	//	g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvFrontStopper,	nzOnOff);
 		g_ioMgr.set_out_bit(stIO.o_Cyl_BufferAccyConvRearStopper,	nzOnOff);
 	}
 	else if( nPos == SIDE_MIDDLE )
@@ -3215,11 +3378,11 @@ void CSeq_BufferAlignConv::OnSet_CylStopper(int nzOnOff, int nPos, int nzSite)
 	else if( nPos == SIDE_OUT_FRONT )
 	{
 		g_ioMgr.set_out_bit(stIO.o_Out_Front_Stopper_UpDn,	nzOnOff);
-		g_ioMgr.set_out_bit(stIO.o_Out_Rear_Stopper_UpDn,	nzOnOff);
+	//	g_ioMgr.set_out_bit(stIO.o_Out_Rear_Stopper_UpDn,	nzOnOff);
 	}
-	else// if( nPos == SIDE_OUT_REAR )
+	else if( nPos == SIDE_OUT_REAR )
 	{
-		g_ioMgr.set_out_bit(stIO.o_Out_Front_Stopper_UpDn,	nzOnOff);
+		//g_ioMgr.set_out_bit(stIO.o_Out_Front_Stopper_UpDn,	nzOnOff);
 		g_ioMgr.set_out_bit(stIO.o_Out_Rear_Stopper_UpDn,	nzOnOff);
 	}
 
@@ -3244,8 +3407,8 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 
 	if( nPos == SIDE_FRONT_ )
 	{
-		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][0]);//UP
-		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][1]);//DOWN
+		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][SIDE_LEFT_]);//UP
+		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_FRONT_][SIDE_RIGHT_]);//DOWN
 // 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][0]);
 // 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][1]);
 		//kwlee 2017.0814
@@ -3260,20 +3423,20 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		nReadIO[0] = IO_OFF;
 		nReadIO[1] = IO_OFF;
 
-		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][0]);
-		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][1]);
+		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][SIDE_LEFT_]);
+		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_REAR_][SIDE_RIGHT_]);
 	}
 	else if( nPos == SIDE_MIDDLE )
 	{
-		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][0]);
-		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][1]);
+		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][SIDE_LEFT_]);
+		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_MIDDLE][SIDE_RIGHT_]);
 		nReadIO[2] = IO_OFF;
 		nReadIO[3] = IO_OFF;
 	}
 	else if( nPos == SIDE_OUT_FRONT )
 	{
-		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]);	// UP
-		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]);	// Down
+		nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][SIDE_LEFT_]);	// UP
+		nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][SIDE_RIGHT_]);	// Down
 
 // 		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][0]);
 // 		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][1]);
@@ -3281,15 +3444,15 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 		nReadIO[2] = IO_OFF;
 		nReadIO[3] = IO_OFF;
 	}
-	else// if( nPos == SIDE_OUT_REAR )
+	else if( nPos == SIDE_OUT_REAR )
 	{
 		//nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][0]);	// UP
 		//nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_FRONT][1]);	// Down
 		//kwlee 2017.0814
 		nReadIO[0] = IO_OFF;
 		nReadIO[1] = IO_OFF;
-		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][0]);
-		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][1]);
+		nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][SIDE_LEFT_]);
+		nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_BufferAccyConvStopper[SIDE_OUT_REAR][SIDE_RIGHT_]);
 	}
 	
 	if (nzSite == SIDE_LEFT_)
@@ -3428,7 +3591,7 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 				}
 			}			
 		}
-		else// if( nPos == SIDE_OUT_REAR )
+		else if( nPos == SIDE_OUT_REAR )
 		{
 			if (m_bflag_Stopper[nPos] == true && 
 				 nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
@@ -3574,14 +3737,14 @@ int CSeq_BufferAlignConv::OnGet_CylStopper(int nzOnOff, int nPos, int nzSite)
 				}
 			}			
 		}
-		else// if( nPos == SIDE_OUT_REAR )
+		else if( nPos == SIDE_OUT_REAR )
 		{
 			if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				m_lWait_Stopper[nPos][0] = GetCurrentTime();
 				m_bflag_Stopper[nPos] = false;
 			}
-			else if (m_bflag_Stopper[nPos] == true && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+			else if (m_bflag_Stopper[nPos] == false && nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
 			{
 				if (m_lWait_Stopper[nPos][2] > st_time.nWait_Off[CYL_ACCY_BUFF_IN_STOPPER])
 				{

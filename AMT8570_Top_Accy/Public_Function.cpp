@@ -175,6 +175,9 @@ void CPublic_Function::OnReset_StructMapInfo()
 //==================================================================//
 int CPublic_Function::OnIsAllRcvyComplete() 
 {
+	//kwlee 2017.0825
+	 return CTL_YES;
+
 	if (stSync.nRcvyComplete[SITE_BOX_LIFT_]	== CTL_YES &&
 		stSync.nRcvyComplete[SITE_XYZ_ROBOT_]	== CTL_YES)
 	{
@@ -273,25 +276,44 @@ void CPublic_Function::OnSet_MotorUnitDist()
 	// 모터 1회전 당 펄스 수 등의 정보 설정
 	// - 인자1: 모터 번호
 	//==============================================================//
-	COMI.Set_MotUnitDist(M_LIFTER_Z1, 1000.000);
-	COMI.Set_MotUnitDist(M_LIFTER_Z2, 1000.000);
-	COMI.Set_MotUnitDist(M_LIFTER_Z3, 1000.000);
-	COMI.Set_MotUnitDist(M_LIFTER_Z4, 1000.000);
-	COMI.Set_MotUnitDist(M_LIFTER_Y, 260.397);
-	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Y, 260.397);
-	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_X, 66.662);
-	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Z, 5000.000);
+// 	COMI.Set_MotUnitDist(M_LIFTER_Z1, 1000.000);
+// 	COMI.Set_MotUnitDist(M_LIFTER_Z2, 1000.000);
+// 	COMI.Set_MotUnitDist(M_LIFTER_Z3, 1000.000);
+// 	COMI.Set_MotUnitDist(M_LIFTER_Z4, 1000.000);
+// 	COMI.Set_MotUnitDist(M_LIFTER_Y, 260.397);
+// 	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Y, 260.397);
+// 	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_X, 66.662);
+// 	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Z, 5000.000);
+// 
+// 
+// 	COMI.Set_MotUnitSpeed(M_LIFTER_Z1,			1000.000);
+// 	COMI.Set_MotUnitSpeed(M_LIFTER_Z2,			1000.000);
+// 	COMI.Set_MotUnitSpeed(M_LIFTER_Z3,			1000.000);
+// 	COMI.Set_MotUnitSpeed(M_LIFTER_Z4,			1000.000);
+// 	COMI.Set_MotUnitSpeed(M_LIFTER_Y,	260.397);
+// 	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Y,	260.397);
+// 	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_X,	66.662);
+// 	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Z,	5000.000);
 
-
-	COMI.Set_MotUnitSpeed(M_LIFTER_Z1,			1000.000);
-	COMI.Set_MotUnitSpeed(M_LIFTER_Z2,			1000.000);
-	COMI.Set_MotUnitSpeed(M_LIFTER_Z3,			1000.000);
-	COMI.Set_MotUnitSpeed(M_LIFTER_Z4,			1000.000);
-	COMI.Set_MotUnitSpeed(M_LIFTER_Y,	260.397);
-	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Y,	260.397);
-	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_X,	66.662);
-	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Z,	5000.000);
-
+	//kwlee 2017.0830
+	COMI.Set_MotUnitDist(M_LIFTER_Z1, 2000.000);
+	COMI.Set_MotUnitDist(M_LIFTER_Z2, 2000.000);
+	COMI.Set_MotUnitDist(M_LIFTER_Z3, 2000.000);
+	COMI.Set_MotUnitDist(M_LIFTER_Z4, 2000.000);
+	COMI.Set_MotUnitDist(M_LIFTER_Y, 500.000);
+	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Y, 200.087);
+	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_X, 181.932);
+	COMI.Set_MotUnitDist(M_BCRREAD_ROBOT_Z, 1000.000);
+	
+	
+	COMI.Set_MotUnitSpeed(M_LIFTER_Z1,			2000.000);
+	COMI.Set_MotUnitSpeed(M_LIFTER_Z2,			2000.000);
+	COMI.Set_MotUnitSpeed(M_LIFTER_Z3,			2000.000);
+	COMI.Set_MotUnitSpeed(M_LIFTER_Z4,			2000.000);
+	COMI.Set_MotUnitSpeed(M_LIFTER_Y,	500.000);
+	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Y,	200.087);
+	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_X,	181.932);
+	COMI.Set_MotUnitSpeed(M_BCRREAD_ROBOT_Z,	1000.000);
 
 	for(i=0; i<MOT_MAXMOTOR; i++)
 	{
@@ -4324,6 +4346,145 @@ int CPublic_Function::OnGet_PickerStatus(int nzSite, int nzYesNo, int nzPickerIn
 
 	return nFuncRet;
 }
+//kwlee 2017.0909
+int CPublic_Function::OnGet_ReadyBuffStatus(int nzSite, int nzYesNo, int nzPickerInfo[DATA_TYPE_][MAX_PICKER_])
+{
+	int nFuncRet = CTL_GOOD;
+
+	int i;
+	//==============================================================//
+	// [WithOut] : 동작할 플래그 정보를 이용하여 실재 자재 존재 상태 설정
+	// - 자재 미사용 모드라 Vacuum 및 센서를 사용할 수 없음
+	//==============================================================//
+	if (st_basic.n_mode_device == WITHOUT_DVC_)
+	{
+		// 자재 존재 여부를 체크함
+		if (nzYesNo == CTL_YES)
+		{
+			for(i=0; i<MAX_PICKER_; i++)
+			{
+				if (nzPickerInfo[TYPE_FLAG_][i] == CTL_YES)
+				{
+					nzPickerInfo[TYPE_SEN_][i] = CTL_YES;
+				}
+				else
+				{
+					nzPickerInfo[TYPE_SEN_][i] = CTL_NO;
+				}
+			}
+		}
+		// 자재 미존재 여부를 체크함
+		else
+		{
+			for(i=0; i<MAX_PICKER_; i++)
+			{
+				if (nzPickerInfo[TYPE_FLAG_][i] == CTL_YES)
+				{
+					nzPickerInfo[TYPE_SEN_][i] = CTL_NO;
+				}
+				else
+				{
+					nzPickerInfo[TYPE_SEN_][i] = CTL_YES;
+				}
+			}
+		}
+		return nFuncRet;
+	}
+	//--------------------------------------------------------------//
+
+	//==============================================================//
+	// [With] 실재 Vacuum 상태 체크하여 자재 존재 여부를 판단함
+	//==============================================================//
+	int iMaster=0, iSlave=0;
+
+	if (nzSite == 0)	// 그립퍼 Vacuum
+	{
+		// [0:좌앞, 1:우앞, 2:좌뒤, 3:우뒤]
+// 		for(i=0; i<MAX_PICKER_; i++)
+// 		{
+// 			iMaster	= i / 2;	// ¸oA≫ °e≫e
+// 			iSlave	= i % 2;	// ³ª¸OAo °e≫e
+// 			
+// 			nzPickerInfo[TYPE_SEN_][i] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[iMaster][iSlave]);
+// 		}
+		
+
+		nzPickerInfo[TYPE_SEN_][0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_LEFT_]);
+		nzPickerInfo[TYPE_SEN_][1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_REAR_][SIDE_RIGHT_]);
+		nzPickerInfo[TYPE_SEN_][2] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_LEFT_]);
+		nzPickerInfo[TYPE_SEN_][3] = !g_ioMgr.get_in_bit(stIO.i_Chk_BufferTryAccyDetection[SIDE_FRONT_][SIDE_RIGHT_]);
+
+
+
+	// 자재 존재 상태 체크
+		if (nzYesNo == CTL_YES)
+		{
+			for(i=0; i<MAX_PICKER_; i++)
+			{
+				// 검사할 피커로 설정된 경우에만 검사
+				if (nzPickerInfo[TYPE_FLAG_][i] == CTL_YES)
+				{
+					
+					// 실재 센서 상태 확인
+					if (nzPickerInfo[TYPE_SEN_][i] == CTL_NO)
+					{
+						if (nzSite == 0)	// 그립퍼 Vacuum
+						{
+							// 115000 0 00 "ROBOT_GRIP_1_VAC_ON_ERR"
+							//(alarm.mstr_code).Format("%06d", 115000+i);	// 알람 코드 생성
+							//kwlee 20170910
+							if (i < 2)
+							{ 
+								//150001 0 00 "PS1408_PS1409_BUFFER_REAR_ACCY_ON_CHK_ERR."
+								(alarm.mstr_code).Format("%06d", 150101);
+							}
+							else
+							{
+								//"PS1406_PS1407_BUFFER_FRONT_ACCY_ON_CHK_ERR."
+								(alarm.mstr_code).Format("%06d", 150001);
+							}
+							
+							nFuncRet = CTL_ERROR;
+						}
+					}
+				}
+			}
+		}
+		// 자재 미존재 상태 체크
+		else
+		{
+			for(i=0; i<MAX_PICKER_; i++)
+			{
+				if (nzPickerInfo[TYPE_FLAG_][i] == CTL_YES)
+				{
+					if (nzPickerInfo[TYPE_SEN_][i] == CTL_YES)
+					{
+						if (nzSite == 0)	// 그립퍼 Vacuum
+						{
+							// 115010 0 00 "ROBOT_GRIP_1_VAC_OFF_ERR"
+							//(alarm.mstr_code).Format("%06d", 115010+i);	// 알람 코드 생성
+							//kwlee 20170910
+							if (i < 2)
+							{ 
+								//150001 0 00 "PS1408_PS1409_BUFFER_REAR_ACCY_ON_CHK_ERR."
+								(alarm.mstr_code).Format("%06d", 150102);
+							}
+							else
+							{
+								//"PS1406_PS1407_BUFFER_FRONT_ACCY_ON_CHK_ERR."
+								(alarm.mstr_code).Format("%06d", 150002);
+							}
+							nFuncRet = CTL_ERROR;
+						}
+					}
+				}
+			}
+		}
+	//--------------------------------------------------------------//
+	}
+	return nFuncRet;
+}	
+
 
 void CPublic_Function::OnLogBCRData(CString sz_Step)
 {

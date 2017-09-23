@@ -25,8 +25,8 @@ public:
 	int  m_nStep_Run;			// BoxLifter Run Step
 	int  m_nStep_Remove;			// Box 제거 Step
 	int  m_nStep_ForceDischarge;	// Box 배출 Step
-
-	// yangkyu 2015.02.12
+	//kwlee 2017.0093
+	long m_lLiftUpCheckTime[4][3];
 	// 악세사리 재정렬을 위해 추가
 	int  m_nStep_ReAlig;	// Accy 정렬
 
@@ -42,7 +42,9 @@ private:
 	int  m_nMotZ2;
 	int  m_nMotZ3;
 
-	int	 m_nBoxLift_Step; //kwlee 2017.0711
+	//kwlee 2017.0825
+	int m_WorkSite;
+
 	int  m_nMotZStep[4];
 	int  m_nMotZInitStep[4];
 

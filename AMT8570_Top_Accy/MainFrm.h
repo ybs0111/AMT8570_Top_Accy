@@ -171,10 +171,6 @@ public:
 	void OnSet_PathInfo();	// 경로 정보 구조체에 설정 및 폴더 생성
 	int  OnIsExistDvcFie();	// 작업할 모델명이 존재하는지 확인
 
-
-
-
-
 	void OnSwitchToForm(int nForm);
 	int  OnIsMenuUsable();	// 메뉴 사용 가능 여부
 	

@@ -386,6 +386,7 @@ int CCtlBd_Library::Motor_SafetyCheck(int nzReqMode, int nzAxis, double dzTarget
 	}
 
 	return BD_GOOD;
+
 }
 
 //==================================================================//
@@ -395,7 +396,7 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 {
 	int d_CurPos[4];
 	int d_Pos[4];
-
+	int nRet = 0;
 	switch(nzAxis)
 	{
 	case M_BCRREAD_ROBOT_Y:
@@ -435,6 +436,7 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
+			return CTL_ERROR; //kwlee 2017.0831
 		}
 		else if(d_CurPos[1] > d_Pos[1])
 		{
@@ -443,6 +445,7 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
+			return CTL_ERROR; //kwlee 2017.0831
 		}
 		else if(d_CurPos[2] > d_Pos[2])
 		{
@@ -451,6 +454,8 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
+
+			return CTL_ERROR; //kwlee 2017.0831
 		}
 		else if(d_CurPos[3] > d_Pos[3])
 		{
@@ -459,6 +464,7 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 			alarm.mn_count_mode	= 0;
 			alarm.mn_type_mode	= eWARNING;
 			st_work.nEqpStatus	= dWARNING;
+			return CTL_ERROR; //kwlee 2017.0831
 		}
 		break;
 
@@ -470,14 +476,22 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 		d_CurPos[0] = COMI.Get_MotCurrentPos(M_LIFTER_Y);
 		// X축의 최소 작업 위치 정보 얻음
 		d_Pos[0] = st_motor[M_LIFTER_Y].d_pos[Y_ACC_FRONT_] - st_motor[M_LIFTER_Y].mn_allow;
-		
+
 		if(d_CurPos[0] < d_Pos[0])
 		{
-		 	// 040000 0 00 "LIFTER_Y_SAFETY_NOT_EXIST_ERR."
-		 	alarm.mstr_code		= "040000";
-		 	alarm.mn_count_mode	= 0;
-		 	alarm.mn_type_mode	= eWARNING;
-		 	st_work.nEqpStatus	= dWARNING;
+			//kwlee 2017.0831
+			d_CurPos[1] = COMI.Get_MotCurrentPos(nzAxis);
+			d_Pos[1] = st_motor[nzAxis].d_pos[Z_ACC_LIFT_READY_] - st_motor[M_LIFTER_Y].mn_allow;
+
+			if (d_Pos[1] > d_CurPos[1])
+			{			
+		 		// 040000 0 00 "LIFTER_Y_SAFETY_NOT_EXIST_ERR."
+		 		alarm.mstr_code		= "040000";
+		 		alarm.mn_count_mode	= 0;
+		 		alarm.mn_type_mode	= eWARNING;
+		 		st_work.nEqpStatus	= dWARNING;
+				return CTL_ERROR; //kwlee 2017.0831
+			}
 		}
 		break;
 	}
@@ -485,6 +499,7 @@ int CCtlBd_Library::OnCheck_MovePossible(int nzMode, int nzAxis, double dzTarget
 	st_motor[nzAxis].mn_retry_time_flag = CTL_NO;//2011.0201 추가 
 
 	return BD_GOOD;
+
 }
 
 BOOL CCtlBd_Library::CreateFolder(LPCTSTR szPath)

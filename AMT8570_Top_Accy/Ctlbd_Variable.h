@@ -295,7 +295,7 @@ enum
 #define Y_RBT_ACC_NG_BUFFER_		6
 #define Y_RBT_ACC_CONV_R_BUFF_		7
 // KILEE [2015.03.17]
-#define Y_RBT_ACC_CONV_F_BUFF_		7
+#define Y_RBT_ACC_CONV_F_BUFF_		8 //7->8
 
 //Zรเ
 #define Z_RBT_SAFETY_			0

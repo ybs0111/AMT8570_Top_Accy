@@ -21,7 +21,7 @@ CSeq_BoxClamp	SeqBoxClamp;
 
 CSeq_BoxClamp::CSeq_BoxClamp()
 {
-
+	
 }
 
 CSeq_BoxClamp::~CSeq_BoxClamp()
@@ -129,14 +129,16 @@ void CSeq_BoxClamp::OnRun_Initial()
 		if( st_work.nLiftDownComplete == CTL_YES )
 		{
 			OnSet_CylClamp(IO_OFF);			// Align
-			OnSet_CylUDGripper(IO_OFF);		// ¾Ç¼¼»ç¸® ¹Ú½º À­ºÎºÐÀ» Á¤·Ä ÇÏ´Â ½Ç¸°´õ [ON:Á¤·Ä, OFF:ÇØÁ¦]
+			OnSet_CylUDGripper(IO_ON);		// ¾Ç¼¼»ç¸® ¹Ú½º À­ºÎºÐÀ» Á¤·Ä ÇÏ´Â ½Ç¸°´õ [ON:Á¤·Ä, OFF:ÇØÁ¦]
+			
 			m_nStep_Init = 110;
 		}
 		break;
 
 	case 110:
 		nRetData[0] = OnGet_CylClamp(IO_OFF);
-		nRetData[1] = OnGet_CylUDGripper(IO_OFF);
+		nRetData[1] = OnGet_CylUDGripper(IO_ON);
+	
 		if(nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
 		{
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
@@ -197,10 +199,24 @@ void CSeq_BoxClamp::OnRun_Initial()
 
 	case 500:
 		OnSet_CylLifter( IO_OFF );
+		m_lTime_GoesBy[0] = GetCurrentTime(); //kwlee 2017.0823
 		m_nStep_Init = 510;
 		break;
 
 	case 510:
+		//kwlee 2017.0823
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			break;
+		}
+		if (m_lTime_GoesBy[2] < 500)
+		{
+			break;
+		}
 		nRet = OnGet_CylLifter( IO_OFF );
 		if( nRet == CTL_GOOD )
 		{
@@ -224,20 +240,36 @@ void CSeq_BoxClamp::OnRun_Initial()
 		// Lifter XÃàÀÌ Ã¹¹øÂ° °ø±Þ À§Ä¡·Î ÀÌµ¿ÇÏ¸é¼­ Accy Box¸¦ Á¦°Å ÇÒ¶§ ±îÁö ´ë±â
 		if( stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_ )
 		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+// 			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
 			m_nStep_Init = 600;
 		}
 		break;
 
 	case 600:
 		OnSet_CylLifter( IO_ON );
+		m_lTime_GoesBy[0] = GetCurrentTime(); //kwlee 2017.0823
 		m_nStep_Init = 610;
 		break;
 
 	case 610:
+		//kwlee 2017.0823
+		m_lTime_GoesBy[1] = GetCurrentTime();
+		m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+		
+		if (m_lTime_GoesBy[2] < 0)
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			break;
+		}
+		if (m_lTime_GoesBy[2] < 500)
+		{
+			break;
+		}
+		//
 		nRet = OnGet_CylLifter( IO_ON );
 		if( nRet == CTL_GOOD )
 		{
+		
 			m_nStep_Init = 1000;
 		}
 		else if( nRet == CTL_ERROR )
@@ -261,7 +293,8 @@ void CSeq_BoxClamp::OnRun_Move()
 {
 	// ÀüÃ¼ »çÀÌÆ® º¹±¸ µ¿ÀÛ ¿Ï·á ¿©ºÎ È®ÀÎ
 	// - ¸ðµç ºÎºÐÀÇ º¹±¸ µ¿ÀÛÀÌ ¿Ï·áµÈ ÈÄ¿¡¸¸ ½ÃÄÁ½º µ¿ÀÛÇÏµµ·Ï ÇÔ
-	// : º¹±¸ µ¿ÀÛ Áß¿¡ ½ÃÄÁ½º ±¸µ¿ÇÏ¸é º¹±¸ÇÏ´Â ¿µ¿ª°ú Ãæµ¹ÀÌ ¹ß»ýÇÒ ¼ö ÀÖÀ½
+	// : º¹±¸ µ¿ÀÛ Áß¿¡ ½ÃÄÁ½º ±¸µ¿ÇÏ¸é º¹±¸ÇÏ´Â ¿	µ¿ª°ú Ãæµ¹ÀÌ ¹ß»ýÇÒ ¼ö ÀÖÀ½
+
 	if( Func.OnIsAllRcvyComplete() != CTL_YES )
 	{
 		return;
@@ -296,8 +329,8 @@ void CSeq_BoxClamp::OnRun_Move()
 				break;
 			}
 		}
-
-		stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
+	//kwlee 2017.0824 del
+	//	stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
 		m_nStep_Run = 100;
 		//kwlee 2017.0711
 		//m_nStep_Run = 10;
@@ -310,10 +343,10 @@ void CSeq_BoxClamp::OnRun_Move()
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_WORK_;
 			// ¹Ú½º°¡ ¾øÀ» °æ¿ì ¾Ë¶÷ ¼Ò¸®¸¦ µè°í ¹Ú½º °ø±ÞÀ» ÇÏ±â À§ÇØ ¾Ë¶÷À» ¿ï¸®µµ·Ï ÇØ³õÀ½.
 			Func.OnSet_BuzzerSound(IO_OFF, 0);
-
 			m_nPusher_Retry = 0;
 			m_nStep_Run = 900;
 		}
+		
 		break;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -395,8 +428,12 @@ void CSeq_BoxClamp::OnRun_Move()
 		break;
 
 	case 2200:
-		OnSet_ConvBoxPusher(IO_ON);			// Align
-		m_nStep_Run = 2300;
+		if (stSync.nResp_Clamp2LoadingConv_Work == SYNC_RESP_BOX_LIFT_CHANGE_COMPLETE_)
+		{
+			OnSet_ConvBoxPusher(IO_ON);			// Align 
+			m_nStep_Run = 2300;
+		}
+		
 		break;
 		
 	case 2300:
@@ -441,7 +478,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		{
 			m_nStep_Run = 2600;
 		}
-		else
+		else if( nRet == CTL_ERROR )
 		{
 			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 2500;
@@ -512,7 +549,7 @@ void CSeq_BoxClamp::OnRun_Move()
 	case 2800:
 		st_map.nBoxChange = TRUE;
 		st_map.nResp_AccyReadyCNT = 240;
-		// Lifter¿¡°Ô Accy Box Clamping ¿Ï·á ¾Ë¸²(´©±¸¿¡°Ô?? ¸®ÇÁÆ®¿¡°Ô??)(±×·³ ¹«½¼ÀÏ ÇÏÁö?)
+		// Lifter¿¡°Ô Accy Box Clamping¿Ï·
 		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_ACCY_BOX_CLAMPING_COMPLETE_;
 		
 		st_map.nClampAccyBoxAccy = 1;
@@ -542,7 +579,7 @@ void CSeq_BoxClamp::OnRun_Move()
 		OnSet_CylClamp(IO_OFF);	            // align
 		//OnSet_CylUDGripper(IO_OFF);			// ¾Ç¼¼»ç¸® ¹Ú½º À­ºÎºÐÀ» Á¤·Ä ÇÏ´Â ½Ç¸°´õ [ON:Á¤·Ä, OFF:ÇØÁ¦]
 		//kwlee 2017.0712
-		OnSet_CylUDGripper(IO_ON);			// ¾Ç¼¼»ç¸® ¹Ú½º À­ºÎºÐÀ» Á¤·Ä ÇÏ´Â ½Ç¸°´õ [ON:Á¤·Ä, OFF:ÇØÁ¦]
+		OnSet_CylUDGripper(IO_ON);			// ¾Ç¼¼»ç¸® ¹Ú½º À­ºÎºÐÀ» Á¤·Â ½Ç¸°´õ [ON:Á¤·Ä, OFF:ÇØÁ¦]
 		m_nStep_Run = 3110;
 		break;
 

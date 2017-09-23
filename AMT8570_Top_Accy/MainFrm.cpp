@@ -1652,11 +1652,14 @@ void CMainFrame::OnSet_PathInfo()
 	
 	char chr_data[100];
 	// 생성할 폴더 정보 얻음
-	::GetPrivateProfileString("Folder_Data", "Main", "Default", chr_data, 100, ".\\PathInfo.TXT");
+	GetPrivateProfileString("Folder_Data", "Main", "Default", chr_data, 100, ".\\PathInfo.TXT");
 	CString sMainPath = chr_data;
 	sMainPath.TrimLeft(' ');
 	sMainPath.TrimRight(' ');
 	
+	sMainPath = PGM_BASE_; //kwlee 2017.0830
+
+
 	// 규이리 주석 처리 [2015.02.14]
 	/*
 	// 김양규 추가 [2014.12.09]
@@ -1679,7 +1682,8 @@ void CMainFrame::OnSet_PathInfo()
 	st_path.mstr_path_dvc = PGM_BASE_ + "Device\\";
 	sFolder = TEXT(st_path.mstr_path_dvc);
 	_CreateFolder((LPCTSTR)sFolder);  // 폴더 생성
-
+	
+	
 	st_path.mstr_basic_folder	= sMainPath + "Setting\\";
 	st_path.mstr_motor			= sMainPath + "Setting\\AMT8570A.cme2";
 	
@@ -2235,7 +2239,7 @@ void CMainFrame::OnSend_BcrRead(int nzPort)
 		st_work.nModeBCR_Test = FALSE;
 		return;
 	}
-	st_serial.str_snd[nzPort -1].Format("%cON%c", 0x02, 0x03);
+	st_serial.str_snd[nzPort -1].Format("%cON+%c", 0x02, 0x03);
 	
 	// 전송할 메시지가 공백이 아닌지 확인
 	// - 공백이면 에러 처리함
@@ -2344,7 +2348,7 @@ void CMainFrame::OnPortOpen(int nzPort)
 	{
 	case 0:
 		nPortNo		= PORT_BCR_ACCY_;
-		nBaudRate	= 115200;
+		nBaudRate	= 9600;
 		sParity		= "None";
 		nDataBits	= 8;
 		nStopBits	= 1;

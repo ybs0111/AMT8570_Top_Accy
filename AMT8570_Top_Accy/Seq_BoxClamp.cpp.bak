@@ -34,8 +34,8 @@ CSeq_BoxClamp::~CSeq_BoxClamp()
 //==================================================================//
 void CSeq_BoxClamp::OnSeq_RUN(void) 
 {
-	OnSeq_INIT();     // 쓰레드 관련 변수 초기화
-	OnSeq_Execute();  // 쓰레드 제어
+	OnSeq_INIT();
+	OnSeq_Execute();
 }
 
 //==================================================================//
@@ -43,14 +43,15 @@ void CSeq_BoxClamp::OnSeq_RUN(void)
 //==================================================================//
 void CSeq_BoxClamp::OnSeq_INIT(void) 
 {
-	if (m_bflag_INIT == true)	{
+	if( m_bflag_INIT == true )
+	{
 		return;
 	}
 	m_bflag_INIT = true;
 
-	m_nStep_Init	= 0;	// 초기화 동작 처리 스텝
-	m_nStep_Run		= 0;	// Run 동작 처리 스텝
-	m_nRcvyStep		= 0;	// 복구 동작 처리 스텝
+	m_nStep_Init = 0;
+	m_nStep_Run = 0;
+	m_nRcvyStep = 0;
 }
 
 //==================================================================//
@@ -58,37 +59,34 @@ void CSeq_BoxClamp::OnSeq_INIT(void)
 //==================================================================//
 void CSeq_BoxClamp::OnSeq_Execute(void) 
 {
-	// 시컨스 인터럽트 조건 확인
-	if (Func.OnIsInterruptCondition() == 1)
+	if( Func.OnIsInterruptCondition() == 1 )
 	{
 		return;
 	}
 
 	int nRet = 0;
 
-	switch(st_work.nEqpStatus)
+	switch( st_work.nEqpStatus )
 	{
 	case dINIT:
 		// 초기화 진행 대화상자에서 [YES] 선택했는지 여부
-		if (st_handler.nInitTryREQ != YES)
+		if( st_handler.nInitTryREQ != YES )
 		{
 			break;
 		}
-		OnRun_Initial();	// BoxClamp 초기화 작업
+		OnRun_Initial();
 		break;
 
 	case dRUN:
 		// 초기화 작업이 완료되지 않으면 [AUTO] 작업 시작 불가능
 		// - st_handler.nIsAllSiteInitEnd : 초기화 화면에서 설정
-		if (st_handler.nIsAllSiteInitEnd == CTL_YES)
+		if( st_handler.nIsAllSiteInitEnd == CTL_YES )
 		{
-			OnRun_Move();	// [악세사리 박스 Clamp] 시컨스 동작
+			OnRun_Move();
 		}
 		break;
 
 	default:
-		// yangkyu 2015.03.31
-		// Run 상태일때가 아닌 Stop 상태일때 동작을 하도록 수정.
 		OnRun_ForceDischarge();
 		break;
 	}
@@ -96,22 +94,23 @@ void CSeq_BoxClamp::OnSeq_Execute(void)
 
 void CSeq_BoxClamp::OnRun_Initial() 
 {
+	
 	// 초기화 작업이 완료된 경우 강제 리턴함
 	if (st_handler.mn_init_state[INIT_BOX_CLAMP] != CTL_NO)
 	{
 		return;
 	}
-
+	
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
 
 	switch(m_nStep_Init)
 	{
 	case 0:
-		m_nStep_Init = 50;
+		m_nStep_Init = 10;
 		break;
 
-	case 50:
+	case 10://have to check...
 		// XYZ Robot이 안전 영역에 없을때 Box Clamp를 초기화
 		// 센서가 B접이라 센서 상태 확인 시 반전 사용
 		nRet = !g_ioMgr.get_in_bit(stIO.i_Chk_GripperSafetyPos);
@@ -122,14 +121,22 @@ void CSeq_BoxClamp::OnRun_Initial()
 		break;
 
 	case 100:
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		m_nStep_Init = 110;
+// 		OnSet_CylClamp(IO_OFF);			// Align
+// 		OnSet_CylUDGripper(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+//		m_nStep_Init = 110;
+
+		//kwlee 2017.0712
+		if( st_work.nLiftDownComplete == CTL_YES )
+		{
+			OnSet_CylClamp(IO_OFF);			// Align
+			OnSet_CylUDGripper(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+			m_nStep_Init = 110;
+		}
 		break;
 
 	case 110:
 		nRetData[0] = OnGet_CylClamp(IO_OFF);
-		nRetData[1] = OnGet_CylLRGripper(IO_OFF);
+		nRetData[1] = OnGet_CylUDGripper(IO_OFF);
 		if(nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
 		{
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
@@ -139,193 +146,104 @@ void CSeq_BoxClamp::OnRun_Initial()
 		{
 			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
 			m_nStep_Init = 100;
+			CTL_Lib.Alarm_Error_Occurrence( 1000, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
+		
 	case 200:
-		OnSet_CylUDGripper(IO_OFF);		// Box UD Gripper [ON:Up, OFF:Down]
+		OnSet_ConvBoxPusher(IO_OFF);			// pusher backward
 		m_nStep_Init = 210;
 		break;
 
 	case 210:
-		nRet = OnGet_CylUDGripper(IO_OFF);
-		if(nRet == CTL_GOOD)
+		nRet = OnGet_ConvBoxPusher( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
 			m_nStep_Init = 300;
 		}
-		else if(nRet == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylUDGripper() 함수 안에서 설정함
 			m_nStep_Init = 200;
+			CTL_Lib.Alarm_Error_Occurrence( 1001, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
 	case 300:
-		OnSet_VacGirpper(IO_OFF);		// Box Gripper Vac [ON:진공, OFF:해제]
-		// yangkyu [2015.03.30]
-		// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-		m_lTime_GoesBy[0] = GetCurrentTime();
+		OnSet_ConvBoxClamp( IO_OFF );
 		m_nStep_Init = 310;
 		break;
 
 	case 310:
-		nRet = OnGet_VacGirpper(IO_OFF);
-		if(nRet == CTL_GOOD)
+		nRet = OnGet_ConvBoxClamp( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
 			m_nStep_Init = 400;
 		}
-		else if(nRet == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// yangkyu [2015.03.30]
-			// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-			m_lTime_GoesBy[1] = GetCurrentTime();
-			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
-			if (m_lTime_GoesBy[2] < 0)
-			{
-				m_lTime_GoesBy[0] = GetCurrentTime();
-				break;
-			}
-			
-			if (m_lTime_GoesBy[2] > 10)
-			{
-				// 알람 코드는 OnGet_VacGirpper() 함수 안에서 설정함
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-			}
 			m_nStep_Init = 300;
+			CTL_Lib.Alarm_Error_Occurrence( 1002, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
-	
+
 	case 400:
-		OnSet_CylStopper(IO_ON);		// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
-		m_nStep_Init = 410;
-		break;
-		
-	case 410:
-		nRet = OnGet_CylStopper(IO_ON);
-		if(nRet == CTL_GOOD)
+		// [ BoxLift -> BoxClamp ] 작업 완료 대기
+		if (stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_)
 		{
 			m_nStep_Init = 500;
 		}
-		else if(nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
-			m_nStep_Init = 400;
-		}
 		break;
-	
+
 	case 500:
-		OnSet_CylSupply(IO_OFF);		// 악세사리 박스 공급 실린더[ON:작업 영역, OFF:짚는 영역]
+		OnSet_CylLifter( IO_OFF );
 		m_nStep_Init = 510;
 		break;
 
 	case 510:
-		nRetData[0] = OnGet_CylSupply(IO_OFF);
-		if(nRetData[0] == CTL_GOOD)
+		nRet = OnGet_CylLifter( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
-			m_nStep_Init = 600;
+			m_nStep_Init = 520;
 		}
-		else if(nRetData[0] == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylSupply() 함수 안에서 설정함
-			m_nStep_Init = 500;			
+			m_nStep_Init = 500;
+			CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
-		
+
+	case 520:
+		// Lift 실린더가 내려가면 Lifter에게 SYNC_REQ_WORK_COMPLETE_ 신호 전달
+		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_;
+		m_nStep_Init = 530;
+		break;
+
+	case 530:
+		// Lifter의 응답 신호가  SYNC_RESP_WORK_COMPLETE_으로 변경되면 
+		// Lifter X축이 첫번째 공급 위치로 이동하면서 Accy Box를 제거 할때 까지 대기
+		if( stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_ )
+		{
+			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+			m_nStep_Init = 600;
+		}
+		break;
+
 	case 600:
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+		OnSet_CylLifter( IO_ON );
 		m_nStep_Init = 610;
 		break;
 
 	case 610:
-		nRet = OnGet_CylClamp(IO_OFF);
-		if(nRet == CTL_GOOD)
-		{
-			m_nStep_Init = 700;
-		}
-		else if(nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylClamp() 함수 안에서 설정함
-			m_nStep_Init = 600;
-		}
-		break;
-
-	case 700:
-		OnSet_CylPusher(IO_OFF);		// 악세사리 박스 뒷부분을 정렬 하는 푸셔 [ON:정렬, OFF:해제]
-		m_nStep_Init = 710;
-		break;
-		
-	case 710:
-		nRet = OnGet_CylPusher(IO_OFF);
-		if(nRet == CTL_GOOD)
-		{
-			m_nStep_Init = 790;
-		}
-		else if(nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylPusher() 함수 안에서 설정함
-			m_nStep_Init = 700;
-		}
-		break;
-
-	case 790:
-		// [ BoxLift -> BoxClamp ] 작업 완료 대기
-		if (stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_)
-		{
-			m_nStep_Init = 800;
-		}
-		break;
-
-	case 800:
-		OnSet_CylLifter(IO_OFF);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
-		m_nStep_Init = 810;
-		break;
-
-	case 810:
-		nRetData[0] = OnGet_CylLifter(IO_OFF);
-		if(nRetData[0] == CTL_GOOD)
-		{
-			m_nStep_Init = 820;
-		}
-		else if(nRetData[0] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
-			m_nStep_Init = 800;
-		}
-		break;
-
-	case 820:
-		// Lift 실린더가 내려가면 Lifter에게 SYNC_REQ_WORK_COMPLETE_ 신호 전달
-		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_;
-		m_nStep_Init = 890;
-		break;
-
-	case 890:
-		// Lifter의 응답 신호가  SYNC_RESP_WORK_COMPLETE_으로 변경되면 
-		// Lifter X축이 첫번째 공급 위치로 이동하면서 Accy Box를 제거 할때 까지 대기
-		if (stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_)
-		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
-			m_nStep_Init = 900;
-		}
-		break;
-	
-	case 900:
-		OnSet_CylLifter(IO_ON);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
-		m_nStep_Init = 910;
-		break;
-
-	case 910:
-		nRet = OnGet_CylLifter(IO_ON);
-		if(nRet == CTL_GOOD)
+		nRet = OnGet_CylLifter( IO_ON );
+		if( nRet == CTL_GOOD )
 		{
 			m_nStep_Init = 1000;
 		}
-		else if(nRet == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
-			m_nStep_Init = 900;
+			m_nStep_Init = 600;
+			CTL_Lib.Alarm_Error_Occurrence( 1004, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
@@ -335,6 +253,7 @@ void CSeq_BoxClamp::OnRun_Initial()
 		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
 		m_nStep_Init = 0;
 		break;
+
 	}
 }
 
@@ -343,37 +262,35 @@ void CSeq_BoxClamp::OnRun_Move()
 	// 전체 사이트 복구 동작 완료 여부 확인
 	// - 모든 부분의 복구 동작이 완료된 후에만 시컨스 동작하도록 함
 	// : 복구 동작 중에 시컨스 구동하면 복구하는 영역과 충돌이 발생할 수 있음
-	if (Func.OnIsAllRcvyComplete() != CTL_YES)
+	if( Func.OnIsAllRcvyComplete() != CTL_YES )
 	{
 		return;
 	}
-	Func.OnTrace_ThreadStep(1, m_nStep_Run);
+	Func.OnTrace_ThreadStep(2, m_nStep_Run);
 
 	int nRet = VAR_INIT_;
 	int nRetData[4] = {0,};
 	int i = 0;
 
-	switch(m_nStep_Run)
+	switch( m_nStep_Run )
 	{
 	case 0:
 		// Loading Cov가 LotEnd 상태이면 Box Clamp를 LotEnd 처리 이며 대기
-		if (stSync.nLotEnd_LoadingConv == TRUE)
+		if( stSync.nLotEnd_LoadingConv == TRUE )
 		{
 			stSync.nLotEnd_BoxClamp = TRUE;
 			break;
 		}
-		// Loading Cov가 LotEnd 상태가 아니면 Box Clamp의 Lot End를 해제 
 		else
 		{
 			stSync.nLotEnd_BoxClamp = FALSE;
 		}
 
-		// With Out 모드에서는 st_map의 데이터를 이용하여 동작
-		if (st_basic.n_mode_device == WITHOUT_DVC_)
+		if( st_basic.n_mode_device == WITHOUT_DVC_ )
 		{
-			if (st_map.nLoadingAccyBoxExist[0] == 0 && 
+			if( st_map.nLoadingAccyBoxExist[0] == 0 &&
 				st_map.nLoadingAccyBoxExist[1] == 0 &&
-				st_map.nLoadingAccyBoxExist[2] == 0)
+				st_map.nLoadingAccyBoxExist[2] == 0 )
 			{
 				stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
 				break;
@@ -382,141 +299,199 @@ void CSeq_BoxClamp::OnRun_Move()
 
 		stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
 		m_nStep_Run = 100;
+		//kwlee 2017.0711
+		//m_nStep_Run = 10;
 		break;
 
 	case 100:
 		// Load Conv에서 Accy Box 공급이 완료 될때까지 대기
-		if (stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_)
+		if( stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_)
 		{
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_WORK_;
-
-			// kilee [2015.03.29]
 			// 박스가 없을 경우 알람 소리를 듣고 박스 공급을 하기 위해 알람을 울리도록 해놓음.
 			Func.OnSet_BuzzerSound(IO_OFF, 0);
 
-			m_nStep_Run = 1000;
+			m_nPusher_Retry = 0;
+			m_nStep_Run = 900;
 		}
 		break;
 
-//////////////////////////////////////////////////////////////////////////
-// Accy Box Gripping과 Lift 유닛에 Accy Box를 공급 하는 작업
-//////////////////////////////////////////////////////////////////////////
-	case 1000:
-		OnSet_CylLRGripper(IO_ON);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		OnSet_VacGirpper(IO_ON);		// Box Gripper Vac [ON:진공, OFF:해제]
-		// yangkyu [2015.03.30]
-		// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-		m_lTime_GoesBy[0] = GetCurrentTime();
-		m_nStep_Run = 1010;
+	//////////////////////////////////////////////////////////////////////////
+	// Accy Box Gripping과 Lift 유닛에 Accy Box를 공급 하는 작업
+	//////////////////////////////////////////////////////////////////////////
+	case 900:
+		{
+			int ReadIO[4] = {0,};
+ 			ReadIO[0] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxClampOnCheck, IO_OFF);
+ 			ReadIO[1] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxClampOffCheck, IO_ON);
+ 			ReadIO[2] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxPusherCylPusherCheck, IO_OFF);
+ 			ReadIO[3] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxPusherCylPullCheck, IO_ON);
+
+			if( ReadIO[0] == IO_OFF && ReadIO[1] == IO_ON && ReadIO[2] == IO_OFF && ReadIO[3] == IO_ON )
+			{
+				m_nStep_Run = 2000;
+			}
+			else
+			{
+				m_nStep_Run = 1000;
+			}
+		}
 		break;
 
-	case 1010:
-		nRetData[0] = OnGet_CylLRGripper(IO_ON);
-		nRetData[1] = OnGet_VacGirpper(IO_ON);
+	case 1000:
+		OnSet_ConvBoxPusher(IO_OFF);			// Align
+		m_nStep_Run = 1100;
+		break;
 
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
+	case 1100:
+		nRet = OnGet_ConvBoxPusher( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
 			m_nStep_Run = 1200;
 		}
-		else if (nRetData[0] == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
 			m_nStep_Run = 1000;
+			CTL_Lib.Alarm_Error_Occurrence( 1005, CTL_dWARNING, alarm.mstr_code );
 		}
-		else if (nRetData[1] == CTL_ERROR)
+		break;
+
+	case  1200:
+		OnSet_ConvBoxClamp( IO_OFF );
+		m_nStep_Run = 1300;
+		break;
+		
+	case 1300:
+		nRet = OnGet_ConvBoxClamp( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
-			// yangkyu [2015.03.30]
-			// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
+			m_nStep_Run = 1400;
+		}
+		else if( nRet == CTL_ERROR )
+		{
+			m_nStep_Run = 1200;
+			CTL_Lib.Alarm_Error_Occurrence( 1006, CTL_dWARNING, alarm.mstr_code );
+		}
+		break;
+
+
+		//Conv Box Pusher
+	case  2000:
+		OnSet_ConvBoxClamp( IO_ON );
+		m_nStep_Run = 2100;
+		break;
+		
+	case 2100:
+		nRet = OnGet_ConvBoxClamp( IO_ON );
+		if( nRet == CTL_GOOD )
+		{
+			m_nStep_Run = 2200;
+		}
+		else if( nRet == CTL_ERROR )
+		{
+			m_nStep_Run = 2000;
+			CTL_Lib.Alarm_Error_Occurrence( 1007, CTL_dWARNING, alarm.mstr_code );
+		}
+		break;
+
+	case 2200:
+		OnSet_ConvBoxPusher(IO_ON);			// Align
+		m_nStep_Run = 2300;
+		break;
+		
+	case 2300:
+		nRet = OnGet_ConvBoxPusher( IO_ON );
+		if( nRet == CTL_GOOD )
+		{
+			m_lTime_GoesBy[0] = GetCurrentTime();
+			m_nStep_Run = 2400;
+		}
+		else if( nRet == CTL_ERROR )
+		{
+			m_nStep_Run = 2200;
+			CTL_Lib.Alarm_Error_Occurrence( 1008, CTL_dWARNING, alarm.mstr_code );
+		}
+		break;
+
+	case 2400:
+		nRet = g_ioMgr.get_in_bit( stIO.i_Chk_AccyBox_Arrive_End, IO_ON );
+		if( nRet == IO_ON )
+		{
+			m_nStep_Run = 2500;
+		}
+		else
+		{
 			m_lTime_GoesBy[1] = GetCurrentTime();
 			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
-			if (m_lTime_GoesBy[2] < 0)
-			{
-				m_lTime_GoesBy[0] = GetCurrentTime();
-				break;
-			}
+			if( m_lTime_GoesBy[2] < 0) m_lTime_GoesBy[0] = GetCurrentTime();
+			if( m_lTime_GoesBy[2] < 100 ) break;
+			//132000 0 00 "PS0407_LOAD_BOX_ARRIVE_END_OFF_CHK_ERR."
+			CTL_Lib.Alarm_Error_Occurrence( 1009, CTL_dWARNING, "132000" );
+		}
+		break;
+
+	case 2500://alig
+		OnSet_CylClamp(IO_ON);
+		m_nStep_Run = 2510;
+		break;
+
+	case 2510:
+		nRet = OnGet_CylClamp(IO_ON);
+		if( nRet == CTL_GOOD )
+		{
+			m_nStep_Run = 2600;
+		}
+		else
+		{
+			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, alarm.mstr_code );
+			m_nStep_Run = 2500;
+		}
+		break;
+
+	case 2600://IO_OFF = DOWN
+		OnSet_CylUDGripper(IO_OFF);
+	//	OnSet_ConvBoxPusher(IO_OFF);
+		m_nStep_Run = 2610;
+		break;
+
+	case 2610:
+		nRetData[0] = OnGet_CylUDGripper( IO_OFF );
+ 	//	nRetData[1] = OnGet_ConvBoxPusher( IO_OFF ); 
+ 	//	if ( nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD )
+		//kwlee 2017.0712 
+		if ( nRetData[0] == CTL_GOOD)
+		{
+			m_nStep_Run = 2700;
 			
-			if (m_lTime_GoesBy[2] > 10)
-			{
-				// 알람 코드는 OnGet_VacGirpper() 함수 안에서 설정함
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-			}
-			m_nStep_Run = 1000;
 		}
-		break;
-
-	case 1200:
-		OnSet_CylUDGripper(IO_ON);		// Box UD Gripper [ON:Up, OFF:Down]
-		m_nStep_Run = 1210;
-		break;
-
-	case 1210:
-		nRet = OnGet_CylUDGripper(IO_ON);
-		if (nRet == CTL_GOOD)
+		else if ( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
-			m_nStep_Run = 1300;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylUDGripper() 함수 안에서 설정함
-			m_nStep_Run = 1200;
+			CTL_Lib.Alarm_Error_Occurrence( 1011, CTL_dWARNING, alarm.mstr_code );
+			m_nStep_Run = 2600;
 		}
 		break;
 
-	case 1300:
-		OnSet_CylStopper(IO_OFF);		// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
-		m_nStep_Run = 1310;
+		//Clamp & Pusher 동시 OFF
+	case 2700:
+		OnSet_ConvBoxClamp( IO_OFF );
+		OnSet_ConvBoxPusher(IO_OFF); //kwlee 2017.0712
+		m_nStep_Run = 2710;
 		break;
+		
+	case 2710:
+		//nRet = OnGet_ConvBoxClamp( IO_OFF );
+		//if( nRet == CTL_GOOD )
+		//kwlee 2017.0712
+		nRetData[0] = OnGet_ConvBoxClamp( IO_OFF );
+		nRetData[1] = OnGet_ConvBoxPusher( IO_OFF ); 
 
-	case 1310:
-		nRet = OnGet_CylStopper(IO_OFF);
-		if (nRet == CTL_GOOD)
-		{
-			m_nStep_Run = 1400;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
-			m_nStep_Run = 1300;
-		}
-		break;
-
-	case 1400:
-		OnSet_CylSupply(IO_ON);		// 악세사리 박스 공급 실린더[ON:작업 영역, OFF:짚는 영역]
-		m_nStep_Run = 1410;
-		break;
-
-	case 1410:
-		nRet = OnGet_CylSupply(IO_ON);
-		if (nRet == CTL_GOOD)
-		{
-			m_nStep_Run = 1500;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylSupply() 함수 안에서 설정함
-			m_nStep_Run = 1400;
-		}
-		break;
-
-	case 1500:
-		OnSet_CylStopper(IO_ON);		// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
-		OnSet_CylUDGripper(IO_OFF);		// Box UD Gripper [ON:Up, OFF:Down]
-		m_nStep_Run = 1510;
-		break;
-
-	case 1510:
-		nRetData[0] = OnGet_CylStopper(IO_ON);
-		nRetData[1] = OnGet_CylUDGripper(IO_OFF);
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
+		if ( nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD )
 		{
 			// [WithOut] 모드인지 확인
-			// 변수를 이용하여 구동
 			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				st_map.nLoadingAccyBoxExist[0] = 0;
-
+				
 				if (stWithoutData.nWorkTestBox != 0)
 				{
 					stWithoutData.nWorkTestBox--;
@@ -524,271 +499,89 @@ void CSeq_BoxClamp::OnRun_Move()
 			}
 			// BoxClamp가 작업 영역에 도착 했다고 Loading Conv에 알림
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
-			m_nStep_Run = 1700;
-		}
-		else if (nRetData[0] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
-			m_nStep_Run = 1600;
-		}
-		else if(nRetData[1] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylUDGripper() 함수 안에서 설정함
-			m_nStep_Run = 1500;
-		}
-		break;
-
-	case 1600:
-		OnSet_CylStopper(IO_OFF);		// 악세사리 박스 스토퍼 [ON:UP, OFF:DOWN]
-		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		OnSet_VacGirpper(IO_OFF);	// Box Gripper Vac [ON:진공, OFF:해제]
-		m_nStep_Run = 1610;
-		break;
-
-	case 1610:
-		nRetData[0] = OnGet_CylStopper(IO_OFF);
-		nRetData[1] = OnGet_VacGirpper(IO_OFF);
-		nRetData[2] = OnGet_CylClamp(IO_OFF);
-		nRetData[3] = OnGet_CylLRGripper(IO_OFF);
-
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD && 
-			nRetData[2] == CTL_GOOD && nRetData[3] == CTL_GOOD)
-		{
-			alarm.mn_count_mode	= 0;
-			alarm.mn_type_mode	= eWARNING;
-			st_work.nEqpStatus	= dWARNING;
-			m_nStep_Run = 1500;
-		}
-		else if (nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR || 
-				 nRetData[2] == CTL_ERROR || nRetData[3] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylStopper() 함수 안에서 설정함
-			m_nStep_Run = 1600;
-		}
-		
-		break;
-
-	// 규이리 추가 [2015.03.10]
-	case 1700:
-		for(i=0; i<3; i++)
-		{
-			m_nResp_Move[i] = CTL_NO;
-		}
-		OnSet_VacGirpper(IO_OFF);	// Box Gripper Vac [ON:진공, OFF:해제]
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		// yangkyu [2015.03.30]
-		// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-		m_lTime_GoesBy[0] = GetCurrentTime();
-		m_nStep_Run = 1710;
-		break;
-		
-		// 규이리 추가 [2015.03.10]
-	case 1710:
-		nRetData[0] = OnGet_VacGirpper(IO_OFF);
-		nRetData[1] = OnGet_CylClamp(IO_OFF);
-		nRetData[2] = OnGet_CylLRGripper(IO_OFF);
-		if (nRetData[0] == CTL_GOOD)
-		{
-			m_nResp_Move[0] = CTL_YES;
-		}
-		if (nRetData[1] == CTL_GOOD)
-		{
-			m_nResp_Move[1] = CTL_YES;
-		}
-		if (nRetData[2] == CTL_GOOD)
-		{
-			m_nResp_Move[2] = CTL_YES;
-		}
-		
-		if (m_nResp_Move[0] == CTL_YES &&
-			m_nResp_Move[1] == CTL_YES &&
-			m_nResp_Move[2] == CTL_YES)
-		{
-			for(i=0; i<3; i++)
-			{
-				m_nResp_Move[i] = CTL_NO;
-			}
-			m_nStep_Run = 1800;
-		}
-		else if (nRetData[0] == CTL_ERROR)
-		{
-			// yangkyu [2015.03.30]
-			// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-			m_lTime_GoesBy[1] = GetCurrentTime();
-			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
-			if (m_lTime_GoesBy[2] < 0)
-			{
-				m_lTime_GoesBy[0] = GetCurrentTime();
-				break;
-			}
 			
-			if (m_lTime_GoesBy[2] > 10)
-			{
-				// 알람 코드는 OnGet_VacGirpper() 함수 안에서 설정함
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-			}
-			m_nStep_Run = 1700;
+			m_nStep_Run = 2800;
 		}
-		else if (nRetData[1] == CTL_ERROR || nRetData[2] == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			m_nStep_Run = 1700;
-			// 알람 코드는 OnGet_CylClamp() 함수 안에서 설정
+			m_nStep_Run = 2700;
+			CTL_Lib.Alarm_Error_Occurrence( 1012, CTL_dWARNING, alarm.mstr_code );
 		}
 		break;
 
-		// 규이리 수정 [2015.03.10]
-	//case 1700:
-	case 1800:
-		OnSet_CylPusher(IO_ON);		// 악세사리 박스 뒷부분을 정렬 하는 푸셔 [ON:정렬, OFF:해제]
-		// yangkyu [2015.03.30]
-		// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-		m_lTime_GoesBy[0] = GetCurrentTime();
-		m_nStep_Run = 1810;
-		break;
-
-	//case 1710:
-	case 1810:
-		nRet = OnGet_CylPusher(IO_ON);
-		if (nRet == CTL_GOOD)
-		{
-			m_nPusher_Retry = 0;
-			m_nStep_Run = 1900;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			if (m_nPusher_Retry > 0)
-			{
-				// 알람 코드는 OnGet_CylPusher() 함수 안에서 설정함
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-				m_nStep_Run = 1800;
-			}
-			else
-			{
-				m_nPusher_Retry++;
-				m_nStep_Run = 1820;
-			}
-		}
-		break;
-
-	case 1820:
-		OnSet_CylPusher(IO_OFF);
-		m_nStep_Run = 1830;
-		break;
-
-	case 1830:
-		nRet = OnGet_CylPusher(IO_OFF);
-		if (nRet == CTL_GOOD)
-		{
-			m_nStep_Run = 1800;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			m_nStep_Run = 1820;
-		}
-		break;
-
-	case 1900:
-		OnSet_CylLRGripper(IO_ON);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		m_nStep_Run = 1910;
-		break;
-
-	case 1910:
-		nRet = OnGet_CylLRGripper(IO_ON);
-		if (nRet == CTL_GOOD)
-		{
-			m_nStep_Run = 2000;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			m_nStep_Run = 1900;
-		}
-		break;
-
-	case 2000:
-		OnSet_CylClamp(IO_ON);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		m_nStep_Run = 2010;
-		break;
-
-	case 2010:
-		nRet = OnGet_CylClamp(IO_ON);
-		if (nRet == CTL_GOOD)
-		{
-			st_map.nBoxChange = TRUE;
-			st_map.nResp_AccyReadyCNT = 180;
-			// Lifter에게 Accy Box Clamping 완료 알림
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_ACCY_BOX_CLAMPING_COMPLETE_;
-			
-			st_map.nClampAccyBoxAccy = 1;
-			
-			if (st_handler.cwnd_main != NULL)
-			{
-				// Box Clamp 자재 존재 상태 표시 요청
-				st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BOX_CLAMP_);
-			}
-			m_nStep_Run = 3000;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			m_nStep_Run = 2000;
-		}
-		break;
-//////////////////////////////////////////////////////////////////////////
+	case 2800:
+		st_map.nBoxChange = TRUE;
+		st_map.nResp_AccyReadyCNT = 240;
+		// Lifter에게 Accy Box Clamping 완료 알림(누구에게?? 리프트에게??)(그럼 무슨일 하지?)
+		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_ACCY_BOX_CLAMPING_COMPLETE_;
 		
+		st_map.nClampAccyBoxAccy = 1;
 		
-//////////////////////////////////////////////////////////////////////////
-// Accy Box 배출 작업
-//////////////////////////////////////////////////////////////////////////
+		if (st_handler.cwnd_main != NULL)
+		{
+			// Box Clamp 자재 존재 상태 표시 요청
+			st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BOX_CLAMP_);
+		}
+		m_nStep_Run = 3000;
+		break;
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Accy Box 배출 작업
+		//////////////////////////////////////////////////////////////////////////
 	case 3000:
 		// [BoxLifter -> BoxClamp] 작업 완료 대기
-		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_)
-		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_;
-			m_nStep_Run = 3200;
+		if( stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_WORK_COMPLETE_ )
+		{		   
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_; //kwlee 2017.0711
+			m_nStep_Run = 3100;
 		}
 		break;
 
-	case 3200:
-		OnSet_CylPusher(IO_OFF);		// 악세사리 박스 뒷부분을 정렬 하는 푸셔 [ON:정렬, OFF:해제]
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		m_nStep_Run = 3210;
+	case 3100:
+		OnSet_CylClamp(IO_OFF);	            // align
+		//OnSet_CylUDGripper(IO_OFF);			// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+		//kwlee 2017.0712
+		OnSet_CylUDGripper(IO_ON);			// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+		m_nStep_Run = 3110;
 		break;
 
-	case 3210:
-		nRetData[0] = OnGet_CylPusher(IO_OFF);
-		nRetData[1] = OnGet_CylClamp(IO_OFF);
-		nRetData[2] = OnGet_CylLRGripper(IO_OFF);
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD && nRetData[2] == CTL_GOOD)
+	case 3110:
+		nRetData[0] = OnGet_CylClamp( IO_OFF );
+		//nRetData[1] = OnGet_CylUDGripper( IO_OFF );
+		//kwlee 2017.0712 IO_ON = UP
+		nRetData[1] = OnGet_CylUDGripper( IO_ON );
+		if( nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD )
 		{
+			m_lTime_GoesBy[01] = GetCurrentTime();
 			m_nStep_Run = 4000;
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+			//
 		}
-		else if (nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR || nRetData[2] == CTL_ERROR)
+		else if( nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylPusher() 함수 안에서 설정함
-			// 알람 코드는 OnGet_CylClamp() 함수 안에서 설정함
-			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
-			m_nStep_Run = 3200;
+			CTL_Lib.Alarm_Error_Occurrence( 1013, CTL_dWARNING, alarm.mstr_code );
+			m_nStep_Run = 3100;
 		}
 		break;
 
 	case 4000:
-		OnSet_CylSupply(IO_OFF);		// 악세사리 박스 공급 실린더[ON:작업 영역, OFF:짚는 영역]
-		m_nStep_Run = 4010;
-		break;
-
-	case 4010:
-		nRet = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyFw);
-		if (nRet == IO_OFF)
-		{
-			m_nStep_Run = 4100;
-		}
+		//kwlee 2017.0707
+ 		nRetData[0] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxPusherCylPusherCheck, IO_OFF);
+ 		nRetData[1] = g_ioMgr.get_in_bit( stIO.i_Chk_Load_BoxPusherCylPullCheck, IO_ON);
+ 		if( nRetData[0] == IO_OFF && nRetData[1] == IO_ON )
+ 		{
+ 			m_nStep_Run = 4100;
+ 		}
+ 		else
+ 		{
+ 			m_lTime_GoesBy[1] = GetCurrentTime();
+ 			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
+ 			if( m_lTime_GoesBy[2] < 0) m_lTime_GoesBy[0] = GetCurrentTime();
+ 			if( m_lTime_GoesBy[2] < 100 ) break;
+ 			//131001 0 00 "PS0702_PS0703_LOAD_BOX_PUSHER_FORWARD_CHK_ERR."
+ 			CTL_Lib.Alarm_Error_Occurrence( 1014, CTL_dWARNING, "131001" );
+ 		}
 		break;
 
 	case 4100:
@@ -796,131 +589,74 @@ void CSeq_BoxClamp::OnRun_Move()
 		m_nStep_Run = 4110;
 		break;
 
+
 	case 4110:
-		nRetData[0] = OnGet_CylLifter(IO_OFF);
-		nRetData[1] = OnGet_CylSupply(IO_OFF);
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
+		nRet = OnGet_CylLifter( IO_OFF );
+		if( nRet == CTL_GOOD )
 		{
-			st_map.nClampAccyBoxAccy = 0;
-
-			if (st_handler.cwnd_main != NULL)
-			{
-				// Box Clamp 자재 존재 상태 표시 요청
-				st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BOX_CLAMP_);
-			}
-			
-			// Lifter에게 Box Remove 요청
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_BOX_REMOVE_;
-
-			// kilee [2015.03.29]
-			Func.OnSet_BuzzerSound(IO_ON);
-
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_; 
+			//kwlee 2017.0711
+			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_;
 			m_nStep_Run = 4200;
 		}
-		else if (nRetData[0] == CTL_ERROR)
+		else if( nRet == CTL_ERROR )
 		{
-			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
+			CTL_Lib.Alarm_Error_Occurrence( 1015, CTL_dWARNING, alarm.mstr_code );
 			m_nStep_Run = 4100;
-		}
-		else if (nRetData[1] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylSupply() 함수 안에서 설정함
-			m_nStep_Run = 4000;
 		}
 		break;
 
 	case 4200:
 		// Box Remove 완료 대기 
-		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_COMPLETE)
+		
+		if( stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_COMPLETE )
 		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_;
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_; //kwlee 2017.0711
 			m_nStep_Run = 4300;
 		}
-		else if(stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_)
+		else if( stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_ )
 		{
 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_WORK_;
-			m_nStep_Run = 4210;
-		}
-		break;
-
-	case 4210:
-		OnSet_CylLRGripper(IO_ON);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		OnSet_VacGirpper(IO_ON);		// Box Gripper Vac [ON:진공, OFF:해제]
-		// yangkyu [2015.03.30]
-		// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-		m_lTime_GoesBy[0] = GetCurrentTime();
-		m_nStep_Run = 4220;
-		break;
-
-	case 4220:
-		nRetData[0] = OnGet_CylLRGripper(IO_ON);
-		nRetData[1] = OnGet_VacGirpper(IO_ON);
-		
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
-		{
-			m_nStep_Run = 4260;
-		}
-		else if (nRetData[0] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
-			m_nStep_Run = 4210;
-		}
-		else if (nRetData[1] == CTL_ERROR)
-		{
-			// yangkyu [2015.03.30]
-			// 시간이 지난 후에 Vacuum 형성될 수 있으므로 다시 검사
-			m_lTime_GoesBy[1] = GetCurrentTime();
-			m_lTime_GoesBy[2] = m_lTime_GoesBy[1] - m_lTime_GoesBy[0];
-			if (m_lTime_GoesBy[2] < 0)
-			{
-				m_lTime_GoesBy[0] = GetCurrentTime();
-				break;
-			}
-			
-			if (m_lTime_GoesBy[2] > 10)
-			{
-				// 알람 코드는 OnGet_VacGirpper() 함수 안에서 설정함
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-			}
-			m_nStep_Run = 4210;
-		}
-		break;
-
-	case 4260:
-		// Box Remove 완료 대기 
-		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_COMPLETE)
-		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_;
 			m_nStep_Run = 4300;
 		}
 		break;
 
 	case 4300:
-		// 다음 Accy Box를 공급 받기 위해 Lift를 올림
-		OnSet_CylLifter(IO_ON);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
-		m_nStep_Run = 4310;
+		// Box Remove 완료 대기 
+		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_COMPLETE)
+		{
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_; //kwlee 2017.0712
+			m_nStep_Run = 4500;
+		}
 		break;
 
-	case 4310:
+	case 4500:
+		// 다음 Accy Box를 공급 받기 위해 Lift를 올림
+		OnSet_CylLifter(IO_ON);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
+		m_nStep_Run = 4510;
+		break;
+
+	case 4510:
 		nRet = OnGet_CylLifter(IO_ON);
 		if (nRet == CTL_GOOD)
 		{
+			//stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_COMPLETE_; //kwlee 2017.0711 올렸다고 알려라.
 			m_nStep_Run = 5000;
 		}
 		else if (nRet == CTL_ERROR)
 		{
-			m_nStep_Run = 4300;		// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
+			CTL_Lib.Alarm_Error_Occurrence( 1016, CTL_dWARNING, alarm.mstr_code );
+			m_nStep_Run = 4500;
 		}
 		break;
-//////////////////////////////////////////////////////////////////////////
 
 	case 5000:
 		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
 		m_nStep_Run = 0;
 		break;
+
 	}
+
 }
 
 //==================================================================//
@@ -929,7 +665,7 @@ void CSeq_BoxClamp::OnRun_Move()
 int CSeq_BoxClamp::OnRun_ForceDischarge() 
 {
 	int nFuncRet = CTL_PROCEED;
-	int nRet;
+//	int nRet;
 	int nRetData[4] = {0,};
 	
 	Func.OnTrace_ThreadStep(4, m_nStep_ForceDischarge);	// 쓰레드 스텝 정보 TRACE
@@ -940,198 +676,180 @@ int CSeq_BoxClamp::OnRun_ForceDischarge()
 		return true;
 	}
 	
-	switch(m_nStep_ForceDischarge)
-	{
-	case 0:
-		if(stSync.nForceDischargeComplete[SITE_BOX_CLAMP_] != CTL_YES)
-		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_;
-			m_nStep_ForceDischarge = 10;
-		}
-		break;
-
-	case 10:
-		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_READY)
-		{
-			m_nStep_ForceDischarge = 100;
-		}
-		break;
-
-	case 100:
-		OnSet_CylPusher(IO_OFF);		// 악세사리 박스 뒷부분을 정렬 하는 푸셔 [ON:정렬, OFF:해제]
-		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
-		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
-		m_nStep_ForceDischarge = 110;
-		break;
-
-	case 110:
-		nRetData[0] = OnGet_CylPusher(IO_OFF);
-		nRetData[1] = OnGet_CylClamp(IO_OFF);
-		nRetData[2] = OnGet_CylLRGripper(IO_OFF);
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD && nRetData[2] == CTL_GOOD)
-		{
-			m_nStep_ForceDischarge = 200;
-		}
-		else if (nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR || nRetData[2] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylPusher() 함수 안에서 설정함
-			// 알람 코드는 OnGet_CylClamp() 함수 안에서 설정함
-			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
-			m_nStep_ForceDischarge = 100;
-		}
-		break;
-
-	case 200:
-		OnSet_CylSupply(IO_OFF);		// 악세사리 박스 공급 실린더[ON:작업 영역, OFF:짚는 영역]
-		m_nStep_ForceDischarge = 210;
-		break;
-
-	case 210:
-		nRet = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyFw);
-		if (nRet == IO_OFF)
-		{
-			m_nStep_ForceDischarge = 300;
-		}
-		break;
-
-	case 300:
-		OnSet_CylLifter(IO_OFF);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
-		m_nStep_ForceDischarge = 310;
-		break;
-
-	case 310:
-		nRetData[0] = OnGet_CylLifter(IO_OFF);
-		nRetData[1] = OnGet_CylSupply(IO_OFF);
-		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
-		{
-			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
-
-			st_map.nClampAccyBoxAccy = 0;
-			
-			if (st_handler.cwnd_main != NULL)
-			{
-				// Box Clamp 자재 존재 상태 표시 요청
-				st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BOX_CLAMP_);
-			}
-			m_nStep_ForceDischarge = 400;
-		}
-		else if (nRetData[0] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
-			m_nStep_ForceDischarge = 300;
-		}
-		else if (nRetData[1] == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylSupply() 함수 안에서 설정함
-			m_nStep_ForceDischarge = 200;
-		}
-		break;
-
-	case 400:
-		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_RESET_)
-		{
-			m_nStep_ForceDischarge = 500;
-		}
-		break;
-
-	case 500:
-		OnSet_CylLifter(IO_ON);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
-		m_nStep_ForceDischarge = 510;
-		break;
-
-	case 510:
-		nRet = OnGet_CylLifter(IO_ON);
-		if (nRet == CTL_GOOD)
-		{
-			m_nStep_ForceDischarge = 600;
-		}
-		else if (nRet == CTL_ERROR)
-		{
-			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
-			m_nStep_ForceDischarge = 500;
-		}
-		break;
-
-	case 600:
-		m_nStep_Run = 0;
-		m_nStep_ForceDischarge = 0;
-		stSync.nForceDischargeComplete[SITE_BOX_CLAMP_] = CTL_YES;
-		stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
-		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
-		break;
-	}
+// 	switch(m_nStep_ForceDischarge)
+// 	{
+// 	case 0:
+// 		if(stSync.nForceDischargeComplete[SITE_BOX_CLAMP_] != CTL_YES)
+// 		{
+// 			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_WORK_;
+// 			m_nStep_ForceDischarge = 10;
+// 		}
+// 		break;
+// 
+// 	case 10:
+// 		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_READY)
+// 		{
+// 			m_nStep_ForceDischarge = 100;
+// 		}
+// 		break;
+// 
+// 	case 100:
+// // 		OnSet_CylPusher(IO_OFF);		// 악세사리 박스 뒷부분을 정렬 하는 푸셔 [ON:정렬, OFF:해제]
+// 		OnSet_CylClamp(IO_OFF);		// 악세사리 박스 윗부분을 정렬 하는 실린더 [ON:정렬, OFF:해제]
+// // 		OnSet_CylLRGripper(IO_OFF);		// Box LR Gripper [ON:Grip, OFF:UnGrip]
+// 		m_nStep_ForceDischarge = 110;
+// 		break;
+// 
+// 	case 110:
+// // 		nRetData[0] = OnGet_CylPusher(IO_OFF);
+// 		nRetData[1] = OnGet_CylClamp(IO_OFF);
+// // 		nRetData[2] = OnGet_CylLRGripper(IO_OFF);
+// 		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD && nRetData[2] == CTL_GOOD)
+// 		{
+// 			m_nStep_ForceDischarge = 200;
+// 		}
+// 		else if (nRetData[0] == CTL_ERROR || nRetData[1] == CTL_ERROR || nRetData[2] == CTL_ERROR)
+// 		{
+// 			// 알람 코드는 OnGet_CylPusher() 함수 안에서 설정함
+// 			// 알람 코드는 OnGet_CylClamp() 함수 안에서 설정함
+// 			// 알람 코드는 OnGet_CylLRGripper() 함수 안에서 설정함
+// 			m_nStep_ForceDischarge = 100;
+// 		}
+// 		break;
+// 
+// 	case 200:
+// 		OnSet_CylSupply(IO_OFF);		// 악세사리 박스 공급 실린더[ON:작업 영역, OFF:짚는 영역]
+// 		m_nStep_ForceDischarge = 210;
+// 		break;
+// 
+// 	case 210:
+// 		nRet = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyFw);
+// 		if (nRet == IO_OFF)
+// 		{
+// 			m_nStep_ForceDischarge = 300;
+// 		}
+// 		break;
+// 
+// 	case 300:
+// 		OnSet_CylLifter(IO_OFF);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
+// 		m_nStep_ForceDischarge = 310;
+// 		break;
+// 
+// 	case 310:
+// 		nRetData[0] = OnGet_CylLifter(IO_OFF);
+// 		nRetData[1] = OnGet_CylSupply(IO_OFF);
+// 		if (nRetData[0] == CTL_GOOD && nRetData[1] == CTL_GOOD)
+// 		{
+// 			stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+// 
+// 			st_map.nClampAccyBoxAccy = 0;
+// 			
+// 			if (st_handler.cwnd_main != NULL)
+// 			{
+// 				// Box Clamp 자재 존재 상태 표시 요청
+// 				st_handler.cwnd_main->PostMessage(WM_UPDATE_MAIN, PLACE_BOX_CLAMP_);
+// 			}
+// 			m_nStep_ForceDischarge = 400;
+// 		}
+// 		else if (nRetData[0] == CTL_ERROR)
+// 		{
+// 			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
+// 			m_nStep_ForceDischarge = 300;
+// 		}
+// 		else if (nRetData[1] == CTL_ERROR)
+// 		{
+// 			// 알람 코드는 OnGet_CylSupply() 함수 안에서 설정함
+// 			m_nStep_ForceDischarge = 200;
+// 		}
+// 		break;
+// 
+// 	case 400:
+// 		// 김양규 추가 [2015.06.24]
+// 		// Lift 쪽에서 싱크 변수 타입을 2개로 주고 있어 추가 함.
+// 		if(stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_RESET_ || stSync.nResp_Lifter2Clamp_Work == SYNC_RESP_BOX_REMOVE_COMPLETE)
+// 		{
+// 			m_nStep_ForceDischarge = 500;
+// 		}
+// 		break;
+// 
+// 	case 500:
+// 		OnSet_CylLifter(IO_ON);		// 악세사리 박스 밑부분을 받쳐주는 실린더 [ON:Up, OFF:Down]
+// 		m_nStep_ForceDischarge = 510;
+// 		break;
+// 
+// 	case 510:
+// 		nRet = OnGet_CylLifter(IO_ON);
+// 		if (nRet == CTL_GOOD)
+// 		{
+// 			m_nStep_ForceDischarge = 600;
+// 		}
+// 		else if (nRet == CTL_ERROR)
+// 		{
+// 			// 알람 코드는 OnGet_CylLifter() 함수 안에서 설정함
+// 			m_nStep_ForceDischarge = 500;
+// 		}
+// 		break;
+// 
+// 	case 600:
+// 		m_nStep_Run = 0;
+// 		m_nStep_ForceDischarge = 0;
+// 		stSync.nForceDischargeComplete[SITE_BOX_CLAMP_] = CTL_YES;
+// 		stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
+// 		stSync.nReq_Clamp2Lifter_Work = SYNC_REQ_RESET_;
+// 		break;
+// 	}
 
 	return nFuncRet;
 }
 
 //==================================================================//
-// 악세사리 박스를 왼쪽 오른 쪽을 잡는 실린더
-// - IO_ON = Fw 상태이며, 박스를 잡음
-// - IO_OFF = Bw 상태이며, 박스를 놓음
+// Load Conv Box Clamp
 //==================================================================//
-void CSeq_BoxClamp::OnSet_CylLRGripper(int nzOnOff) 
+void CSeq_BoxClamp::OnSet_ConvBoxClamp(int nzOnOff) 
 {
-	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxGripperFw, nzOnOff);
-	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxGripperBw, !nzOnOff);
+	g_ioMgr.set_out_bit(stIO.o_Load_BoxClampOnOff, nzOnOff);
 
-	m_bflag_LRGripper = true;
-	m_lWait_LRGripper[0] = GetCurrentTime();
+	m_bflag_ConvClamp = true;
+	m_lWait_ConvClamp[0] = GetCurrentTime();
 }
 
-int CSeq_BoxClamp::OnGet_CylLRGripper(int nzOnOff, int nzSite) 
+int CSeq_BoxClamp::OnGet_ConvBoxClamp(int nzOnOff) 
 {
 	int nFunRet = CTL_PROCEED;
 
-	int nReadIO[4] = {0,};
-	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripperFw[SIDE_LEFT_]);
-	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripperBw[SIDE_LEFT_]);
-	nReadIO[2] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripperFw[SIDE_RIGHT_]);
-	nReadIO[3] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripperBw[SIDE_RIGHT_]);
+	int nReadIO[2] = {0,};
+	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxClampOnCheck);
+	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxClampOffCheck);
 
-	if (nzSite == SIDE_LEFT_)
-	{
-		// [Right] 센서 입력은 강제로 설정
-		nReadIO[2] =  nzOnOff;
-		nReadIO[3] = !nzOnOff;
-	}
-	else if (nzSite == SIDE_RIGHT_)
-	{
-		// [Left] 센서 입력은 강제로 설정
-		nReadIO[0] =  nzOnOff;
-		nReadIO[1] = !nzOnOff;
-	}
+	m_lWait_ConvClamp[1] = GetCurrentTime();
+	m_lWait_ConvClamp[2] = m_lWait_ConvClamp[1] - m_lWait_ConvClamp[0];
 
-	m_lWait_LRGripper[1] = GetCurrentTime();
-	m_lWait_LRGripper[2] = m_lWait_LRGripper[1] - m_lWait_LRGripper[0];
-
-	if (m_lWait_LRGripper[2] < 0)
+	if (m_lWait_ConvClamp[2] < 0)
 	{
-		m_lWait_LRGripper[0] = GetCurrentTime();
+		m_lWait_ConvClamp[0] = GetCurrentTime();
 	}
 
 	if (nzOnOff == IO_OFF)		// 박스를 놓은 상태
 	{
-		if (m_bflag_LRGripper == true &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON &&
-			nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+		if (m_bflag_ConvClamp == true &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
 		{
-			m_lWait_LRGripper[0] = GetCurrentTime();
-			m_bflag_LRGripper = false;
+			m_lWait_ConvClamp[0] = GetCurrentTime();
+			m_bflag_ConvClamp = false;
 		}
-		else if (m_bflag_LRGripper == false &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON &&
-			nReadIO[2] == IO_OFF && nReadIO[3] == IO_ON)
+		else if (m_bflag_ConvClamp == false &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
 		{
-			if (m_lWait_LRGripper[2] > st_time.nWait_Off[CYL_ACCY_BOX_LR_GRIPPER])
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Off[CYL_ACCY_CONV_BOX_CLAMP])
 			{
 				nFunRet = CTL_GOOD;
 			}
 		}
 		else
 		{
-			if (m_lWait_LRGripper[2] > st_time.nWait_Limit[CYL_ACCY_BOX_LR_GRIPPER])
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Limit[CYL_ACCY_CONV_BOX_CLAMP])
 			{
-				//  130000 0 00 "PS0701_PS0703_BOX_CLAMP_GRIPPER_UNGRIP_CHK_ERR."
+				//  130000 0 00 "PS0701_PS0703_LOAD_BOX_CLAMP_OFF_CHK_ERR."
 				alarm.mstr_code		= "130000";
 
 				alarm.mn_count_mode	= 0;
@@ -1144,33 +862,125 @@ int CSeq_BoxClamp::OnGet_CylLRGripper(int nzOnOff, int nzSite)
 	}
 	else		// 박스를 잡은 상태
 	{
-		if (m_bflag_LRGripper == true &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF &&
-			nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
+		if (m_bflag_ConvClamp == true &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
 		{
-			m_lWait_LRGripper[0] = GetCurrentTime();
-			m_bflag_LRGripper = false;
+			m_lWait_ConvClamp[0] = GetCurrentTime();
+			m_bflag_ConvClamp = false;
 		}
-		else if (m_bflag_LRGripper == false &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF &&
-			nReadIO[2] == IO_ON && nReadIO[3] == IO_OFF)
+		else if (m_bflag_ConvClamp == false &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
 		{
-			if (m_lWait_LRGripper[2] > st_time.nWait_On[CYL_ACCY_BOX_LR_GRIPPER])
+			if (m_lWait_ConvClamp[2] > st_time.nWait_On[CYL_ACCY_CONV_BOX_CLAMP])
 			{
 				nFunRet = CTL_GOOD;
 			}
 		}
 		else
 		{
-			if (m_lWait_LRGripper[2] > st_time.nWait_Limit[CYL_ACCY_BOX_LR_GRIPPER])
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Limit[CYL_ACCY_CONV_BOX_CLAMP])
 			{
-				//  130001 0 00 "PS0700_PS0702_BOX_CLAMP_GRIPPER_GRIP_CHK_ERR."
+				// 130001 0 00 "PS0701_PS0703_LOAD_BOX_CLAMP_ON_CHK_ERR."
 				alarm.mstr_code		= "130001";
 
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
 				st_work.nEqpStatus	= dWARNING;
 
+				nFunRet = CTL_ERROR;
+			}
+		}
+	}
+	return nFunRet;
+}
+
+//==================================================================//
+// Load Conv Box Pusher
+//==================================================================//
+void CSeq_BoxClamp::OnSet_ConvBoxPusher(int nzOnOff) 
+{
+	g_ioMgr.set_out_bit(stIO.o_Load_BoxPusherCylPusher, nzOnOff);
+	g_ioMgr.set_out_bit(stIO.o_Load_BoxPusherCylPull, !nzOnOff);
+	
+	m_bflag_ConvClamp = true;
+	m_lWait_ConvClamp[0] = GetCurrentTime();
+}
+
+int CSeq_BoxClamp::OnGet_ConvBoxPusher(int nzOnOff) 
+{
+	int nFunRet = CTL_PROCEED;
+	
+	int nReadIO[2] = {0,};
+	//kwlee 2017.0707
+ 	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherCylPusherCheck);
+ 	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_Load_BoxPusherCylPullCheck);
+	
+	m_lWait_ConvClamp[1] = GetCurrentTime();
+	m_lWait_ConvClamp[2] = m_lWait_ConvClamp[1] - m_lWait_ConvClamp[0];
+	
+	if (m_lWait_ConvClamp[2] < 0)
+	{
+		m_lWait_ConvClamp[0] = GetCurrentTime();
+	}
+	
+	if (nzOnOff == IO_OFF)		// 박스를 놓은 상태
+	{
+		if (m_bflag_ConvClamp == true &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
+		{
+			m_lWait_ConvClamp[0] = GetCurrentTime();
+			m_bflag_ConvClamp = false;
+		}
+		else if (m_bflag_ConvClamp == false &&
+			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
+		{
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Off[CYL_ACCY_CONV_BOX_CLAMP])
+			{
+				nFunRet = CTL_GOOD;
+			}
+		}
+		else
+		{
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Limit[CYL_ACCY_CONV_BOX_CLAMP])
+			{
+				//  131000 0 00 "PS0702_PS0703_LOAD_BOX_PUSHER_BACKWARD_CHK_ERR."
+				alarm.mstr_code		= "131000";
+				
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+				
+				nFunRet = CTL_ERROR;
+			}
+		}
+	}
+	else		// 박스를 잡은 상태
+	{
+		if (m_bflag_ConvClamp == true &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+		{
+			m_lWait_ConvClamp[0] = GetCurrentTime();
+			m_bflag_ConvClamp = false;
+		}
+		else if (m_bflag_ConvClamp == false &&
+			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
+		{
+			if (m_lWait_ConvClamp[2] > st_time.nWait_On[CYL_ACCY_CONV_BOX_CLAMP])
+			{
+				nFunRet = CTL_GOOD;
+			}
+		}
+		else
+		{
+			if (m_lWait_ConvClamp[2] > st_time.nWait_Limit[CYL_ACCY_CONV_BOX_CLAMP])
+			{
+				// 130001 0 00 "PS0701_PS0703_LOAD_BOX_CLAMP_ON_CHK_ERR."
+				alarm.mstr_code		= "130001";
+				
+				alarm.mn_count_mode	= 0;
+				alarm.mn_type_mode	= eWARNING;
+				st_work.nEqpStatus	= dWARNING;
+				
 				nFunRet = CTL_ERROR;
 			}
 		}
@@ -1245,8 +1055,8 @@ int CSeq_BoxClamp::OnGet_CylClamp(int nzOnOff, int nzSite)
 		{
 			if (m_lWait_Clamp[2] > st_time.nWait_Limit[CYL_ACCY_BOX_CLAMP])
 			{
-				// 131000 0 00 "PS0505_PS0507_BOX_CLAMP_UNCLAMP_CHK_ERR."
-				alarm.mstr_code		= "131000";
+				// 133000 0 00 "PS0505_PS0507_BOX_CLAMP_UNCLAMP_CHK_ERR."
+				alarm.mstr_code		= "133000";
 
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
@@ -1278,8 +1088,8 @@ int CSeq_BoxClamp::OnGet_CylClamp(int nzOnOff, int nzSite)
 		{
 			if (m_lWait_Clamp[2] > st_time.nWait_Limit[CYL_ACCY_BOX_CLAMP])
 			{
-				//  131001 0 00 "PS0504_PS0506_BOX_CLAMP_CLAMP_CHK_ERR."
-				alarm.mstr_code		= "131001";
+				//  133001 0 00 "PS0504_PS0506_BOX_CLAMP_CLAMP_CHK_ERR."
+				alarm.mstr_code		= "133001";
 
 				alarm.mn_count_mode	= 0;
 				alarm.mn_type_mode	= eWARNING;
@@ -1287,144 +1097,6 @@ int CSeq_BoxClamp::OnGet_CylClamp(int nzOnOff, int nzSite)
 
 				nFunRet = CTL_ERROR;
 			}
-		}
-	}
-	return nFunRet;
-}
-
-//==================================================================//
-// 악세사리 박스를 잡은 후 왼쪽 오른 쪽에 잡는 Vac
-// - IO_ON = Vac ON 상태이며, 상단 박스를 잡음
-// - IO_OFF = Vac OFF 상태이며, 상단 박스를 놓음
-//==================================================================//
-void CSeq_BoxClamp::OnSet_VacGirpper(int nzOnOff, int nzSite)
-{
-	if (nzSite == SIDE_LEFT_)
-	{
-		g_ioMgr.set_out_bit(stIO.o_Vac_AccyBoxGripper_VacOnOff[SIDE_LEFT_], nzOnOff);
-
-		m_bflag_Vac[SIDE_LEFT_] = true;
-		m_lWait_Vac[SIDE_LEFT_][0] = GetCurrentTime();
-	}
-	else if (nzSite == SIDE_RIGHT_)
-	{
-		g_ioMgr.set_out_bit(stIO.o_Vac_AccyBoxGripper_VacOnOff[SIDE_RIGHT_], nzOnOff);
-
-		m_bflag_Vac[SIDE_RIGHT_] = true;
-		m_lWait_Vac[SIDE_RIGHT_][0] = GetCurrentTime();
-	}
-	else
-	{
-		g_ioMgr.set_out_bit(stIO.o_Vac_AccyBoxGripper_VacOnOff[SIDE_LEFT_],	nzOnOff);
-		g_ioMgr.set_out_bit(stIO.o_Vac_AccyBoxGripper_VacOnOff[SIDE_RIGHT_],	nzOnOff);
-
-		m_bflag_Vac[SIDE_BOTH_] = true;
-		m_lWait_Vac[SIDE_BOTH_][0] = GetCurrentTime();
-	}
-}
-
-int CSeq_BoxClamp::OnGet_VacGirpper(int nzOnOff, int nzSite)
-{
-	int nFunRet = CTL_PROCEED;
-
-	if (nzSite < SIDE_LEFT_ || nzSite > SIDE_RIGHT_)
-	{
-		nzSite = SIDE_BOTH_;
-	}
-
-	int nReadIO[2] = {0,};
-	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripper_VacOn[SIDE_LEFT_]);
-	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxGripper_VacOn[SIDE_RIGHT_]);
-
-	if (nzSite == SIDE_LEFT_)
-	{
-		// [Right] 센서 입력은 강제로 설정
-		nReadIO[1] = !nzOnOff;
-	}
-	else if (nzSite == SIDE_RIGHT_)
-	{
-		// [Left] 센서 입력은 강제로 설정
-		nReadIO[0] = !nzOnOff;
-	}
-
-	if (st_basic.n_mode_device == WITHOUT_DVC_)
-	{
-		// [WithOut] 모드에서는 Vacuum 상태를 설정하고자 하는 상태로 강제로 할당함
-		nReadIO[0] = nzOnOff;
-		nReadIO[1] = nzOnOff;
-	}
-
-	if (nReadIO[0] == nzOnOff && nReadIO[1] == nzOnOff &&
-		m_bflag_Vac[nzSite] == true)
-	{
-		m_lWait_Vac[nzSite][0] = GetCurrentTime();
-		m_bflag_Vac[nzSite] = false;
-	}
-	else if (nReadIO[0] == nzOnOff && nReadIO[1] == nzOnOff &&
-		m_bflag_Vac[nzSite] == false)
-	{
-		m_lWait_Vac[nzSite][1] = GetCurrentTime();
-		m_lWait_Vac[nzSite][2] = m_lWait_Vac[nzSite][1] - m_lWait_Vac[nzSite][0];
-		if (m_lWait_Vac[nzSite][2] < 0)
-		{
-			m_lWait_Vac[nzSite][0] = GetCurrentTime();
-			return nFunRet;
-		}
-
-		if (nzOnOff == IO_ON)
-		{
-			if (m_lWait_Vac[nzSite][2] >= st_time.nWait_On[CYL_ACCY_BOX_VAC_GRIPPER])
-			{
-				nFunRet = CTL_GOOD;
-			}
-		}
-		else
-		{
-			if (m_lWait_Vac[nzSite][2] >= st_time.nWait_Off[CYL_ACCY_BOX_VAC_GRIPPER])
-			{
-				nFunRet = CTL_GOOD;
-			}
-		}
-	}
-	else
-	{
-		m_lWait_Vac[nzSite][1] = GetCurrentTime();
-		m_lWait_Vac[nzSite][2] = m_lWait_Vac[nzSite][1] - m_lWait_Vac[nzSite][0];
-		if (m_lWait_Vac[nzSite][2] < 0)
-		{
-			m_lWait_Vac[nzSite][0] = GetCurrentTime();
-			return nFunRet;
-		}
-
-		if (m_lWait_Vac[nzSite][2] >= st_time.nWait_Limit[CYL_ACCY_BOX_VAC_GRIPPER])
-		{
-			if (nReadIO[0] != nzOnOff)
-			{
-				if (nzOnOff == IO_OFF)
-				{
-					// 132000 0 00 "PS0704_BOX_CLAMP_LEFT_GRIPPER_VAC_OFF_CHK_ERR."
-					alarm.mstr_code		= "132000";
-				}
-				else
-				{
-					// 132002 0 00 "PS0704_BOX_CLAMP_LEFT_GRIPPER_VAC_ON_CHK_ERR."
-					alarm.mstr_code		= "132002";
-				}
-			}
-			else if (nReadIO[1] != nzOnOff)
-			{
-				if (nzOnOff == IO_OFF)
-				{
-					// 132001 0 00 "PS0705_BOX_CLAMP_RIGHT_GRIPPER_VAC_OFF_CHK_ERR."
-					alarm.mstr_code		= "132001";
-				}
-				else
-				{
-					// 132003 0 00 "PS0705_BOX_CLAMP_RIGHT_GRIPPER_VAC_ON_CHK_ERR."
-					alarm.mstr_code		= "132003";
-				}
-			}
-			nFunRet = CTL_ERROR;
 		}
 	}
 	return nFunRet;
@@ -1538,8 +1210,8 @@ int CSeq_BoxClamp::OnGet_CylStopper(int nzOnOff, int nzSite)
 //==================================================================//
 void CSeq_BoxClamp::OnSet_CylSupply(int nzOnOff) 
 {
-	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxSupplyFw, nzOnOff);
-	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxSupplyBw, !nzOnOff);
+// 	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxSupplyFw, nzOnOff);
+// 	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxSupplyBw, !nzOnOff);
 
 	m_bflag_Supply = true;
 	m_lWait_Supply[0] = GetCurrentTime();
@@ -1550,8 +1222,8 @@ int CSeq_BoxClamp::OnGet_CylSupply(int nzOnOff, int nzSite)
 	int nFunRet = CTL_PROCEED;
 
 	int nReadIO[2] = {0,};
-	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyFw);
-	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyBw);
+// 	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyFw);
+// 	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxSupplyBw);
 
 	if (nzSite == SIDE_FW_)
 	{
@@ -1866,107 +1538,5 @@ int CSeq_BoxClamp::OnGet_CylLifter(int nzOnOff, int nzSite)
 	return nFunRet;
 }
 
-//==================================================================//
-// 악세사리 박스를 앞으로 밀어서 고정하는 실린더
-// - IO_ON = Fw 상태이다
-// - IO_OFF = Bw 상태이다
-// - Nomal = Bw 상태이다.
-//==================================================================//
-void CSeq_BoxClamp::OnSet_CylPusher(int nzOnOff) 
-{
-	g_ioMgr.set_out_bit(stIO.o_Cyl_AccyBoxPusher, nzOnOff);
 
-	m_bflag_Pusher = true;
-	m_lWait_Pusher[0] = GetCurrentTime();
-}
 
-int CSeq_BoxClamp::OnGet_CylPusher(int nzOnOff, int nzSite) 
-{
-	// [WithOut] 모드인지 확인
-	// Accy Box가 없기 때문에 실린더 센서가 감지 되지 않음
-	if (st_basic.n_mode_device == WITHOUT_DVC_)
-	{
-		return CTL_GOOD;
-	}
-	int nFunRet = CTL_PROCEED;
-
-	int nReadIO[2] = {0,};
-	nReadIO[0] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxPusherFw);
-	nReadIO[1] = g_ioMgr.get_in_bit(stIO.i_Chk_AccyBoxPusherBw);
-
-	if (nzSite == SIDE_FW_)
-	{
-		// [BW] 센서 입력은 강제로 설정
-		nReadIO[1] = !nzOnOff;
-	}
-	else if (nzSite == SIDE_BW_)
-	{
-		// [FW] 센서 입력은 강제로 설정
-		nReadIO[0] =  !nzOnOff;
-	}
-
-	m_lWait_Pusher[1] = GetCurrentTime();
-	m_lWait_Pusher[2] = m_lWait_Pusher[1] - m_lWait_Pusher[0];
-
-	if (m_lWait_Pusher[2] < 0)
-	{
-		m_lWait_Pusher[0] = GetCurrentTime();
-	}
-
-	if (nzOnOff == IO_OFF)		// 박스를 고정 안한 상태
-	{
-		if (m_bflag_Pusher == true &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON )
-		{
-			m_lWait_Pusher[0] = GetCurrentTime();
-			m_bflag_Pusher = false;
-		}
-		else if (m_bflag_Pusher == false &&
-			nReadIO[0] == IO_OFF && nReadIO[1] == IO_ON)
-		{
-			if (m_lWait_Pusher[2] > st_time.nWait_Off[CYL_ACCY_BOX_PUSHER])
-			{
-				nFunRet = CTL_GOOD;
-			}
-		}
-		else
-		{
-			if (m_lWait_Pusher[2] > st_time.nWait_Limit[CYL_ACCY_BOX_PUSHER])
-			{
-				//  122001 0 00 "PS0305_LOADING_CONV_PUSHER_BW_CHK_ERR."
-				alarm.mstr_code		= "122001";
-				alarm.mn_count_mode	= 0;
-				alarm.mn_type_mode	= eWARNING;
-				st_work.nEqpStatus	= dWARNING;
-				nFunRet = CTL_ERROR;
-			}
-		}
-	}
-	else		// 박스를 고정한 상태
-	{
-		if (m_bflag_Pusher == true &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
-		{
-			m_lWait_Pusher[0] = GetCurrentTime();
-			m_bflag_Pusher = false;
-		}
-		else if (m_bflag_Pusher == false &&
-			nReadIO[0] == IO_ON && nReadIO[1] == IO_OFF)
-		{
-			if (m_lWait_Pusher[2] > st_time.nWait_On[CYL_ACCY_BOX_PUSHER])
-			{
-				nFunRet = CTL_GOOD;	// [OFF:DOWN]
-			}
-		}
-		else
-		{
-			if (m_lWait_Pusher[2] > st_time.nWait_Limit[CYL_ACCY_BOX_PUSHER])
-			{
-				// 122000 0 00 "PS0304_LOADING_CONV_PUSHER_FW_CHK_ERR."
-				alarm.mstr_code		= "122000";
-				nFunRet = CTL_ERROR;
-			}
-		}
-	}
-	return nFunRet;
-}

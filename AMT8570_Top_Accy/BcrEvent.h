@@ -26,7 +26,7 @@ private:
 // Attributes
 public:
 	bool m_bflag_INIT;
-
+	
 	// 시리얼 통신 클래스 접근자 선언
 	CSerialCommBase	m_cComm_ACCY;
 	

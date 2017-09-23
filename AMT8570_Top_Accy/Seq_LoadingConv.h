@@ -43,6 +43,7 @@ private:
 	bool m_bflag_Clamp[2];
 	long m_lWait_Clamp[2][3];
 
+	long m_lWaitTime[2][3]; //kwlee 2017.0824
 
 // Operations
 public:

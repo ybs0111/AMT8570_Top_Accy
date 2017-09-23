@@ -233,6 +233,8 @@ public:
 	// 규이리 추가 [2015.03.14]
 	int  OnGet_PickerStatus(int nzSite, int nzYesNo, int nzPickerInfo[DATA_TYPE_][MAX_PICKER_]);	// 악세사리 존재 상태 반환
 
+	//kwlee 2017.0909
+	int  OnGet_ReadyBuffStatus(int nzSite, int nzYesNo, int nzPickerInfo[DATA_TYPE_][MAX_PICKER_]);	// 악세사리 존재 상태 반환
 	void OnLogBCRData(CString sz_Step);
 
 private:

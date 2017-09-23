@@ -128,7 +128,14 @@ void CBcrEvent::OnRcvDataFromBCR(WPARAM ch, LPARAM port)
 	}
 	else
 	{
+		
 		m_sRcvedData[port -1] += (char)ch;
+		//kwlee 2017.0825
+		if (ch == 0x03)
+		{
+			st_serial.comm_rec[nPort -1] = m_sRcvedData[nPort -1];
+			(m_sRcvedData[nPort -1]).Empty();
+		}
 	}
 }
 

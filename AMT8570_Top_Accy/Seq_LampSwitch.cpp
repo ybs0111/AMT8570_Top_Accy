@@ -196,7 +196,8 @@ void CSeq_LampSwitch::OnPush_Start()
 		{
 			m_nStep_Start = 700;
 		}
-		else	{
+		else
+		{
 			m_nStep_Start = 0;
 		}
 		break;
@@ -683,7 +684,7 @@ void CSeq_LampSwitch::OnPush_LoadingStart()
 	{
 		return;
 	}
-
+	int nRet;
 	switch(m_nStep_LoadingStart)
 	{
 	case 0:
@@ -709,6 +710,7 @@ void CSeq_LampSwitch::OnPush_LoadingStart()
 		// - 시그널이 튀는 경우에 대해서는 버튼 눌림으로 처리하지 않음
 		if (m_lWaitTimeSW[2] > 50 &&
 			g_ioMgr.get_in_bit(stIO.i_Chk_LoadingStartSwitch) == IO_OFF)
+		
 		{
 			m_lWaitTimeSW[0] = GetCurrentTime();
 			m_nStep_LoadingStart = 300;

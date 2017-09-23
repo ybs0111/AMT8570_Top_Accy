@@ -896,7 +896,9 @@ void CMyBasicData::OnLoad_BasicData()
 	/* ************************************************************************** */
     /*  데이터 로딩할 파일 설정한다 [파일 확장자 검사]                            */
     /* ************************************************************************** */
-	str_load_file = st_path.mstr_path_dvc + st_basic.mstr_device_name;  // 티칭 데이터 로딩 파일 설정
+	//str_load_file = st_path.mstr_path_dvc + st_basic.mstr_device_name;  // 티칭 데이터 로딩 파일 설정
+	//kwlee 2017.0922
+	str_load_file = st_path.mstr_path_dvc + st_basic.sDvcName;  // 티칭 데이터 로딩 파일 설정
 	
 	n_pos = str_load_file.Find(".");  // 확장자 위치 검사
 
@@ -1041,7 +1043,10 @@ void CMyBasicData::OnLoad_BasicData()
 	st_basic.nMode_PlaceType = mn_chk;
 	//////////////////////////////////////////////////////////////////////////
 
-	mn_chk = GetPrivateProfileInt("BasicData", "nMode_Pitch_Variable", 0, st_path.mstr_basic);
+//	mn_chk = GetPrivateProfileInt("BasicData", "nMode_Pitch_Variable", 0, st_path.mstr_basic);
+	//kwlee 2017.0922
+	mn_chk = GetPrivateProfileInt("BasicData", "nMode_Pitch_Variable", 0, str_load_file);
+	
 	if (mn_chk < 0 ||
 		mn_chk > 1)
 	{
@@ -1163,7 +1168,10 @@ void CMyBasicData::OnBasic_Data_Save()
 	// 백상현 추가 [2014.08.27]
 	CString mstr_temp;  // 저장할 정보 임시 저장 변수
 	char chr_buf[20];
-	
+	CString str_save_file;
+
+	str_save_file	= st_path.mstr_path_dvc + st_basic.sDvcName;	//kwlee 20170922
+
 	:: WritePrivateProfileString("BasicData", "DeviceType", LPCTSTR(st_basic.sDvcName), st_path.mstr_basic);
 	
 	// **************************************************************************
@@ -1211,7 +1219,10 @@ void CMyBasicData::OnBasic_Data_Save()
 	::WritePrivateProfileString("BasicData", "nMode_PlaceType", LPCTSTR(mstr_temp), st_path.mstr_basic);
 
 	mstr_temp = LPCTSTR(_itoa(st_basic.nMode_Slop_Variable, chr_buf, 10));
-	::WritePrivateProfileString("BasicData", "nMode_Pitch_Variable", LPCTSTR(mstr_temp), st_path.mstr_basic);
+	//::WritePrivateProfileString("BasicData", "nMode_Pitch_Variable", LPCTSTR(mstr_temp), st_path.mstr_basic);
+	//kwlee 20170922
+	::WritePrivateProfileString("BasicData", "nMode_Pitch_Variable", LPCTSTR(mstr_temp), str_save_file);
+	
 }
 
 CString CMyBasicData::OnGet_File_Name()
@@ -1324,7 +1335,7 @@ int CMyBasicData::On_Teach_Data_Load()
 	sReadFileName	= st_basic.sDvcName;
 	str_LoadFile	= st_path.mstr_path_dvc + sReadFileName;
 
-	CString sM_Lift_Y[3] = { "Y_ACC_BOX_AVOID_", "Y_ACC_FRONT_", "Y_ACC_REAR_" };
+	CString sM_Lift_Y[4] = { "Y_ACC_BOX_AVOID_","Y_ACC_FRONT_","Y_ACC_MIDDLE_","Y_ACC_REAR_" };
 	CString sM_Lift_Z[4] = { "Z_ACC_LIFT_SAFETY_", "Z_ACC_LIFT_LIMIT_", "Z_ACC_LIFT_OFFSET_", "Z_ACC_LIFT_READY_" };
 
 	CString sM_BCRRbt_X[2] = { "X_RBT_ACC_BCR_", "X_RBT_ACC_BCR_OFFSET_" };
@@ -1333,13 +1344,13 @@ int CMyBasicData::On_Teach_Data_Load()
 		"Y_RBT_ACC_NG_OUT_", "Y_RBT_ACC_NG_BUFFER_", "Y_RBT_ACC_CONV_R_BUFF_"};
 	*/
 	// kilee [2015.03.17]
-	CString sM_BCRRbt_Y[8] = { "Y_RBT_SAFETY_", "Y_RBT_ACC_BCR_", "Y_RBT_ACC_GRIP_FRONT_", "Y_RBT_ACC_GRIP_REAR_",
+	CString sM_BCRRbt_Y[9] = { "Y_RBT_SAFETY_", "Y_RBT_ACC_BCR_", "Y_RBT_ACC_GRIP_FRONT_", "Y_RBT_ACC_GRIP_REAR_","Y_RBT_ACC_GRIP_BACK_",
 		"Y_RBT_ACC_NG_OUT_", "Y_RBT_ACC_NG_BUFFER_", "Y_RBT_ACC_CONV_R_BUFF_", "Y_RBT_ACC_CONV_F_BUFF_"};
 	CString sM_BCRRbt_Z[6] = { "Z_RBT_SAFETY_", "Z_RBT_ACC_GRIP_", "Z_RBT_ACC_NG_BUFFER_PLACE_",  "Z_RBT_ACC_NG_BUFFER_PICK_",
 		"Z_RBT_ACC_BUFFER_CONV_PLACE_", "Z_RBT_ACC_BUFFER_CONV_PICK_" };
 	CString sM_Rbt_Grip[2] = { "GRIP_RBT_OPEN_", "GRIP_RBT_GRIPPER_" };
 
-	for (i=0; i<3; i++)
+	for (i=0; i<4; i++)
 	{
 		:: GetPrivateProfileString("M_LIFTER_Y", sM_Lift_Y[i], "0", chr_data, 10, str_LoadFile);
 		l_chk = atol(chr_data);
@@ -1376,7 +1387,7 @@ int CMyBasicData::On_Teach_Data_Load()
 	
 	//for (i=0; i<7; i++)
 	// kilee [2015.03.17]
-	for(i=0; i<8; i++)
+	for(i=0; i<9; i++)
 	{
 		:: GetPrivateProfileString("M_BCRREAD_ROBOT_Y", sM_BCRRbt_Y[i], "0", chr_data, 10, str_LoadFile);
 		l_chk = atol(chr_data);
@@ -1406,7 +1417,7 @@ void CMyBasicData::On_Teach_Data_Save()
 	
 	int i;
 
-	CString sM_Lift_Y[3] = { "Y_ACC_BOX_AVOID_", "Y_ACC_FRONT_", "Y_ACC_REAR_" };
+	CString sM_Lift_Y[4] = { "Y_ACC_BOX_AVOID_","Y_ACC_FRONT_","Y_ACC_MIDDLE_","Y_ACC_REAR_"};
 	CString sM_Lift_Z[4] = { "Z_ACC_LIFT_SAFETY_", "Z_ACC_LIFT_LIMIT_", "Z_ACC_LIFT_OFFSET_", "Z_ACC_LIFT_READY_" };
 
 	CString sM_BCRRbt_X[2] = { "X_RBT_ACC_BCR_", "X_RBT_ACC_BCR_OFFSET_" };
@@ -1415,13 +1426,13 @@ void CMyBasicData::On_Teach_Data_Save()
 		"Y_RBT_ACC_NG_OUT_", "Y_RBT_ACC_NG_BUFFER_", "Y_RBT_ACC_CONV_R_BUFF_"};
 	*/
 	// kilee [2015.03.17]
-	CString sM_BCRRbt_Y[8] = { "Y_RBT_SAFETY_", "Y_RBT_ACC_BCR_", "Y_RBT_ACC_GRIP_FRONT_", "Y_RBT_ACC_GRIP_REAR_",
+	CString sM_BCRRbt_Y[9] = { "Y_RBT_SAFETY_", "Y_RBT_ACC_BCR_", "Y_RBT_ACC_GRIP_FRONT_", "Y_RBT_ACC_GRIP_REAR_","Y_RBT_ACC_GRIP_BACK_",
 		"Y_RBT_ACC_NG_OUT_", "Y_RBT_ACC_NG_BUFFER_", "Y_RBT_ACC_CONV_R_BUFF_", "Y_RBT_ACC_CONV_F_BUFF_"};
 	CString sM_BCRRbt_Z[6] = { "Z_RBT_SAFETY_", "Z_RBT_ACC_GRIP_", "Z_RBT_ACC_NG_BUFFER_PLACE_",  "Z_RBT_ACC_NG_BUFFER_PICK_",
 		"Z_RBT_ACC_BUFFER_CONV_PLACE_", "Z_RBT_ACC_BUFFER_CONV_PICK_" };
 	CString sM_Rbt_Grip[2] = { "GRIP_RBT_OPEN_", "GRIP_RBT_GRIPPER_" };
 	
-	for (i=0; i<3; i++)
+	for (i=0; i<4; i++)
 	{
 		str_temp = LPCTSTR(_itoa((int)(st_motor[M_LIFTER_Y].d_pos[i]), chr_buf, 10));
 		:: WritePrivateProfileString("M_LIFTER_Y", sM_Lift_Y[i], LPCTSTR(str_temp), str_SaveFile);
@@ -1452,7 +1463,7 @@ void CMyBasicData::On_Teach_Data_Save()
 
 	//for (i=0; i<7; i++)
 	// kilee [2015.03.17]
-	for(i=0; i<8; i++)
+	for(i=0; i<9; i++)
 	{
 		str_temp = LPCTSTR(_itoa((int)(st_motor[M_BCRREAD_ROBOT_Y].d_pos[i]), chr_buf, 10));
 		:: WritePrivateProfileString("M_BCRREAD_ROBOT_Y", sM_BCRRbt_Y[i], LPCTSTR(str_temp), str_SaveFile);

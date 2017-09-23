@@ -114,7 +114,9 @@ int CComizoaPublic::Initialize_MotBoard(CString s_file)
 	int nRet = -1;
 	// 라이브러리 로드
 	// - 응용 프로그램의 메모리 공간으로 커미조아 라이브러리 로드
+	CString str;
 	nRet = cmmLoadDll();
+
 	if (nRet == TRUE)	// [TRUE:1]
 	{
 		nRet = BD_GOOD;
@@ -143,6 +145,8 @@ int CComizoaPublic::Initialize_MotBoard(CString s_file)
 			// 규이리 추가 [2014.09.01]
 			// [리셋] 모션 보드 초기화 작업
 			//st_handler.mn_mot_brd_initial = CTLBD_NO;
+			
+			cLOG.OnLogEvent(LOG_SEQ_, s_file);
 			return BD_ERROR;
 		}
 
@@ -170,6 +174,7 @@ int CComizoaPublic::Initialize_MotBoard(CString s_file)
 		// [리셋] 모션 보드 초기화 작업
 		//st_handler.mn_mot_brd_initial = CTLBD_NO;
 		nRet = BD_ERROR;
+		
 	}
 	
 	return nRet;

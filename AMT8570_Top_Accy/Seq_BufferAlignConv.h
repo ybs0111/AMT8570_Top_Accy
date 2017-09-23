@@ -21,6 +21,7 @@ public:
 	
 	int  m_nStep_Init;
 	int  m_nStep_Run;
+	int  m_nStep_Front_Run;
 	int  m_nStep_RunReady;
 	int  m_nStep_RunMiddle;
 
@@ -29,7 +30,9 @@ public:
 // Attributes
 private:
 	int  m_nReq_AcMotCtrl;//Req AC action.
-	long m_lTime_GoesBy[3][3];
+	/*long m_lTime_GoesBy[3][3];*/
+	//kwlee 2017.0829
+	long m_lTime_GoesBy[4][3];
 	
 	bool m_bflag_BufferTrayPathAlign;
 	long m_lWait_BufferTrayPathAlign[3];
@@ -44,12 +47,21 @@ private:
 	long m_lWait_Stopper[5][3];
 	
 	int  m_nReq_Completemsg;
+	int m_nRetryCnt;
 
 	int m_nTestSupply;			// 0 : 기본 모드, 1 : 테스트 모드
 	int m_nAccySupply;
 	int m_nReqMidConv;
-	int m_nReqOutConv;  //OutConv->BuffConv
-    
+	//int m_nReqOutConv;  //OutConv->BuffConv
+	//kwlee 2017.0829
+	int m_nReqOut_Rear_Conv;
+    int m_nReqOut_Front_Conv;
+
+	//kwlee 2017.0831
+	long m_nFront_Wait[3];
+	long m_nRear_Wait[3];
+	
+
 	long m_lDelay_Time[3]; //kwlee 2017.0814
 // Operations
 public:
@@ -61,6 +73,12 @@ public:
 	void OnRun_Move();			// Seq_BufferAlignConv의 시컨스 동작
 	void OnRun_ReadyMove();
 	void OnRun_MiddleMove();
+	
+	//kwlee 2017.0829
+	void OnRun_OutFront_Move();
+	void OnRun_OutRear_Move();
+	////
+
 	int OnRun_ForceDischarge(); 
 
 	void OnMove_AcMotor(int nzMoveType);

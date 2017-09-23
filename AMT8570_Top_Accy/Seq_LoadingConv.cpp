@@ -23,6 +23,7 @@ CSeq_LoadingConv::CSeq_LoadingConv()
 
 	//kwlee 2017.0711 test
 	st_handler.nSimulation = 0;
+	stSync.nReq_LoadingConv2Clamp_Work = -1;
 
 }
 
@@ -116,7 +117,9 @@ void CSeq_LoadingConv::OnSeq_Execute(void)
 		m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
 		if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
 
-		if( m_lTime_GoesBy[1][2] >= st_time.nWait_On[WAIT_RAIL_AC_OFF])
+		//if( m_lTime_GoesBy[1][2] >= st_time.nWait_On[WAIT_RAIL_AC_OFF])
+		//kwlee 2017.00824
+		if( m_lTime_GoesBy[1][2] >= st_time.nWait_Limit[WAIT_RAIL_AC_OFF])
 		{
 			OnMove_AcMotor2( AC_MV_STOP_ );
 		}
@@ -137,7 +140,9 @@ void CSeq_LoadingConv::OnSeq_Execute(void)
 		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[0][1] - m_lTime_GoesBy[0][0];
 		if( m_lTime_GoesBy[0][2] <= 0 ) m_lTime_GoesBy[0][0] = GetCurrentTime();
 		
-		if( m_lTime_GoesBy[0][2] >= st_time.nWait_On[WAIT_RAIL_AC_OFF])
+		//if( m_lTime_GoesBy[0][2] >= st_time.nWait_On[WAIT_RAIL_AC_OFF])
+		//kwlee 2017.0824
+		if( m_lTime_GoesBy[0][2] >= st_time.nWait_Limit[WAIT_RAIL_AC_OFF])
 		{
 			OnMove_AcMotor( AC_MV_STOP_ );
 		}
@@ -181,8 +186,7 @@ void CSeq_LoadingConv::OnSeq_Execute(void)
 		{
 // 			OnRun_Move2();
 // 			OnRun_Move();
-
-			//kwlee 2017.0706
+			
 			OnRun_Move_Front();
 			OnRun_Move_Rear();
 		}
@@ -236,13 +240,13 @@ void CSeq_LoadingConv::OnRun_Initial()
 		}
 		else if( nRet_1 == CTL_ERROR || nRet_2 == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 4000, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 5000, CTL_dWARNING, m_strAlarmCode );
 			m_nStep_Init = 100;
 		}
 		break;
 
 	case 200:
-		OnMove_AcMotor2(AC_MV_CW_);
+		OnMove_AcMotor2(AC_MV_STOP_);
 		OnMove_AcMotor(AC_MV_STOP_);
 		//m_lTime_GoesBy[0][0] = GetCurrentTime(); kwlee 2017.0707
 		m_nStep_Init = 400;
@@ -267,19 +271,19 @@ void CSeq_LoadingConv::OnRun_Initial()
 		{
 			if (nRet[0] == IO_OFF)
 			{
-				m_strAlarmCode = "120000";
+				m_strAlarmCode = "120010";
 				
 			}
 			else if (nRet[1] == IO_OFF)
 			{
-				m_strAlarmCode = "120001";
+				m_strAlarmCode = "120011";
 			}
 			else if (nRet[2] == IO_OFF)
 			{
-				m_strAlarmCode = "120002";
+				m_strAlarmCode = "120012";
 			}
 
-			CTL_Lib.Alarm_Error_Occurrence( 1010, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 5001, CTL_dWARNING, m_strAlarmCode );
 		}		
 		break;
 
@@ -345,6 +349,7 @@ void CSeq_LoadingConv::OnRun_Initial()
 
 void CSeq_LoadingConv::OnRun_Move_Front()
 {
+
 	int nRetData = CTL_NO;
 	int nRet_1 = CTL_NO, nRet_2 = CTL_NO;
 
@@ -380,14 +385,6 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 	}
 	Func.OnTrace_ThreadStep(1, m_nStep_Run2 );
 
-	//Box Pusher Clamp -> Conv Req
-	//kwlee 2017.0710
-// 	if (stSync.nResp_Clamp2LoadingConv_Work == SYNC_RESP_WORK_)
-// 	{
-// 		stSync.nReq_LoadingConv2Clamp_Work[1] = SYNC_REQ_RESET_;
-// 		return;
-// 	}
-
 	switch( m_nStep_Run2 )
 	{
 	case 0:
@@ -400,16 +397,8 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 		break;
 
 	case 200:
-		//kwlee 2017.0711 test
-		if (st_handler.nSimulation == 1)
-		{
-			nRet_1 = CTL_GOOD;
-		}
-		else
-		{
-			nRet_1 = OnGet_CylStopper2( IO_ON );
-		}
-
+		nRet_1 = OnGet_CylStopper2( IO_ON );
+		
 		if( nRet_1 == CTL_GOOD )
 		{
 			//m_nStep_Run2 = 300;
@@ -420,69 +409,10 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 
 		else if( nRet_1 == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1000, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 5002, CTL_dWARNING, m_strAlarmCode );
 			m_nStep_Run2 = 100;
 		}
 		break;
-
-// 	case 300:
-// 		//Box Exist Skip
-// 		st_work.nSkipReq_ShiftTray = CTL_NO;
-// 
-// 		//kwlee 2017.0707 
-// 		OnSet_CylBoxClamp(IO_OFF);
-// 		//m_nStep_Run2 = 40;
-// 		//kwlee 2017.0707
-// 		m_nStep_Run2 = 310;
-// 		break;
-// 
-// 	case 310:
-// 		//kwlee 2017.0711 test
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			nRet_1 = CTL_GOOD;
-// 		}
-// 		else
-// 		{
-// 			nRet_1 = OnGet_CylBoxClamp(IO_OFF);
-// 		}
-// 		//
-// 		if (nRet_1 == CTL_GOOD)
-// 		{
-// 			m_nStep_Run2 = 320;
-// 		}
-// 		else if (nRet_1 == CTL_ERROR)
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1001, CTL_dWARNING, m_strAlarmCode );
-// 		}
-// 		break;
-// 
-// 	case 320:
-// 		OnSet_CylBoxPusher(IO_OFF);
-// 		m_nStep_Run2 = 330;
-// 		break;
-// 
-// 	case 330:
-// 		//kwlee 2017.0711 test
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			nRet_1 = CTL_GOOD;
-// 		}
-// 		else
-// 		{
-// 			nRet_1 = OnGet_CylBoxPusher(IO_OFF);
-// 		}
-// 		
-// 
-// 		if (nRet_1 == CTL_GOOD)
-// 		{
-// 			m_nStep_Run2 = 400;
-// 		}
-// 		else if (nRet_1 == CTL_ERROR)
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1002, CTL_dWARNING, m_strAlarmCode );
-// 		}
-// 		break;
 
 	case 400:
 		if( st_basic.n_mode_device == WITHOUT_DVC_ )
@@ -519,7 +449,7 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 			//있으면 대기..
 			if( nRetData == IO_ON ) 
 			{
-				m_lTime_GoesBy[1][0] = GetCurrentTime();
+				m_lWaitTime[0][0] = GetCurrentTime();
 				m_nStep_Run2 = 500;
 			}
 			else //Box 감지 안됨.  Box 받는다.
@@ -534,8 +464,11 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 					{
 						stSync.nLotEnd_LoadingConv = TRUE;
 						OnMove_AcMotor2( AC_MV_CW_ );
-						m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;//일정한시간후에 stop..그전에 각단계에서 센서 감지되면..
-						stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
+						//m_nReq_AcMotCtrl[1] = REQ_MV_THIRD_;//일정한시간후에 stop..그전에 각단계에서 센서 감지되면..
+						//kwlee 2017.0830
+						//m_lTime_GoesBy[1][1] = GetCurrentTime();
+						m_nReq_AcMotCtrl[1] = REQ_MV_THIRD_;
+						stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;	
 					}
 					else
 					{
@@ -543,12 +476,12 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 					}
 					st_map.nLotStart = CTL_YES;
 					stSync.nLotEnd_LoadingConv = FALSE;
-					
+					m_lWaitTime[0][0] = GetCurrentTime();
 					//m_nStep_Run2 = 200;
 					//kwlee 2017.0709
 					stSync.nReq_LoadingConv2Conv1_Work = CTL_REQ; //뒷단 Conv에 투입 요청.
 					//kwlee 2017.0711
-					cLOG.OnLogEvent(LOG_SEQ_, "1. Right Conv(Conv_2)가 LeftConv_1에게  투입 요청(REQ) 보냄. ----Start----  ");
+					cLOG.OnLogEvent(LOG_SEQ_, "1. Front Conv(Conv_2)가 Rear Conv_1에게  투입 요청(REQ) 보냄. ----Start----  ");
 					m_nStep_Run2 = 900;
 				//kwlee 2017.0707 
 // 				stSync.nReq_LoadingConv2Conv1_Work = CTL_REQ;
@@ -566,9 +499,9 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 
 		//Box Check 센서 감지 되었을 때.
 	case 500:
-		m_lTime_GoesBy[1][1] = GetCurrentTime();
-		m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-		if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
+		m_lWaitTime[0][1] = GetCurrentTime();
+		m_lWaitTime[0][2] = m_lWaitTime[0][1] - m_lWaitTime[0][0];
+		if( m_lWaitTime[0][2] <= 0 ) m_lWaitTime[0][0] = GetCurrentTime();
 
 		if( st_basic.n_mode_device == WITHOUT_DVC_ )
 		{
@@ -592,7 +525,7 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 			nRetData = OnCheck_AccyBoxConvInThird( IO_ON );
 			if( nRetData == IO_ON )
 			{
-				if( m_lTime_GoesBy[1][2] < 1000 ) break;
+				if( m_lWaitTime[0][2] < 1000 ) break;
 
 			//	OnSet_CylStopper( IO_ON ); 
 				//m_nStep_Run2 = 70;
@@ -609,6 +542,9 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 				{
 					stSync.nLotEnd_LoadingConv = TRUE;
 					OnMove_AcMotor2( AC_MV_CW_ );
+					//m_nReq_AcMotCtrl[1] = REQ_MV_THIRD_;
+					//kwlee 2017.0830
+					m_lTime_GoesBy[1][1] = GetCurrentTime();
 					m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;
 					stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 				}
@@ -623,71 +559,6 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 		}
 		break;
 
-//	case 70:
-// 		nRet_1 = OnGet_CylStopper( IO_ON );
-// 		if( nRet_1 == CTL_GOOD )
-// 		{
-// 			m_nStep_Run2 = 80;
-// 		}
-// 		else if( nRet_1 == CTL_ERROR )
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1002, CTL_dWARNING, m_strAlarmCode );
-// 			m_nStep_Run2 = 60;
-// 		}
-		
-		//Sync.nReq_LoadingConv2Clamp_Work[1] = SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_;
-		//m_nStep_Run2 = 1100;
-		//kwlee 2017.0710
-		//m_nStep_Run2 = 1020;
-//		break;
-
-// 	case 80:
-// 		if( st_basic.n_mode_device == WITHOUT_DVC_ )
-// 		{
-// 			if( stWithoutData.nLoadingTestBox == 0 )
-// 			{
-// 				if( st_map.nLoadingAccyBoxExist[0] == 0 )
-// 				{
-// 					break;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				m_nStep_Run2 = 200;
-// 				break;
-// 			}
-// 			m_nStep_Run2 = 100;
-// 			break;
-// 		}
-// 		else
-// 		{
-// 			nRetData = OnCheck_AccyBoxConvInThird( IO_ON );
-// 			if( nRetData == IO_ON )
-// 			{
-// 				m_nStep_Run2 = 100;
-// 			}
-// 			else
-// 			{
-// // 				if( stSync.nLotEnd_LoadingConv != TRUE )
-// // 				{
-// // 					stSync.nLotEnd_LoadingConv = TRUE;
-// 				//kwlee 2017.0706
-// 				if( stSync.nLotEnd_LoadingConv[1] != TRUE )
-// 				{
-// 					stSync.nLotEnd_LoadingConv[1] = TRUE;
-// 					OnMove_AcMotor2( AC_MV_CW_ );
-// 					m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;
-// 					stSync.nReq_LoadingConv2Clamp_Work[1] = SYNC_REQ_RESET_;
-// 				}
-// 				else
-// 				{
-// 					stSync.nReq_LoadingConv2Clamp_Work[1] = SYNC_REQ_RESET_;
-// 				}
-// 				st_map.nLotStart = CTL_YES;
-// 				stSync.nLotEnd_LoadingConv[1] = FALSE;
-// 			}
-// 		}
-// 		break;
 
 	//case 100:
 	//kwlee 2017.0711
@@ -708,30 +579,11 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 			else
 			{
 				//m_nStep_Run2 = 1000;
-				m_lTime_GoesBy[1][0] = GetCurrentTime(); //kwlee 2017.0711
+				m_lWaitTime[0][0] = GetCurrentTime(); //kwlee 2017.0711
 				m_nStep_Run2 = 900;
 			}
 		}
 		break;
-
-		//kwlee 2017.0707 Del
-// 	case 200:
-// 		OnSet_CylStopper( IO_OFF );
-// 		m_nStep_Run2 = 210;
-// 		break;
-// 
-// 	case 210:
-// 		nRet_1 = OnGet_CylStopper( IO_OFF );
-// 		if( nRet_1 == CTL_GOOD )
-// 		{
-// 			m_nStep_Run2 = 900;
-// 		}
-// 		else if( nRet_1 == CTL_ERROR )
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1000, CTL_dWARNING, m_strAlarmCode);
-// 			m_nStep_Run2 = 200;
-// 		}
-// 		break;
 
 	case 900:
 		//stSync.nReq_LoadingConv2Conv2_Work = CTL_REQ;
@@ -739,38 +591,47 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 	//	stSync.nReq_LoadingConv2Conv1_Work = CTL_REQ;
 		if (stSync.nReq_LoadingConv2Conv1_Work == CTL_READY)
 		{
+			OnMove_AcMotor2( AC_MV_CW_ );
+			//kwlee 2017.0830
+			m_lTime_GoesBy[1][0] = GetCurrentTime();
+ 			m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;
+
 			cLOG.OnLogEvent(LOG_SEQ_, "4.Left Conv(Conv_1)이 Right Conv(Conv_2)에게 Ready 받음.   ---ING------  ");
 			m_nStep_Run2 = 1000;
 		}
 		//kwlee 2017.0712
-		else if (stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_RESET_)
+		//else if (stSync.nReq_LoadingConv2Clamp_Work == SYNC_REQ_RESET_)
+		//kwlee 2017.0823
+		else /*if (stSync.nReq_LoadingConv2Conv1_Work == SYNC_REQ_RESET_)*/
 		{
 			//Retry
-			m_lTime_GoesBy[1][1] = GetCurrentTime();
-			m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-			if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
-			if (m_lTime_GoesBy[1][2] > MAX_WAIT_ACCY_BOX_CONV_ * 2)
+			OnMove_AcMotor2( AC_MV_STOP_ ); //kwlee 2017.0917
+
+			m_lWaitTime[0][1] = GetCurrentTime();
+			m_lWaitTime[0][2] = m_lWaitTime[0][1] - m_lWaitTime[0][0];
+			if( m_lWaitTime[0][2] <= 0 ) m_lWaitTime[0][0] = GetCurrentTime();
+			if (m_lWaitTime[0][2] > MAX_WAIT_ACCY_BOX_CONV_ * 100)
 			{
 				m_nRetryCnt++;
 				if (m_nRetryCnt > 3)
 				{
-					CTL_Lib.Alarm_Error_Occurrence( 1003, CTL_dWARNING, "900004" );
+					CTL_Lib.Alarm_Error_Occurrence( 5003, CTL_dWARNING, "900004" );
+					m_lWaitTime[0][0] = GetCurrentTime();
 					m_nRetryCnt = 0;
 				}
-				else
-				{
-					m_lTime_GoesBy[1][0] = GetCurrentTime(); //kwlee 2017.0711
-					m_nStep_Run2 = 500;
-				}
+				
 			}
+			
 		}
 		break;
 
 	case 1000:
 		//센서 감지시 멈춤.
-		OnMove_AcMotor2( AC_MV_CW_ );
-		m_lTime_GoesBy[1][0] = GetCurrentTime();
-		m_nReq_AcMotCtrl[1] = REQ_MV_THIRD_;
+		//OnMove_AcMotor2( AC_MV_CW_ );
+		m_lWaitTime[0][0] = GetCurrentTime();
+		//m_nReq_AcMotCtrl[1] = REQ_MV_THIRD_;
+		
+		
 		cLOG.OnLogEvent(LOG_SEQ_, "5.Right Conv(Conv_2) 모터 온. ---ING------  ");
 		m_nStep_Run2 = 1010;
 		break;
@@ -787,13 +648,7 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 		break;
 
 	case 1020:
-		//kwlee 2017.0711 위치 대기.
-		if (st_handler.nSimulation == 1)
-		{
-			m_nReq_AcMotCtrl[1] = REQ_MV_RESET_;
-		}
-		//
-
+	
 		if( m_nReq_AcMotCtrl[1] == REQ_MV_RESET_ )
 		{
 			if( st_map.nLoadingAccyBoxExist[0] == 0 )
@@ -825,13 +680,13 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 				OnMove_AcMotor2( AC_MV_CW_ );
 				m_nStep_Run2 = 3000;
 			}
-			m_lTime_GoesBy[1][1] = GetCurrentTime();
-			m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-			if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
+			m_lWaitTime[0][1] = GetCurrentTime();
+			m_lWaitTime[0][2] = m_lWaitTime[0][1] - m_lWaitTime[0][0];
+			if( m_lWaitTime[0][2] <= 0 ) m_lWaitTime[0][0] = GetCurrentTime();
 
 			if( st_basic.n_mode_device == WITHOUT_DVC_ )
 			{
-				if( m_lTime_GoesBy[1][2] >= ( MAX_WAIT_ACCY_BOX_CONV_ / 2 ) )
+				if( m_lWaitTime[0][2] >= ( MAX_WAIT_ACCY_BOX_CONV_ / 2 ) )
 				{
 					OnMove_AcMotor2(AC_MV_STOP_);
 					if( st_map.nLoadingAccyBoxExist[0] == 0 )
@@ -846,91 +701,22 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 			}
 			else
 			{
-				if ( m_lTime_GoesBy[1][2] >= (MAX_WAIT_ACCY_BOX_CONV_ * 5) )
+				if ( m_lWaitTime[0][2] >= (MAX_WAIT_ACCY_BOX_CONV_ * 10) )
 				{
 					OnMove_AcMotor2( AC_MV_STOP_ );
 					m_nStep_Run2 = 1000;
 					
-					// 120002 0 00 "PS0308_LOADING_CONV_THIRD_CHK_ERR."
-					CTL_Lib.Alarm_Error_Occurrence( 1004, CTL_dWARNING, "120002" );
+					// 120012 0 00 "PS0308_LOADING_CONV_THIRD_CHK_ERR."
+					CTL_Lib.Alarm_Error_Occurrence( 5004, CTL_dWARNING, "120012" );
 				}
 			}
 		}
 		break;
 
-// 	case 1020:
-// 		OnMove_AcMotor2( AC_MV_CW_ );
-// 		m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;
-// 		m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 		m_nStep_Run2 = 1030;
-// 		break;
-// 		
-// 	case 1030:
-// 		//kwlee 2017.0711 test
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			m_nReq_AcMotCtrl[1] = REQ_MV_RESET_;
-// 		}
-// 		
-// 		if( m_nReq_AcMotCtrl[1] == REQ_MV_RESET_ )
-// 		{
-// 			//kwlee 2017.0710 Box Clamp에게 로딩 완료 되었다고 알려 준다.
-// 			stSync.nReq_LoadingConv2Clamp_Work[1] = SYNC_REQ_ACCY_BOX_LOADING_COMPLETE_;
-// 			cLOG.OnLogEvent(LOG_SEQ_, "8. Box Clamp에게 Conv_2 Box Load 완료 보냄..   ---ING------  ");
-// 			m_nStep_Run2 = 1100;
-// 		}
-// 		else
-// 		{
-// 			if( st_work.nSkipReq_ShiftTray == CTL_YES )
-// 			{
-// 				OnMove_AcMotor2( AC_MV_CW_ );
-// 				m_nStep_Run2 = 3000;
-// 			}
-// 			m_lTime_GoesBy[1][1] = GetCurrentTime();
-// 			m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-// 			if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 			
-// 			if( st_basic.n_mode_device == WITHOUT_DVC_ )
-// 			{
-// 				if( m_lTime_GoesBy[1][2] >= ( MAX_WAIT_ACCY_BOX_CONV_ / 2 ) )
-// 				{
-// 					OnMove_AcMotor2(AC_MV_STOP_);
-// 					if( st_map.nLoadingAccyBoxExist[0] == 0 )
-// 					{
-// 						st_map.nLoadingAccyBoxExist[0] = 1;
-// 					}
-// 					else
-// 					{
-// 						st_map.nLoadingAccyBoxExist[0] = 1;
-// 					}
-// 				}
-// 			}
-// 			else
-// 			{
-// 				if ( m_lTime_GoesBy[1][2] >= (MAX_WAIT_ACCY_BOX_CONV_ * 5) )
-// 				{
-// 					OnMove_AcMotor2( AC_MV_STOP_ );
-// 					m_nStep_Run2 = 1020;
-// 					
-// 					// 120002 0 00 "PS0308_LOADING_CONV_THIRD_CHK_ERR."
-// 					CTL_Lib.Alarm_Error_Occurrence( 1004, CTL_dWARNING, "120002" );
-// 				}
-// 			}
-// 		}
-// 	break;
-
 	//kwlee 2017.0709
 	case 1100:
 		//Box Clamp가 투입 요청 
 		nRetData = OnCheck_AccyBoxConvInThird( IO_ON );
-		
-		//kwlee 2017.0711
-		if (st_handler.nSimulation == 1)
-		{
-			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_WORK_;
-			nRetData = IO_ON;
-		}
-		//
 		if( nRetData == IO_OFF )
 		{
 			m_nStep_Run2 = 1020;
@@ -941,7 +727,7 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 			//Box Clamp 작업 요청 
 			stSync.nReq_LoadingConv2Conv1_Work = CTL_SORT; 
 
-			cLOG.OnLogEvent(LOG_SEQ_, "9. Conv_2 Motor On 하여 Box 앞으로 붙임. Sort 신호 보냄.   ---ING------  ");
+		//	cLOG.OnLogEvent(LOG_SEQ_, "9. Conv_2 Motor On 하여 Box 앞으로 붙임. Sort 신호 보냄.   ---ING------  ");
 
 			if (stSync.nResp_Clamp2LoadingConv_Work == SYNC_RESP_WORK_)
 			{
@@ -958,229 +744,21 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 	case 1300:
 		nRet_1 = OnGet_CylStopper2( IO_OFF );
 
-		//kwlee 2017.0711
-		if (st_handler.nSimulation == 1)
-		{
-			nRet_1 = CTL_GOOD;
-		}
-
 		if( nRet_1 == CTL_GOOD )
 		{
 			//m_nStep_Run2 = 1400;
 			//kwlee 2017.0712
 			//m_nStep_Run2 = 3000;
+			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_BOX_LIFT_CHANGE_COMPLETE_; //kwlee 2017.0824
 			m_nStep_Run2 = 2000;
 
 		}
 		else if( nRet_1 == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence(1005, CTL_dWARNING, m_strAlarmCode);
+			CTL_Lib.Alarm_Error_Occurrence(5005, CTL_dWARNING, m_strAlarmCode);
 			m_nStep_Run2 = 1200;
 		}
 		break;
-
-// 	case 1400:
-// 		OnSet_CylBoxClamp(IO_ON);
-// 		m_nStep_Run2 = 1500;
-// 		break;
-// 
-// 	case 1500:
-// 		nRet_1 = OnGet_CylBoxClamp(IO_ON);
-// 
-// 		//kwlee 2017.0711
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			nRet_1 = CTL_GOOD;
-// 		}
-// 		//
-// 		if (nRet_1 == CTL_GOOD)
-// 		{
-// 			m_nStep_Run2 = 1600;
-// 		}
-// 		else if (nRet_1 == CTL_ERROR)
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1006, CTL_dWARNING, m_strAlarmCode );
-// 			m_nStep_Run2 = 1400;
-// 		}
-// 		break;
-// 
-// 	case 1600:
-// 		OnSet_CylBoxPusher(IO_ON);
-// 		m_nStep_Run2 = 1700;
-// 		break;
-// 
-// 	case 1700:
-// 		nRet_1 = OnGet_CylBoxPusher(IO_ON);
-// 
-// 		//kwlee 2017.0711
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			nRet_1 = CTL_GOOD;
-// 		}
-// 		//
-// 		if (nRet_1 == CTL_GOOD)
-// 		{
-// 			m_nStep_Run2 = 1800;
-// 			m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 		}
-// 		else if (nRet_1 == CTL_ERROR)
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence( 1007, CTL_dWARNING, m_strAlarmCode );
-// 			m_nStep_Run2 = 1600;
-// 		}
-// 		break;
-
-// 	case 1800:
-// 		nRet_1 = g_ioMgr.get_in_bit( stIO.i_Chk_AccyBox_Arrive_End, IO_ON );
-// 		//kwlee 2017.0711
-// 		if (st_handler.nSimulation == 1)
-// 		{
-// 			stSync.nResp_Clamp2LoadingConv_Work = SYNC_RESP_RESET_;
-// 			nRet_1 = IO_ON;
-// 		}
-// 
-// 		if (nRet_1 == IO_ON &&  stSync.nResp_Clamp2LoadingConv_Work == SYNC_RESP_RESET_)
-// 		{
-// 			m_nStep_Run2 = 3000;
-// 		}
-// 		else
-// 		{
-// 			m_lTime_GoesBy[1][1] = GetCurrentTime();
-// 			m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-// 			if( m_lTime_GoesBy[1][2] < 0) m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 			if( m_lTime_GoesBy[1][2] < 1000 ) break;
-// 			//132000 0 00 "PS0407_LOAD_BOX_ARRIVE_END_OFF_CHK_ERR."
-// 			CTL_Lib.Alarm_Error_Occurrence( 1008, CTL_dWARNING, "132000" );
-// 		}
-// 		break;
-
-		/////////////////
-// 	case 1100:
-// 		nRet_1 = OnCheck_AccyBoxConvInThird( IO_ON );
-// 
-// 		if( nRet_1 == IO_OFF )
-// 		{
-// 			if( st_basic.n_mode_device == WITHOUT_DVC_ )
-// 			{
-// 				if( stWithoutData.nLoadingTestBox > 0 )
-// 				{
-// 					m_nStep_Run2 = 1200;
-// 				}
-// 				else
-// 				{
-// 					m_nStep_Run2 = 3000;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				m_nStep_Run2 = 1200;
-// 			}
-// 		}
-// 		else
-// 		{
-// 			m_nStep_Run2 = 2000;
-// 		}
-// 		break;
-// 
-// 
-// 	case 2000:
-// 		nRet_1 = OnCheck_AccyBoxConvInThird(IO_ON);
-// 		if (nRet_1 == IO_OFF)
-// 		{
-// 			m_nStep_Run2 = 3000;
-// 		}
-// 		else
-// 		{
-// 			if (st_basic.n_mode_device == WITHOUT_DVC_)
-// 			{
-// 				if(stWithoutData.nLoadingTestBox > 0)
-// 				{
-// 					m_nStep_Run2 = 2100;
-// 				}
-// 				else
-// 				{
-// 					m_nStep_Run2 = 3000;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				if (st_work.nLoadingFlag == TRUE)
-// 				{
-// 					st_work.nLoadingFlag = FALSE;
-// 					m_nStep_Run2 = 2100;
-// 				}
-// 				else
-// 				{
-// 					m_nStep_Run2 = 3000;
-// 				}
-// 			}
-// 		}
-// 		break;
-
-//kwlee 2017.0711
-// 	case 2100:
-// 		OnSet_CylStopper2( IO_ON );
-// 		m_nStep_Run2 = 2110;
-// 		break;
-// 
-// 	case 2110:
-// 		nRet_1 = OnGet_CylStopper2( IO_ON );
-// 		if( nRet_1 == CTL_GOOD )
-// 		{
-// 			m_nStep_Run2 = 2200;
-// 		}
-// 		else if( nRet_1 == CTL_ERROR )
-// 		{
-// 			CTL_Lib.Alarm_Error_Occurrence(1009, CTL_dWARNING, m_strAlarmCode);
-// 			m_nStep_Run2 = 2100;
-// 		}
-// 		break;
-// 
-// 	case 2200:
-// 		OnMove_AcMotor2( AC_MV_CW_ );
-// 		m_nReq_AcMotCtrl[1] = REQ_MV_STABILITY_;
-// 		m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 		m_nStep_Run2 = 2210;
-// 		break;
-// 
-// 	case 2210:
-// 		if( m_nReq_AcMotCtrl[1] == REQ_MV_RESET_ )
-// 		{
-// 			m_nStep_Run2 = 3000;
-// 		}
-// 		else
-// 		{
-// 			if( st_work.nSkipReq_ShiftTray == CTL_YES )
-// 			{
-// 				OnMove_AcMotor2( AC_MV_STOP_ );
-// 				m_nStep_Run2 = 3000;
-// 				break;
-// 			}
-// 			m_lTime_GoesBy[1][1] = GetCurrentTime();
-// 			m_lTime_GoesBy[1][2] = m_lTime_GoesBy[1][1] - m_lTime_GoesBy[1][0];
-// 			if( m_lTime_GoesBy[1][2] <= 0 ) m_lTime_GoesBy[1][0] = GetCurrentTime();
-// 
-// 			if( st_basic.n_mode_device == WITHOUT_DVC_ )
-// 			{
-// 				if( m_lTime_GoesBy[1][2] >= (MAX_WAIT_ACCY_BOX_CONV_/2) )
-// 				{
-// 					st_map.nLoadingAccyBoxExist[0] = 1;
-// 					OnMove_AcMotor2( AC_MV_STOP_);
-// 					m_nStep_Run2 = 3000;
-// 				}
-// 			}
-// 			else
-// 			{
-// 				if( m_lTime_GoesBy[1][2] >= MAX_WAIT_ACCY_BOX_CONV_ )
-// 				{
-// 					OnMove_AcMotor2( AC_MV_STOP_ );
-// 					// 120002 0 00 "PS0308_LOADING_CONV_THIRD_CHK_ERR."
-// 					CTL_Lib.Alarm_Error_Occurrence(1010, CTL_dWARNING, "120002");
-// 					m_nStep_Run = 2200;
-// 				}
-// 			}
-// 		}
-// 		break;
 
 	//kwlee 2017.0712 BoxClamp Clamp  완료.
 	case  2000:
@@ -1204,23 +782,17 @@ void CSeq_LoadingConv::OnRun_Move_Front()
 
 void CSeq_LoadingConv::OnRun_Move_Rear() 
 {
-	if (st_handler.nSimulation == 1)
+	if (Func.OnIsAllRcvyComplete() != CTL_YES)
 	{
-		//st_work.nEqpStatus = dRUN;
+		return;
 	}
-	else
-	{
-		if (Func.OnIsAllRcvyComplete() != CTL_YES)
-		{
-			return;
-		}
 
-		if (st_work.nLoadingStatus == dMANUAL)
-		{
-			st_work.nLoadingFlag = TRUE;
-			return;
-		}
+	if (st_work.nLoadingStatus == dMANUAL)
+	{
+		st_work.nLoadingFlag = TRUE;
+		return;
 	}
+	
 
 	Func.OnTrace_ThreadStep(0, m_nStep_Run );
 
@@ -1243,15 +815,7 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		break;
 
 	case 110:
-		//kwlee 2017.0711 test
-		if (st_handler.nSimulation == 1)
-		{
-			nRet_1 = CTL_GOOD;
-		}
-		else
-		{
-			nRet_1 = OnGet_CylStopper(IO_ON);
-		}
+		nRet_1 = OnGet_CylStopper(IO_ON);
 		
 		if (nRet_1 == CTL_GOOD)
 		{
@@ -1259,7 +823,7 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		}
 		else if (nRet_1 == CTL_ERROR)
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1200, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 5006, CTL_dWARNING, m_strAlarmCode );
 		}
 		break;
 
@@ -1289,19 +853,13 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		{
 			nRetData[1] = OnCheck_AccyBoxConvInSecond( IO_ON );
 			nRetData[2] = OnCheck_AccyBoxConvInFirst( IO_ON );
-			
-			//kwlee 2017.0711 Test
-			if (st_handler.nSimulation == 1)
-			{
-				nRetData[1] = IO_ON;
-			}
-
 			if( nRetData[1] == IO_ON )
 			{
-				m_lTime_GoesBy[0][0] = GetCurrentTime();
+				m_lWaitTime[1][0] = GetCurrentTime();
 				//kwlee 2017.0710 
 				OnMove_AcMotor( AC_MV_CW_ );
 				m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+				m_lTime_GoesBy[0][0] = GetCurrentTime();
 				m_nStep_Run = 500;
 			}
 			else
@@ -1315,7 +873,9 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				{
 					stSync.nLotEnd_LoadingConv = TRUE;
 					OnMove_AcMotor( AC_MV_CW_ );
+					//kwlee 2017.0824
 					m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+					m_lTime_GoesBy[0][0] = GetCurrentTime();
 					stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 				}
 				else
@@ -1326,15 +886,15 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				//stSync.nLotEnd_LoadingConv = FALSE;
 				//kwlee 2017.0706
 				stSync.nLotEnd_LoadingConv = FALSE;
-				//m_nStep_Run = 200;
-				m_nStep_Run = 800;
+				//kwlee 2017.0824
+				m_nStep_Run = 600;
 			}
 		}
 		break;
 
 	case 500:
-		m_lTime_GoesBy[0][1] = GetCurrentTime();
-		m_lTime_GoesBy[0][2] = m_lTime_GoesBy[0][1] - m_lTime_GoesBy[0][0];
+		m_lWaitTime[1][1] = GetCurrentTime();
+		m_lWaitTime[1][2] = m_lWaitTime[1][1] - m_lWaitTime[1][0];
 		if (m_lTime_GoesBy[0][2] <= 0) m_lTime_GoesBy[0][0] = GetCurrentTime();
 		
 		if( st_basic.n_mode_device == WITHOUT_DVC_ )
@@ -1362,16 +922,10 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				nRetData[1] = OnCheck_AccyBoxConvInSecond( IO_ON );
 				nRetData[2] = OnCheck_AccyBoxConvInFirst( IO_ON );
 				
-				//kwlee 2017.0711 test
-				if (st_handler.nSimulation == 1)
-				{
-					nRetData[1] = IO_ON ;
-				}
-
 				if( nRetData[1] == IO_ON )
 				{
-					if( m_lTime_GoesBy[0][2] < 500) break;//stick box at third
-					m_lTime_GoesBy[0][0] = GetCurrentTime();
+					if( m_lWaitTime[1][2] < 500) break;//stick box at third
+					m_lWaitTime[1][0] = GetCurrentTime();
 					//m_nStep_Run = 70;
 					//kwlee 2017.0710
 					m_nStep_Run = 600;
@@ -1386,7 +940,7 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 					{
 						stSync.nLotEnd_LoadingConv = TRUE;
 						OnMove_AcMotor( AC_MV_CW_ );
-						m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+						m_nReq_AcMotCtrl[0] = REQ_MV_SECOND_;
 						stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 					}
 					else
@@ -1409,31 +963,29 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		if( stSync.nReq_LoadingConv2Conv1_Work == CTL_REQ )
 		{
 			//kwlee 2017.0711
-			cLOG.OnLogEvent(LOG_SEQ_, "2. Right Conv(Conv_2)이 Left Conv(Conv_1)에게 투입 요청 함 (REQ) 받음. ---ING------  ");
-			OnSet_CylStopper(IO_OFF);
-			m_nStep_Run = 700;
+			cLOG.OnLogEvent(LOG_SEQ_, "2. Rear Conv가  Front Conv에게 투입 요청 (REQ) 받음. ---ING------  ");
+			//OnSet_CylStopper(IO_OFF);
+			//m_nStep_Run = 700;
+			m_nStep_Run = 610;
 		}
 		break;
-	
-	case 700:
-		//kwlee 2017.0711
-		if (st_handler.nSimulation == 1)
-		{
-			nRet_1 = CTL_GOOD;
-		}
-		else
-		{
-			nRet_1 = OnGet_CylStopper(IO_OFF);
-		}
-		//
 
+	case 610:
+		OnSet_CylStopper(IO_OFF);
+		m_nStep_Run = 700;
+		break;
+
+	case 700:
+		nRet_1 = OnGet_CylStopper(IO_OFF);
+	
 		if (nRet_1 == CTL_GOOD)
 		{
 			m_nStep_Run = 710;
 		}
-		else
+		else if (nRet_1 == CTL_ERROR)
 		{
-			CTL_Lib.Alarm_Error_Occurrence( 1201, CTL_dWARNING, m_strAlarmCode );
+			CTL_Lib.Alarm_Error_Occurrence( 5007, CTL_dWARNING, m_strAlarmCode );
+			m_nStep_Run = 610;
 		}
 		break;
 
@@ -1459,15 +1011,10 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		{
 			nRetData[1] = OnCheck_AccyBoxConvInSecond( IO_ON );
 			nRetData[2] = OnCheck_AccyBoxConvInFirst( IO_ON );	
-			
-			//kwlee 2017.0711
-			if (st_handler.nSimulation == 1)
-			{
-				nRetData[1] = IO_ON;
-			}
-			//
 
-			if( nRetData[1] == IO_ON )
+			//if( nRetData[1] == IO_ON)
+			//kwlee 2017.0915
+			if( nRetData[1] == IO_ON || nRetData[2] == IO_ON)
 			{
 // 				if( stSync.nReq_LoadingConv2Conv2_Work == CTL_REQ )
 // 				{
@@ -1476,7 +1023,11 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 // 				if( stSync.nReq_LoadingConv2Conv1_Work == CTL_REQ )
 // 				{
 				OnMove_AcMotor( AC_MV_CW_ );
+				//kwlee 2017.0824
+				//m_nReq_AcMotCtrl[0] = REQ_MV_SECOND_; '
+				m_lTime_GoesBy[0][0] = GetCurrentTime();
 				m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+				
 				stSync.nReq_LoadingConv2Conv1_Work = CTL_READY;
 
 				//kwlee 2017.0711 test
@@ -1492,20 +1043,32 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 					if( stSync.nLotEnd_LoadingConv != TRUE )
 					{
 						stSync.nLotEnd_LoadingConv = TRUE;
-						OnMove_AcMotor( AC_MV_CW_ );
-						m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+						//kwlee 2017.0830
+// 						OnMove_AcMotor( AC_MV_CW_ );
+// 						//m_nReq_AcMotCtrl[0] = REQ_MV_SECOND_;
+// 						//kwlee 2017.0830
+// 						m_lTime_GoesBy[0][0] = GetCurrentTime();
+// 						m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
 						stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 					}
 					else
 					{
+						st_map.nLotStart = CTL_YES;
+						stSync.nLotEnd_LoadingConv = FALSE;
 						stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 					}
-					st_map.nLotStart = CTL_YES;
+					
 					//stSync.nLotEnd_LoadingConv = FALSE;
 					//kwlee 2017.0706
-					stSync.nLotEnd_LoadingConv = FALSE;
+// 					st_map.nLotStart = CTL_YES;
+// 					stSync.nLotEnd_LoadingConv = FALSE;
 					//m_nStep_Run = 200;
-					m_nStep_Run = 0;
+					//kwlee 2017.0823
+				//	m_nStep_Run = 0;
+
+					//kwlee 20170917
+// 					st_map.nLotStart = CTL_YES;
+// 					stSync.nLotEnd_LoadingConv = FALSE;
 				}
 			}			
 		}
@@ -1518,12 +1081,19 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				if (stSync.nReq_LoadingConv2Conv1_Work == CTL_COMPLETE)
 				{
 					cLOG.OnLogEvent(LOG_SEQ_, "7.Left Conv(Conv_1)이 Right Conv(Conv_2)에게 Complete 받음..Motor Stop   ---ING------  ");
-					m_lTime_GoesBy[0][0] = GetCurrentTime();
-					OnMove_AcMotor( AC_MV_STOP_ );
+					m_lWaitTime[1][0] = GetCurrentTime();
+
+					//OnMove_AcMotor( AC_MV_STOP_ ); 
+					//kwlee 2017.0824
+					nRetData[1] = OnCheck_AccyBoxConvInThird( IO_ON );
+					if (nRetData[1] == IO_ON)
+					{
+						OnMove_AcMotor( AC_MV_STOP_ );
+					}
+					//
 					m_nStep_Run = 900;
 				}
 			}
-			
 			break;
 
 	//case 100:
@@ -1544,7 +1114,10 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				if( nRetData[2] == IO_OFF )
 				{
 					OnMove_AcMotor( AC_MV_CW_);
-					m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
+					//m_nReq_AcMotCtrl[0] = REQ_MV_SECOND_;
+					//kwlee 2017.0830
+					m_lTime_GoesBy[0][0] = GetCurrentTime();
+						m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
 					stSync.nReq_LoadingConv2Clamp_Work = SYNC_REQ_RESET_;
 					m_nStep_Run = 0;
 					break;
@@ -1580,11 +1153,6 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 	//kwlee 2017.0711
 	case 910:
 		nRet_1 = OnGet_CylStopper( IO_ON );
-		//kwlee 2017.0711
-		if (st_handler.nSimulation == 1)
-		{
-			nRet_1 = CTL_GOOD;
-		}
 
 		if( nRet_1 == CTL_GOOD )
 		{
@@ -1594,7 +1162,7 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		}
 		else if( nRet_1 == CTL_ERROR )
 		{
-			CTL_Lib.Alarm_Error_Occurrence(1202, CTL_dWARNING, m_strAlarmCode);
+			CTL_Lib.Alarm_Error_Occurrence(5008, CTL_dWARNING, m_strAlarmCode);
 			m_nStep_Run = 900;
 		}
 		break;
@@ -1611,7 +1179,7 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 		{
 			OnMove_AcMotor( AC_MV_CW_);	
 			m_nReq_AcMotCtrl[0] = REQ_MV_STABILITY_;
-			m_lTime_GoesBy[0][0] = GetCurrentTime();
+			m_lTime_GoesBy[1][0] = GetCurrentTime();
 			m_nStep_Run = 1010;
 		}
 		break;
@@ -1646,13 +1214,13 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 				OnMove_AcMotor( AC_MV_CW_ );
 				m_nStep_Run = 3000;
 			}
-			m_lTime_GoesBy[0][1] = GetCurrentTime();
-			m_lTime_GoesBy[0][2] = m_lWait_Stopper[0][1] - m_lTime_GoesBy[0][0];
-			if( m_lTime_GoesBy[0][2] <= 0 ) m_lTime_GoesBy[0][0] = GetCurrentTime();
+			m_lWaitTime[1][1] = GetCurrentTime();
+			m_lWaitTime[1][2] = m_lWaitTime[1][1] - m_lWaitTime[1][0];
+			if( m_lWaitTime[1][2] <= 0 ) m_lWaitTime[1][0] = GetCurrentTime();
 
 			if( st_basic.n_mode_device == WITHOUT_DVC_ )
 			{
-				if ( m_lTime_GoesBy[0][2] >= ( MAX_WAIT_ACCY_BOX_CONV_ / 2 ) )
+				if ( m_lWaitTime[1][2] >= ( MAX_WAIT_ACCY_BOX_CONV_ / 2 ) )
 				{
 					OnMove_AcMotor(AC_MV_STOP_);
 					if( st_map.nLoadingAccyBoxExist[2] == 1 &&
@@ -1683,13 +1251,13 @@ void CSeq_LoadingConv::OnRun_Move_Rear()
 			}
 			else
 			{
-				if( m_lTime_GoesBy[0][2] >= (MAX_WAIT_ACCY_BOX_CONV_ * 5))
+				if( m_lWaitTime[1][2] >= (MAX_WAIT_ACCY_BOX_CONV_ * 5))
 				{
 					OnMove_AcMotor( AC_MV_STOP_);
 					m_nStep_Run = 1000;
 
-					// 120000 0 00 "PS0306_LOADING_CONV_FIRST_CHK_ERR."
-					CTL_Lib.Alarm_Error_Occurrence( 1203, CTL_dWARNING, "120000" );
+					// 120010 0 00 "PS0306_LOADING_CONV_FIRST_CHK_ERR."
+					CTL_Lib.Alarm_Error_Occurrence( 5009, CTL_dWARNING, "120010" );
 				}
 			}
 		}
@@ -1882,7 +1450,7 @@ int CSeq_LoadingConv::OnGet_CylStopper(int nzOnOff)
 	{
 		m_lWait_Stopper[0][0] = GetCurrentTime();
 	}
-
+	
 	if (nzOnOff == IO_OFF)		// 스토퍼 내려간 상태
 	{
 		if (m_bflag_Stopper[0] == true &&
@@ -1965,7 +1533,7 @@ int CSeq_LoadingConv::OnGet_CylStopper2(int nzOnOff)
 	{
 		m_lWait_Stopper[1][0] = GetCurrentTime();
 	}
-	
+
 	if (nzOnOff == IO_OFF)		// 스토퍼 내려간 상태
 	{
 		if (m_bflag_Stopper[1] == true &&

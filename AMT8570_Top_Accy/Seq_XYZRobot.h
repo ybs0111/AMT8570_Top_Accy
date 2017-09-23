@@ -38,7 +38,9 @@ public:
 	int m_nStep_BufferConvPlace;
 	int	m_nStep_NGBufferPick;
 	int m_nStep_NGBufferPlace;
-	
+	//kwlee 2017.0913
+	int m_nNGLeftPickerNo;
+	int m_nNGRigtPickerNo;
 	
 	int m_nStep_GripRetry;
 
@@ -68,6 +70,14 @@ private:
 	int  m_nMotZ2;
 	int  m_nMotZ3;
 	
+	//kwlee 2017.0909
+	int m_nBuffer_Pos_Left;
+	int m_nBuffer_Pos_Right;
+
+	int m_nPicker_Pos_Left;
+	int m_nPicker_Pos_Right;
+	int m_nEmptyPlaceCheck;
+
 	int  m_nRetryCount;	// 재시도 횟수
 	int  m_nNearby;		// 바코드 읽기 실패 시 [좌/우] 이동하여 재시도 작업 진행 상태
 
@@ -111,16 +121,12 @@ private:
 	void OnRun_Move();
 	int OnBCRRead(int nzMode);
 	int OnProc_BCRStateBad();
-
-
-
 	int OnCheck_NGBufferAccy(int nzOnOff, int nzMode=CHK_EXIST_, int nzSite=SIDE_BOTH_);
 	int OnCheck_FrontAccySupply(int nzOnOff, int nzMode, int nzSite); 
 	int OnCheck_RearAccySupply(int nzOnOff, int nzMode, int nzSite);
 	int OnCheck_MiddleAccySupply(int nzOnOff, int nzMode, int nzSite); 
 	int OnCheck_OutFrontAccySupply(int nzOnOff, int nzMode, int nzSite);
 	int OnCheck_OutRearAccySupply(int nzOnOff, int nzMode, int nzSite);
-
 	int OnProc_ReadMove();
 	int OnProc_WorkSiteChange();
 	int OnProc_NGBufferClear();
@@ -128,23 +134,22 @@ private:
 	int OnProc_BufferConvClear();
 	int OnProc_AccyVacPick();
 	int OnProc_AccyPlace();
-
 	int OnProc_BufferPlace();
+	//int OnProc_4BufferPlace();
+	//kwlee 2017.0908
 	int OnProc_4BufferPlace();
-// 
-// 	int OnProc_NGBufferPick(int nzSite);
-// 	int OnProc_NGBufferPlace(int nzSite);
+	int OnProc_BufferPlaceFind(); //kwlee 2017.0913
+	
+	int OnBufferPlacePosFind(int nMode);
 
 	//kwlee 2017.0727
 	int OnProc_NGBufferPick();
 	int OnProc_NGBufferPlace();
 
 	int OnProc_GripRetry();
-
 	void OnSet_PickerPitch( int nOzOff, int nzMode=0);
 	int OnGet_PickerPitch( int nOzOff, int nzMode=0);
 
-	
  	void OnSet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzMode=0);	
  	int OnGet_PickerUpDn(int nzOnOff, int nzPickerInfo[MAX_PICKER_], int nzUnDnStatus[MAX_PICKER_], int nzMode=0);
  
@@ -158,9 +163,6 @@ private:
 	int OnGet_PickerPitchOPenClose( int nOzOff, int nzMode=0);
 
 	int OnRun_ForceDischarge();
-
-
-
 };
 extern CSeq_XYZRobot	SeqXYZRobot;
 

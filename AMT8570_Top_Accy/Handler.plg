@@ -6,13 +6,7 @@
 --------------------Configuration: Handler - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSPE192.tmp" with contents
-[
-/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /FR"Debug/" /Fp"Debug/Handler.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
-"D:\source\AMT8570_Top_Accy\Seq_LoadingConv.cpp"
-]
-Creating command line "cl.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSPE192.tmp" 
-Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSPE193.tmp" with contents
+Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSP2B10.tmp" with contents
 [
 TipsWareExt.lib libmysql.lib FM_8000.lib netapi32.lib HSSI.lib Spr32d70.lib wininet.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/Handler.pdb" /debug /machine:I386 /out:"Debug/Handler.exe" /pdbtype:sept 
 .\Debug\ABpcManager.obj
@@ -138,12 +132,10 @@ TipsWareExt.lib libmysql.lib FM_8000.lib netapi32.lib HSSI.lib Spr32d70.lib wini
 .\Debug\SerialPort.obj
 .\Debug\Handler.res
 ]
-Creating command line "link.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSPE193.tmp"
+Creating command line "link.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSP2B10.tmp"
 <h3>Output Window</h3>
-Compiling...
-Seq_LoadingConv.cpp
 Linking...
-Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSPE230.tmp" with contents
+Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSP2B50.tmp" with contents
 [
 /nologo /o"Debug/Handler.bsc" 
 .\Debug\StdAfx.sbr
@@ -267,7 +259,7 @@ Creating temporary file "C:\Users\ADMINI~1\AppData\Local\Temp\RSPE230.tmp" with 
 .\Debug\BcrEvent.sbr
 .\Debug\SerialCommBase.sbr
 .\Debug\SerialPort.sbr]
-Creating command line "bscmake.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSPE230.tmp"
+Creating command line "bscmake.exe @C:\Users\ADMINI~1\AppData\Local\Temp\RSP2B50.tmp"
 Creating browse info file...
 <h3>Output Window</h3>
 

@@ -1358,9 +1358,14 @@ extern  st_dsp_alarm_param  st_alarm;
 #define ACCY_OUT_YES_			0
 #define ACCY_OUT_NO_			1
 
+// #define BCR_READ_BAD_	0
+// #define BCR_READ_GOOD_	1
+// #define DEVICE_OUT      2 //kwlee 2017.0721 
+
+#define BCR_READ_INIT_	2
 #define BCR_READ_BAD_	0
 #define BCR_READ_GOOD_	1
-#define DEVICE_OUT      2 //kwlee 2017.0721 
+
 	
 // ******************************************************************************
 // 장비 동작 제어 플래그 정보 저장 구조체 선언                                   
@@ -1687,12 +1692,20 @@ enum AC_MOVE_TYPE
 #define SMEMA_TOP_				0
 #define SMEMA_BTM_				1
 
-
-
 #define	SIDE_BOTH_				2
 //kwlee 2017.0727
 #define SIDE_BOTH_FRONT_        3
 #define SIDE_BOTH_REAR_        4
+
+//kwlee 2017.0825
+#define SITE_REAR              0
+#define SITE_MID			   1
+#define SITE_FRONT             2
+
+//kwlee 2017.0913
+#define BUFFER_FRONT_POS       0
+#define BUFFER_REAR_POS        1
+#define BUFFER_PLACE_POS       2 
 
 // 프로그램에서 사용할 IO MAP 정의
 struct tagIO_PARAM
