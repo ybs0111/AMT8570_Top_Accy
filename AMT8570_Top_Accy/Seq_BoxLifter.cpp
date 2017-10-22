@@ -652,13 +652,11 @@ void CSeq_BoxLifter::OnRun_Move()
 		}
 
 		// Lifter Z(0,1,2,3)에 대해서 모두 작업을 완료할때까지 기다린다
-		// 2017.0910 추가 예정.
-		//1. SenSor 미감지시 바로 다운 하지 말고Pitch 만� 올린후  로봇에 요청 하여 한번 집어 보자.
-		//2. 로봇에 자재 감지 안되었을 경우Lift 내린다.
-		if (m_nStandByOK[0] == CTL_NO || m_nStandByOK[1] == CTL_NO || m_nStandByOK[2] == CTL_NO || m_nStandByOK[3] == CTL_NO )
-		{
-			break;
-		}
+// 	
+// 		if (m_nStandByOK[0] == CTL_NO || m_nStandByOK[1] == CTL_NO || m_nStandByOK[2] == CTL_NO || m_nStandByOK[3] == CTL_NO )
+// 		{
+// 			break;
+// 		}
 
 		nRetData[0] = !g_ioMgr.get_in_bit(stIO.i_Chk_BoxClampAccyDetection[SIDE_LEFT_][ SIDE_FW_ + m_WorkSite * 2 ]);
 		nRetData[1] = !g_ioMgr.get_in_bit(stIO.i_Chk_BoxClampAccyDetection[SIDE_RIGHT_][SIDE_FW_ + m_WorkSite * 2]);
@@ -759,46 +757,46 @@ void CSeq_BoxLifter::OnRun_Move()
 			}
 		}
 		//kwlee 2017.09
-		else
-		{
-			nCnt = 0;
-			for (i = 0; i<MAX_PICKER_; i++)
-			{
-				if (nRetData[i] == IO_ON)
-				{
-					nCnt++;
-				}
-			}
-
-			if (nCnt > 0)
-			{
-				if (dCurrPos[0] <= st_motor[m_nMotZ0].d_pos[Z_ACC_LIFT_READY_])
-				{
-					// 002000 0 00 "LIFTER_UP_DOWN_SHIFT1_LOAD_ACCY_CHK_ERR."
-					alarm.mstr_code		= "002000";
-					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
-				}
-				else if (dCurrPos[1] <= st_motor[m_nMotZ1].d_pos[Z_ACC_LIFT_READY_])
-				{
-					// 012000 0 00 "LIFTER_UP_DOWN_SHIFT2_LOAD_ACCY_CHK_ERR."
-					alarm.mstr_code		= "012000";
-					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
-				}
-				else if (dCurrPos[2] <= st_motor[m_nMotZ2].d_pos[Z_ACC_LIFT_READY_])
-				{
-					// 022000 0 00 "LIFTER_UP_DOWN_SHIFT3_LOAD_ACCY_CHK_ERR."
-					alarm.mstr_code		= "022000";
-					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
-				}
-				else if (dCurrPos[3] <= st_motor[m_nMotZ3].d_pos[Z_ACC_LIFT_READY_])
-				{
-					// 032000 0 00 "LIFTER_UP_DOWN_SHIFT4_LOAD_ACCY_CHK_ERR."
-					alarm.mstr_code		= "032000";
-					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
-				}
-				m_nStep_Run = 200;
-			}
-		}
+// 		else
+// 		{
+// 			nCnt = 0;
+// 			for (i = 0; i<MAX_PICKER_; i++)
+// 			{
+// 				if (nRetData[i] == IO_ON)
+// 				{
+// 					nCnt++;
+// 				}
+// 			}
+// 
+// 			if (nCnt > 0)
+// 			{
+// 				if (dCurrPos[0] <= st_motor[m_nMotZ0].d_pos[Z_ACC_LIFT_READY_])
+// 				{
+// 					// 002000 0 00 "LIFTER_UP_DOWN_SHIFT1_LOAD_ACCY_CHK_ERR."
+// 					alarm.mstr_code		= "002000";
+// 					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
+// 				}
+// 				else if (dCurrPos[1] <= st_motor[m_nMotZ1].d_pos[Z_ACC_LIFT_READY_])
+// 				{
+// 					// 012000 0 00 "LIFTER_UP_DOWN_SHIFT2_LOAD_ACCY_CHK_ERR."
+// 					alarm.mstr_code		= "012000";
+// 					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
+// 				}
+// 				else if (dCurrPos[2] <= st_motor[m_nMotZ2].d_pos[Z_ACC_LIFT_READY_])
+// 				{
+// 					// 022000 0 00 "LIFTER_UP_DOWN_SHIFT3_LOAD_ACCY_CHK_ERR."
+// 					alarm.mstr_code		= "022000";
+// 					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
+// 				}
+// 				else if (dCurrPos[3] <= st_motor[m_nMotZ3].d_pos[Z_ACC_LIFT_READY_])
+// 				{
+// 					// 032000 0 00 "LIFTER_UP_DOWN_SHIFT4_LOAD_ACCY_CHK_ERR."
+// 					alarm.mstr_code		= "032000";
+// 					CTL_Lib.Alarm_Error_Occurrence(2410, CTL_dWARNING, alarm.mstr_code);
+// 				}
+// 				m_nStep_Run = 200;
+// 			}
+// 		}
 		//else// Lifter Z(0,1,2,3)에 대해서 모든 리프터가 정상적으로 자재 공급을 하지 못하였기 때문에 Down Step 진행
 // 		else 
 // 		{

@@ -2188,9 +2188,7 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 		if (nRet == CTL_GOOD)
 		{
 			// 자재가 없는 경우에는 Rand 확률을 이용하여 구분 하도록 설정
-			//if (st_basic.n_mode_device == WITHOUT_DVC_)
-			//kwlee 2017.0902 Test
-			if (1 || st_basic.n_mode_device == WITHOUT_DVC_)
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				srand((unsigned)time(NULL));
 				int nRand = rand() % 10;
@@ -2241,9 +2239,8 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 		if (nRet == CTL_GOOD)
 		{
 			// 자재가 없는 경우에는 Rand 확률을 이용하여 구분 하도록 설정
-			//if (st_basic.n_mode_device == WITHOUT_DVC_)
-			//kwlee 2017.0902 test
-			if (1 ||st_basic.n_mode_device == WITHOUT_DVC_)
+			
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				srand((unsigned)time(NULL));
 				int nRand = rand() % 10;
@@ -2322,9 +2319,8 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 		if (nRet == CTL_GOOD)
 		{
 			// 자재가 없는 경우에는 Rand 확률을 이용하여 구분 하도록 설정
-			//if (st_basic.n_mode_device == WITHOUT_DVC_)
-			//kwlee 20170902 test
-			if (1 || st_basic.n_mode_device == WITHOUT_DVC_)
+			//kwlee 2017.0825 Bcr Test
+			if (st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				srand((unsigned)time(NULL));
 				int nRand = rand() % 10;
@@ -2379,7 +2375,7 @@ int CSeq_XYZRobot::OnProc_ReadMove()
 			// 자재가 없는 경우에는 Rand 확률을 이용하여 구분 하도록 설정
 			//if (st_basic.n_mode_device == WITHOUT_DVC_)
 			//kwlee 20170902 Test
-			if (st_basic.n_mode_device == WITHOUT_DVC_)
+			if ( st_basic.n_mode_device == WITHOUT_DVC_)
 			{
 				srand((unsigned)time(NULL));
 				int nRand = rand() % 10;
@@ -3479,9 +3475,7 @@ int CSeq_XYZRobot::OnBCRRead(int nzMode)
 		break;
 
 	case 110:
-		//kwlee 2017.0825 Test
-		m_nStep_BCRRead = 5000;
-		break;
+	
 		if (m_nResp_Move == CTL_NO)
 		{
 			// 바코드 읽기 요청

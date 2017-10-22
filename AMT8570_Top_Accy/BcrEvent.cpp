@@ -31,7 +31,8 @@ CBcrEvent::~CBcrEvent()
 //==================================================================//
 void CBcrEvent::OnSeq_RUN(void) 
 {
-	m_cComm_ACCY.OnRun_BarCode(); 	
+
+	m_cComm_ACCY.OnRun_BarCode();
 }
 
 //==================================================================//

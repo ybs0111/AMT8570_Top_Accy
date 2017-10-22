@@ -38,7 +38,7 @@ void CSerialCommBase::OnRun_BarCode()
 	{
 	case 0:
 		// 메시지 전송 요청 발생
-		if (st_serial.nReq_CommSend[m_nPortNum -1] == REQ_CALL_)
+		if (st_serial.nReq_CommSend[PORT_BCR_ACCY_ -1] == REQ_CALL_)
 		{
 			m_nStep_Bcr = 1000;
 		}
@@ -46,8 +46,8 @@ void CSerialCommBase::OnRun_BarCode()
 
 	case 1000:
 		// 바코드 읽기 요청
-		::PostMessage(st_handler.hWnd, WM_DATA_SEND, m_nPortNum, 0);
-		st_serial.n_rec_chk[m_nPortNum -1] = FALSE;
+		::PostMessage(st_handler.hWnd, WM_DATA_SEND, PORT_BCR_ACCY_, 0);
+		st_serial.n_rec_chk[PORT_BCR_ACCY_ -1] = FALSE;
 
 		m_lWait_Bcr[0] = GetCurrentTime();
 		m_nStep_Bcr = 1100;
@@ -55,10 +55,10 @@ void CSerialCommBase::OnRun_BarCode()
 
 	case 1100:
 		// 응답 기다림
-		if (st_serial.n_rec_chk[m_nPortNum -1] == YES)
+		if (st_serial.n_rec_chk[PORT_BCR_ACCY_ -1] == YES)
 		{
-			sTemp = st_serial.comm_rec[m_nPortNum -1];
-
+			sTemp = st_serial.comm_rec[PORT_BCR_ACCY_ -1];
+			cLOG.OnLogEvent(LOG_SEQ_, sTemp);
 			// 바코드 읽기 작업 실패했는지 검사
 			if (sTemp == "No-Read")
 			{
@@ -66,7 +66,7 @@ void CSerialCommBase::OnRun_BarCode()
 			}
 			else
 			{
-				st_serial.nReq_CommSend[m_nPortNum -1] = REPLY_CORRECT_;
+				st_serial.nReq_CommSend[PORT_BCR_ACCY_ -1] = REPLY_CORRECT_;
 				m_nStep_Bcr = 0;
 			}
 		}
@@ -89,7 +89,7 @@ void CSerialCommBase::OnRun_BarCode()
 		break;
 
 	case 5000:
-		st_serial.nReq_CommSend[m_nPortNum -1] = REPLY_ERROR_;
+		st_serial.nReq_CommSend[PORT_BCR_ACCY_ -1] = REPLY_ERROR_;
 		m_nStep_Bcr = 0;
 		break;
 	}
